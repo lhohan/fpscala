@@ -33,7 +33,8 @@ object MyModule {
     var acc = 1
     var i = n
     while (i > 0) {
-      acc *= i; i -= 1
+      acc *= i;
+      i -= 1
     }
     acc
   }
@@ -94,7 +95,8 @@ object AnonymousFunctions {
     println(formatResult("increment3", 7, x => x + 1))
     println(formatResult("increment4", 7, _ + 1))
     println(formatResult("increment5", 7, x => {
-      val r = x + 1; r
+      val r = x + 1;
+      r
     }))
   }
 }
@@ -146,7 +148,18 @@ object PolymorphicFunctions {
 
   // Exercise 2: Implement a polymorphic function to check whether
   // an `Array[A]` is sorted
-  def isSorted[A](as: Array[A], gt: (A, A) => Boolean): Boolean = ???
+  def isSorted[A](as: Array[A], gt: (A, A) => Boolean): Boolean = {
+    @tailrec
+    def go(as: Array[A]): Boolean = {
+      if (as.size <= 1) {
+        true
+      } else {
+        if (gt(as(0), as(1))) go(as drop 1)
+        else false
+      }
+    }
+    go(as)
+  }
 
   // Polymorphic functions are often so constrained by their type
   // that they only have one implementation! Here's an example:
