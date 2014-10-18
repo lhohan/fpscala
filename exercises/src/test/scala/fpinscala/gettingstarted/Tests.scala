@@ -40,6 +40,11 @@ class Tests extends FunSuite{
 
   test("compose"){
     import fpinscala.gettingstarted.PolymorphicFunctions.compose
+
+    // compose to functions:
+    // - one takes and array I determines it is empty or not giving back a boolean
+    // - the other takes that boolean and turns it into a char 'F' or 'T'
+
     def isEmpty[T] (a: Array[T]) = a.isEmpty
     def boolToChar(b:Boolean):Char =  if(b) 'T' else 'F'
     def h = compose(boolToChar , isEmpty[String])
