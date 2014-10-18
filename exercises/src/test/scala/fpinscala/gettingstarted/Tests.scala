@@ -32,4 +32,10 @@ class Tests extends FunSuite{
     assertResult(false, "unsorted - 1") {isSorted(Array("abcd","abcdef","a"),gt1)}
   }
 
+  test("curry"){
+    import fpinscala.gettingstarted.PolymorphicFunctions.curry
+    curry((x:Int, y:Double) => (x+y).toString)
+
+  }
+
 }
