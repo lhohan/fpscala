@@ -154,7 +154,7 @@ object PolymorphicFunctions {
       if (as.size <= 1) {
         true
       } else {
-        if (gt(as(0), as(1))) go(as drop 1)
+        if (gt(as(0), as(1))) go(as tail)
         else false
       }
     }
