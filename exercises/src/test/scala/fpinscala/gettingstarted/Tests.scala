@@ -38,4 +38,13 @@ class Tests extends FunSuite{
 
   }
 
+  test("compose"){
+    import fpinscala.gettingstarted.PolymorphicFunctions.compose
+    def isEmpty[T] (a: Array[T]) = a.isEmpty
+    def boolToChar(b:Boolean):Char =  if(b) 'T' else 'F'
+    def h = compose(boolToChar , isEmpty[String])
+    assertResult('T'){h(Array())}
+    assertResult('F'){h(Array("not empty"))}
+  }
+
 }
