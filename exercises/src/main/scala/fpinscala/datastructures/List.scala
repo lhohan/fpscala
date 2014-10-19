@@ -65,7 +65,11 @@ object List {
     case Cons(_, xs) => Cons(h, xs)
   }
 
-  def drop[A](l: List[A], n: Int): List[A] = sys.error("todo")
+  def drop[A](l: List[A], n: Int): List[A] = l match {
+    case Nil if n > 0 => throw new UnsupportedOperationException("drop not supported on empty list")
+    case Cons(_, xs) if n > 1 => drop(xs, n - 1)
+    case Cons(_, xs) if n ==1 => xs
+  }
 
   def dropWhile[A](l: List[A], f: A => Boolean): List[A] = sys.error("todo")
 
