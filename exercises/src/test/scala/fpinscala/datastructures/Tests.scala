@@ -33,4 +33,11 @@ class Tests extends FunSuite{
     intercept[RuntimeException]{tail2(Nil)}
     assertResult(List(2,3,4)){tail2(List(1,2,3,4))}
   }
+
+  test("dropWhile"){
+    assertResult(Nil){dropWhile(Nil, (x:Int) => false)}
+    assertResult(List(2,3,4), "cond met"){dropWhile(List(1,2,3,4), (x:Int) => x < 2)}
+    assertResult(List(1,2,3,4), "cond not met"){dropWhile(List(1,2,3,4), (x:Int) => x > 2)}
+    assertResult(List("Bonjour"), "strings"){dropWhile(List("Hello","Hi","Bonjour"), (x:String) => x.startsWith("H"))}
+  }
 }

@@ -1,5 +1,7 @@
 package fpinscala.datastructures
 
+import scala.annotation.tailrec
+
 sealed trait List[+A]
 
 // `List` data type, parameterized on a type, `A`
@@ -78,7 +80,11 @@ object List {
   def tail2[A](l: List[A]): List[A] = drop(l,1)
 
 
-  def dropWhile[A](l: List[A], f: A => Boolean): List[A] = sys.error("todo")
+  @tailrec
+  def dropWhile[A](l: List[A], f: A => Boolean): List[A] = l match {
+    case Nil => Nil
+    case Cons(h, xs) => if (f(h)) dropWhile(xs, f) else l
+  }
 
   def init[A](l: List[A]): List[A] = sys.error("todo")
 
