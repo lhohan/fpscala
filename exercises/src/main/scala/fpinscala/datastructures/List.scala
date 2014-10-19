@@ -74,6 +74,10 @@ object List {
       case Cons(_, xs) => drop(xs, n - 1)
     }
 
+  //tail in terms of drop
+  def tail2[A](l: List[A]): List[A] = drop(l,1)
+
+
   def dropWhile[A](l: List[A], f: A => Boolean): List[A] = sys.error("todo")
 
   def init[A](l: List[A]): List[A] = sys.error("todo")

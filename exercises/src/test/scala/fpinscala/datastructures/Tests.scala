@@ -28,4 +28,9 @@ class Tests extends FunSuite{
     assertResult(List(1,2,3,4), "neg n"){drop(List(1,2,3,4),-1)}
     assertResult(Nil){drop(List(1,2,3,4),4)}
   }
+
+  test("tail2"){
+    intercept[RuntimeException]{tail2(Nil)}
+    assertResult(List(2,3,4)){tail2(List(1,2,3,4))}
+  }
 }
