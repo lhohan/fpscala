@@ -47,4 +47,10 @@ class DataStructuresTests extends FunSuite{
     assertResult(Nil, "1 element"){init(List(1))}
     assertResult(List(1,2,3), "default"){init(List(1,2,3,4))}
   }
+
+  test("init2"){
+    intercept[RuntimeException]{init2(Nil)}
+    assertResult(Nil, "1 element"){init2(List(1))}
+    assertResult(List(1,2,3), "default"){init2(List(1,2,3,4))}
+  }
 }

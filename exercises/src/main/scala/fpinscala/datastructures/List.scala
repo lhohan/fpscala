@@ -90,7 +90,25 @@ object List {
     case Nil => throw new UnsupportedOperationException("init on empty list")
     case Cons(h, Nil) => Nil
     case Cons(h, xs) => Cons(h, init(xs))
+  }
 
+  def init2[A](l: List[A]): List[A] = {
+    @tailrec
+    def go(acc: List[A], rest:List[A]):List[A] = rest match {
+      case Nil => throw new UnsupportedOperationException("init2 on empty list")
+      case Cons(_, Nil) => acc
+      case Cons(h, xs) => go(Cons(h, acc), xs)
+    }
+    reverse(go(Nil, l))
+  }
+
+  def reverse[A](l: List[A]) : List[A] = {
+    @tailrec
+    def go(acc:List[A],l: List[A]) : List[A] = l match {
+      case Nil => acc
+      case Cons(h, xs) => go(Cons(h, acc),xs)
+    }
+    go(Nil,l)
   }
 
   def length[A](l: List[A]): Int = sys.error("todo")
