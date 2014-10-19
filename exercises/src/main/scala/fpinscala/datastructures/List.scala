@@ -82,8 +82,8 @@ object List {
 
   @tailrec
   def dropWhile[A](l: List[A], f: A => Boolean): List[A] = l match {
-    case Nil => Nil
-    case Cons(h, xs) => if (f(h)) dropWhile(xs, f) else l
+    case Cons(h, xs) if f(h) => dropWhile(xs, f)
+    case _ => l
   }
 
   def init[A](l: List[A]): List[A] = sys.error("todo")
