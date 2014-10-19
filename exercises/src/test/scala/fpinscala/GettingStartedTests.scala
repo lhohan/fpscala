@@ -1,11 +1,11 @@
-package fpinscala.gettingstarted
+package fpinscala
 
 import org.scalatest.FunSuite
 
 /**
  * Created by hans on 17/10/14.
  */
-class Tests extends FunSuite{
+class GettingStartedTests extends FunSuite{
 
 
   test("isSorted - Int"){

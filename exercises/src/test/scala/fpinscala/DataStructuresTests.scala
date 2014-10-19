@@ -1,12 +1,13 @@
-package fpinscala.datastructures
+package fpinscala
 
+import fpinscala.datastructures.{List, Nil}
 import org.scalatest.FunSuite
 
 /**
  * Created by hans on 19/10/14.
  */
-class Tests extends FunSuite{
-  import List._
+class DataStructuresTests extends FunSuite{
+  import fpinscala.datastructures.List._
   test("ex 3.1"){
     assertResult(3){x}
   }
