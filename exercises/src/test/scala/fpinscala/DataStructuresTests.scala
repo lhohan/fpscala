@@ -41,4 +41,10 @@ class DataStructuresTests extends FunSuite{
     assertResult(List(1,2,3,4), "cond not met"){dropWhile(List(1,2,3,4), (x:Int) => x > 2)}
     assertResult(List("Bonjour"), "strings"){dropWhile(List("Hello","Hi","Bonjour"), (x:String) => x.startsWith("H"))}
   }
+
+  test("init"){
+    intercept[RuntimeException]{init(Nil)}
+    assertResult(Nil, "1 element"){init(List(1))}
+    assertResult(List(1,2,3), "default"){init(List(1,2,3,4))}
+  }
 }

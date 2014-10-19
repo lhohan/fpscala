@@ -86,7 +86,12 @@ object List {
     case _ => l
   }
 
-  def init[A](l: List[A]): List[A] = sys.error("todo")
+  def init[A](l: List[A]): List[A] = l match {
+    case Nil => throw new UnsupportedOperationException("init on empty list")
+    case Cons(h, Nil) => Nil
+    case Cons(h, xs) => Cons(h, init(xs))
+
+  }
 
   def length[A](l: List[A]): Int = sys.error("todo")
 
