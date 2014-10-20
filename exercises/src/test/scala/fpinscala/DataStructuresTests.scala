@@ -71,4 +71,10 @@ class DataStructuresTests extends FunSuite{
     assertResult(1){productLF(Nil)}
     assertResult(24){productLF(List(1,2,3,4))}
   }
+
+  test("reverse"){
+    assertResult(Nil)(reverse(Nil))
+    assertResult(List(1))(reverse(List(1)))
+    assertResult(List(1,2,3))(reverse(List(3,2,1)))
+  }
 }

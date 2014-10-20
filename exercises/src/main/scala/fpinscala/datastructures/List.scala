@@ -123,5 +123,7 @@ object List {
 
   def productLF(ds: List[Double]): Double = foldLeft(ds, 1.0)(_ * _)
 
+  def reverse[A](ls: List[A]):List[A] = foldLeft(ls, List[A]()){(acc,el) => Cons(el,acc)}
+
   def map[A, B](l: List[A])(f: A => B): List[B] = sys.error("todo")
 }
