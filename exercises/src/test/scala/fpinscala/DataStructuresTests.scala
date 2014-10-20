@@ -64,4 +64,11 @@ class DataStructuresTests extends FunSuite{
     assertResult(1)(length(List(1)))
     assertResult(3)(length(List(1,2,4)))
   }
+
+  test("sum and product - using foldLeft"){
+    assertResult(0){sumLF(Nil)}
+    assertResult(10){sumLF(List(1,2,3,4))}
+    assertResult(1){productLF(Nil)}
+    assertResult(24){productLF(List(1,2,3,4))}
+  }
 }
