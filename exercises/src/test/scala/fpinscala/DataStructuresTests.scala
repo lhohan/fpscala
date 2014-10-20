@@ -1,6 +1,6 @@
 package fpinscala
 
-import fpinscala.datastructures.{List, Nil}
+import fpinscala.datastructures.{Cons, List, Nil}
 import org.scalatest.FunSuite
 
 /**
@@ -52,5 +52,16 @@ class DataStructuresTests extends FunSuite{
     intercept[RuntimeException]{init2(Nil)}
     assertResult(Nil, "1 element"){init2(List(1))}
     assertResult(List(1,2,3), "default"){init2(List(1,2,3,4))}
+  }
+
+  test("foldRight(List(1,2,3), Nil:List[Int])(Cons(_,_))"){
+    val res = foldRight(List(1,2,3), Nil:List[Int])(Cons(_,_))
+    println(res)
+  }
+
+  test("length"){
+    assertResult(0)(length(Nil))
+    assertResult(1)(length(List(1)))
+    assertResult(3)(length(List(1,2,4)))
   }
 }
