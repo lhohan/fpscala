@@ -113,17 +113,15 @@ object List {
 
   def length[A](l: List[A]): Int = foldRight(l, 0)((_, acc) => acc + 1)
 
-  def foldLeft[A, B](l: List[A], z: B)(f: (B, A) => B): B = {
-    @tailrec
-    def go(z: B, cur: List[A]): B = cur match {
-      case Nil => z
-      case Cons(h, xs) => go(f(z, h), xs)
-    }
-    go(z, l)
+  @tailrec
+  def foldLeft[A, B](l: List[A], z: B)(f: (B, A) => B): B = l match {
+    case Nil => z
+    case Cons(h, xs) => foldLeft(xs, f(z, h))(f)
   }
 
-  def sumLF(is: List[Int]):Int = foldLeft(is,0)(_+_)
-  def productLF(ds: List[Double]):Double = foldLeft(ds,1.0)(_*_)
+  def sumLF(is: List[Int]): Int = foldLeft(is, 0)(_ + _)
+
+  def productLF(ds: List[Double]): Double = foldLeft(ds, 1.0)(_ * _)
 
   def map[A, B](l: List[A])(f: A => B): List[B] = sys.error("todo")
 }
