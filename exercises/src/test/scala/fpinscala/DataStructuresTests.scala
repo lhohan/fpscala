@@ -98,4 +98,10 @@ class DataStructuresTests extends FunSuite{
     assertResult(List(1,2), "appendee nil")(appendLF(List(), List(1,2)))
     assertResult(List(1,2,3), "both not nil")(appendLF(List(1,2), List(3)))
   }
+
+  test("concat"){
+    assertResult(List[Int]())(concat(List(List[Int]())))
+    assertResult(List[Int](1,2))(concat(List(List[Int](1,2))))
+    assertResult(List[Int](1,2,3,4,5))(concat(List(List[Int](1,2),List[Int](3,4,5))))
+  }
 }
