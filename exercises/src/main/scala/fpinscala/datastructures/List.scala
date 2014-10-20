@@ -77,7 +77,7 @@ object List {
     }
 
   //tail in terms of drop
-  def tail2[A](l: List[A]): List[A] = drop(l,1)
+  def tail2[A](l: List[A]): List[A] = drop(l, 1)
 
 
   @tailrec
@@ -94,7 +94,7 @@ object List {
 
   def init2[A](l: List[A]): List[A] = {
     @tailrec
-    def go(acc: List[A], rest:List[A]):List[A] = rest match {
+    def go(acc: List[A], rest: List[A]): List[A] = rest match {
       case Nil => throw new UnsupportedOperationException("init2 on empty list")
       case Cons(_, Nil) => acc
       case Cons(h, xs) => go(Cons(h, acc), xs)
@@ -102,16 +102,16 @@ object List {
     reverse(go(Nil, l))
   }
 
-  def reverse[A](l: List[A]) : List[A] = {
+  def reverse[A](l: List[A]): List[A] = {
     @tailrec
-    def go(acc:List[A],l: List[A]) : List[A] = l match {
+    def go(acc: List[A], l: List[A]): List[A] = l match {
       case Nil => acc
-      case Cons(h, xs) => go(Cons(h, acc),xs)
+      case Cons(h, xs) => go(Cons(h, acc), xs)
     }
-    go(Nil,l)
+    go(Nil, l)
   }
 
-  def length[A](l: List[A]): Int = foldRight(l, 0)((_,acc)=> acc+1)
+  def length[A](l: List[A]): Int = foldRight(l, 0)((_, acc) => acc + 1)
 
   def foldLeft[A, B](l: List[A], z: B)(f: (B, A) => B): B = sys.error("todo")
 
