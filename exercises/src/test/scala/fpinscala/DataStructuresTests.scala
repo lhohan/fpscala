@@ -182,4 +182,10 @@ class DataStructuresTests extends FunSuite {
       map_tr(List(1, 2, 4))(_ * 2)
     }
   }
+
+  test("filter") {
+    assertResult(List(2, 4, 8)) {
+      filter(List(1, 2, 4, 8, 5))(_ % 2 == 0)
+    }
+  }
 }

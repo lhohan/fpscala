@@ -152,4 +152,17 @@ object List {
     loop(l)
     List(lb: _*)
   }
+
+  def filter[A](as: List[A])(f: A => Boolean) = {
+    val lb = new ListBuffer[A]
+    @tailrec
+    def loop(cur: List[A]): Unit = cur match {
+      case Nil => ()
+      case Cons(h, xs) =>
+        if (f(h)) lb.append(h)
+        loop(xs)
+    }
+    loop(as)
+    List(lb: _*)
+  }
 }
