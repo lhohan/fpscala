@@ -170,4 +170,10 @@ class DataStructuresTests extends FunSuite {
     assertResult(List[String]())(doubleToString(List[Double]()))
     assertResult(List[String]("1.0", "2.2", "3.33"))(doubleToString(List(1.0, 2.2, 3.33)))
   }
+
+  test("map") {
+    assertResult(List(2, 4, 8)) {
+      map(List(1, 2, 4))(_ * 2)
+    }
+  }
 }
