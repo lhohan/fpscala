@@ -176,4 +176,10 @@ class DataStructuresTests extends FunSuite {
       map(List(1, 2, 4))(_ * 2)
     }
   }
+
+  test("map_tr") {
+    assertResult(List(2, 4, 8)) {
+      map_tr(List(1, 2, 4))(_ * 2)
+    }
+  }
 }

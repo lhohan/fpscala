@@ -1,6 +1,7 @@
 package fpinscala.datastructures
 
 import scala.annotation.tailrec
+import scala.collection.mutable.ListBuffer
 
 sealed trait List[+A]
 
@@ -138,4 +139,16 @@ object List {
   def doubleToString(l: List[Double]): List[String] = foldRight(l, List[String]()) { (el, acc) => Cons(el.toString, acc)}
 
   def map[A, B](l: List[A])(f: A => B): List[B] = foldRight(l, List[B]()) { (el, acc) => Cons(f(el), acc)}
+
+  def map_tr[A, B](l: List[A])(f: A => B): List[B] = {
+    val lb = new ListBuffer[B]
+    def loop(cur: List[A]): Unit = cur match {
+      case Nil => ()
+      case Cons(h, xs) =>
+        lb.append(f(h))
+        loop(xs)
+    }
+    loop(l)
+    List(lb: _*)
+  }
 }
