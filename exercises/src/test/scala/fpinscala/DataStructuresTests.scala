@@ -104,4 +104,9 @@ class DataStructuresTests extends FunSuite{
     assertResult(List[Int](1,2))(concat(List(List[Int](1,2))))
     assertResult(List[Int](1,2,3,4,5))(concat(List(List[Int](1,2),List[Int](3,4,5))))
   }
+
+  test("add1"){
+    assertResult(List[Int]())(add1(List[Int]()))
+    assertResult(List[Int](2,3,4))(add1(List(1,2,3)))
+  }
 }

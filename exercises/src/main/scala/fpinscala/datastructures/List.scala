@@ -133,5 +133,7 @@ object List {
 
   def concat[A](ls: List[List[A]]):List[A] = foldRight(ls, List[A]())(append)
 
+  def add1(l: List[Int]):List[Int] = foldRight(l, List[Int]()){(el, acc) => Cons(el + 1,acc)}
+
   def map[A, B](l: List[A])(f: A => B): List[B] = sys.error("todo")
 }
