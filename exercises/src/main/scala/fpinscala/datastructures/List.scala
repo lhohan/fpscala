@@ -99,10 +99,10 @@ object List {
       case Cons(_, Nil) => acc
       case Cons(h, xs) => go(Cons(h, acc), xs)
     }
-    reverse(go(Nil, l))
+    rev(go(Nil, l))
   }
 
-  def reverse[A](l: List[A]): List[A] = {
+  def rev[A](l: List[A]): List[A] = {
     @tailrec
     def go(acc: List[A], l: List[A]): List[A] = l match {
       case Nil => acc
