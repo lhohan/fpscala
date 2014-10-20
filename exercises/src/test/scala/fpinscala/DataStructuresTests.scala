@@ -77,4 +77,11 @@ class DataStructuresTests extends FunSuite{
     assertResult(List(1))(reverse(List(1)))
     assertResult(List(1,2,3))(reverse(List(3,2,1)))
   }
+
+  test("foldRightViaFoldLeft"){
+    val res = foldRightViaFoldLeft(List(1,2,3,4), 0)(_+_)
+    assertResult(10)(res)
+    val res2 = foldRightViaFoldLeft(List[Int](), 0)(_+_)
+    assertResult(0)(res2)
+  }
 }
