@@ -142,6 +142,7 @@ object List {
 
   def map_tr[A, B](l: List[A])(f: A => B): List[B] = {
     val lb = new ListBuffer[B]
+    @tailrec
     def loop(cur: List[A]): Unit = cur match {
       case Nil => ()
       case Cons(h, xs) =>
