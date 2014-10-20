@@ -84,4 +84,18 @@ class DataStructuresTests extends FunSuite{
     val res2 = foldRightViaFoldLeft(List[Int](), 0)(_+_)
     assertResult(0)(res2)
   }
+
+  test("append RF"){
+    assertResult(List[Int]())(appendRF(List[Int](), List[Int]()))
+    assertResult(List(1,2), "appended nil")(appendRF(List(1,2), List[Int]()))
+    assertResult(List(1,2), "appendee nil")(appendRF(List(), List(1,2)))
+    assertResult(List(1,2,3), "both not nil")(appendRF(List(1,2), List(3)))
+  }
+
+  test("append LF"){
+    assertResult(List[Int]())(appendLF(List[Int](), List[Int]()))
+    assertResult(List(1,2), "appended nil")(appendLF(List(1,2), List[Int]()))
+    assertResult(List(1,2), "appendee nil")(appendLF(List(), List(1,2)))
+    assertResult(List(1,2,3), "both not nil")(appendLF(List(1,2), List(3)))
+  }
 }
