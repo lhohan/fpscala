@@ -190,14 +190,14 @@ class DataStructuresTests extends FunSuite {
   }
 
   test("flatMap") {
-    assertResult(List(1,1,2,2,3,3)) {
-      flatMap(List(1, 2, 3))(i => List(i,i))
+    assertResult(List(1, 1, 2, 2, 3, 3)) {
+      flatMap(List(1, 2, 3))(i => List(i, i))
     }
   }
 
   test("flatMap_2") {
-    assertResult(List(1,1,2,2,3,3)) {
-      flatMap_2(List(1, 2, 3))(i => List(i,i))
+    assertResult(List(1, 1, 2, 2, 3, 3)) {
+      flatMap_2(List(1, 2, 3))(i => List(i, i))
     }
   }
 
@@ -209,19 +209,19 @@ class DataStructuresTests extends FunSuite {
 
   test("zipAdd") {
     assertResult(List(5, 7, 9)) {
-      zipAdd(List(1, 2, 3),List(4,5,6))
+      zipAdd(List(1, 2, 3), List(4, 5, 6))
     }
   }
 
   test("zipAdd_2") {
     assertResult(List(5, 7, 9)) {
-      zipAdd_2(List(1, 2, 3),List(4,5,6))
+      zipAdd_2(List(1, 2, 3), List(4, 5, 6))
     }
   }
 
   test("zipAdd_3") {
     assertResult(List(5, 7, 9)) {
-      zipAdd_3(List(1, 2, 3),List(4,5,6))
+      zipAdd_3(List(1, 2, 3), List(4, 5, 6))
     }
   }
 }
