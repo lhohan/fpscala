@@ -218,4 +218,10 @@ class DataStructuresTests extends FunSuite {
       zipAdd_2(List(1, 2, 3),List(4,5,6))
     }
   }
+
+  test("zipAdd_3") {
+    assertResult(List(5, 7, 9)) {
+      zipAdd_3(List(1, 2, 3),List(4,5,6))
+    }
+  }
 }
