@@ -194,4 +194,10 @@ class DataStructuresTests extends FunSuite {
       flatMap(List(1, 2, 3))(i => List(i,i))
     }
   }
+
+  test("flatMap_2") {
+    assertResult(List(1,1,2,2,3,3)) {
+      flatMap_2(List(1, 2, 3))(i => List(i,i))
+    }
+  }
 }

@@ -166,7 +166,11 @@ object List {
     List(lb: _*)
   }
 
+  // not stack safe, a bit coarse too
   def flatMap[A, B](as: List[A])(f: A => List[B]): List[B] = {
     concat(foldRight(as, List[List[B]]()) { (el, acc) => Cons(f(el), acc)})
   }
+
+  // stack safe, short but don't like double traversal
+  def flatMap_2[A, B](as: List[A])(f: A => List[B]): List[B] = concat(map(as)(f))
 }
