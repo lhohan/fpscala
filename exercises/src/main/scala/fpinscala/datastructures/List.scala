@@ -207,8 +207,6 @@ object List {
     case (Nil, Nil) => Nil
     case (Cons(h1, xs1), Cons(h2, xs2)) => Cons(f(h1, h2), zipWith(xs1, xs2)(f))
     case (_, _) => throw new IllegalArgumentException("number of element does not match")
-
   }
-
 
 }
