@@ -182,5 +182,14 @@ object List {
     case (_, _) => throw new IllegalArgumentException("number of element does not match")
   }
 
+  def zipAdd_2(is1: List[Int], is2: List[Int]): List[Int] = {
+    def loop(is1: List[Int], is2: List[Int], acc: List[Int]): List[Int] = (is1, is2) match {
+      case (Nil, Nil) => acc
+      case (Cons(h1, xs1), Cons(h2, xs2)) => loop(xs1, xs2, Cons(h1 + h2, acc))
+      case (_, _) => throw new IllegalArgumentException("number of element does not match")
+    }
+    reverse(loop(is1, is2, List[Int]()))
+  }
+
 
 }
