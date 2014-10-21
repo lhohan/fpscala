@@ -1,11 +1,11 @@
-package fpinscala.gettingstarted
+package fpinscala
 
 import org.scalatest.FunSuite
 
 /**
  * Created by hans on 17/10/14.
  */
-class Tests extends FunSuite{
+class GettingStartedTests extends FunSuite{
 
 
   test("isSorted - Int"){
@@ -36,6 +36,20 @@ class Tests extends FunSuite{
     import fpinscala.gettingstarted.PolymorphicFunctions.curry
     curry((x:Int, y:Double) => (x+y).toString)
 
+  }
+
+  test("compose"){
+    import fpinscala.gettingstarted.PolymorphicFunctions.compose
+
+    // compose to functions:
+    // - one takes and array I determines it is empty or not giving back a boolean
+    // - the other takes that boolean and turns it into a char 'F' or 'T'
+
+    def isEmpty[T] (a: Array[T]) = a.isEmpty
+    def boolToChar(b:Boolean):Char =  if(b) 'T' else 'F'
+    def h = compose(boolToChar , isEmpty[String])
+    assertResult('T'){h(Array())}
+    assertResult('F'){h(Array("not empty"))}
   }
 
 }
