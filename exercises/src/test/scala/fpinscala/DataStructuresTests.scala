@@ -206,4 +206,10 @@ class DataStructuresTests extends FunSuite {
       filterWithFlatMap(List(1, 2, 4, 8, 5))(_ % 2 == 0)
     }
   }
+
+  test("zipAdd") {
+    assertResult(List(5, 7, 9)) {
+      zipAdd(List(1, 2, 3),List(4,5,6))
+    }
+  }
 }

@@ -176,4 +176,11 @@ object List {
 
   def filterWithFlatMap[A](as: List[A])(f: A => Boolean) = flatMap(as)(a => if (f(a)) List(a) else Nil)
 
+  def zipAdd(is1: List[Int], is2: List[Int]): List[Int] = (is1, is2) match {
+    case (Nil, Nil) => Nil
+    case (Cons(h1, xs1), Cons(h2, xs2)) => Cons(h1 + h2, zipAdd(xs1, xs2))
+    case (_, _) => throw new IllegalArgumentException("number of element does not match")
+  }
+
+
 }
