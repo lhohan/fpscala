@@ -165,4 +165,8 @@ object List {
     loop(as)
     List(lb: _*)
   }
+
+  def flatMap[A, B](as: List[A])(f: A => List[B]): List[B] = {
+    concat(foldRight(as, List[List[B]]()) { (el, acc) => Cons(f(el), acc)})
+  }
 }

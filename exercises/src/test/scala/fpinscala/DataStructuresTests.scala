@@ -188,4 +188,10 @@ class DataStructuresTests extends FunSuite {
       filter(List(1, 2, 4, 8, 5))(_ % 2 == 0)
     }
   }
+
+  test("flatMap") {
+    assertResult(List(1,1,2,2,3,3)) {
+      flatMap(List(1, 2, 3))(i => List(i,i))
+    }
+  }
 }
