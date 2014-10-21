@@ -173,4 +173,7 @@ object List {
 
   // stack safe, short but don't like double traversal
   def flatMap_2[A, B](as: List[A])(f: A => List[B]): List[B] = concat(map(as)(f))
+
+  def filterWithFlatMap[A](as: List[A])(f: A => Boolean) = flatMap(as)(a => if (f(a)) List(a) else Nil)
+
 }
