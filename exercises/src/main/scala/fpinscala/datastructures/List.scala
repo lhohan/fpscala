@@ -202,5 +202,13 @@ object List {
     List(lb: _*)
   }
 
+  // only one implementation, see zipAdd implementation for stack safe versions
+  def zipWith[A, B](as1: List[A], as2: List[A])(f: (A, A) => B): List[B] = (as1, as2) match {
+    case (Nil, Nil) => Nil
+    case (Cons(h1, xs1), Cons(h2, xs2)) => Cons(f(h1, h2), zipWith(xs1, xs2)(f))
+    case (_, _) => throw new IllegalArgumentException("number of element does not match")
+
+  }
+
 
 }
