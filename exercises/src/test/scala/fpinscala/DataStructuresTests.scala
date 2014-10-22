@@ -1,6 +1,6 @@
 package fpinscala
 
-import fpinscala.datastructures.{Cons, List, Nil}
+import fpinscala.datastructures._
 import org.scalatest.FunSuite
 
 /**
@@ -239,6 +239,12 @@ class DataStructuresTests extends FunSuite {
     assertResult(false, "nil sup")(hasSubSequence(Nil, List(1, 3)))
     assertResult(true, "nil sub")(hasSubSequence(List(1, 2, 3, 4), Nil))
     assertResult(true, "nil nil")(hasSubSequence(Nil, Nil))
+  }
+
+  test("tree - size"){
+    import Tree._
+    assertResult(1, "1 leaf")(size(Leaf("abc")))
+    assertResult(3, "3 leafs")(size(Branch(Leaf("abc"), Branch(Leaf("def"), Leaf("ghi")))))
   }
 
 
