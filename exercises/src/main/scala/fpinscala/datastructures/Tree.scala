@@ -9,12 +9,9 @@ case class Branch[A](left: Tree[A], right: Tree[A]) extends Tree[A]
 
 object Tree {
 
-  def size[A](t: Tree[A]): Int = {
-    def go(c: Tree[A], acc: Int): Int = c match {
-      case _: Leaf[A] => acc + 1
-      case Branch(left, right) => go(left, acc) + go(right, acc)
-    }
-    go(t, 0)
+  def size[A](t: Tree[A]): Int = t match {
+    case _: Leaf[A] => 1
+    case Branch(left, right) => size(left) + size(right)
   }
 
 }
