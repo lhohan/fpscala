@@ -11,7 +11,7 @@ object Tree {
 
   def size[A](t: Tree[A]): Int = t match {
     case _: Leaf[A] => 1
-    case Branch(left, right) => size(left) + size(right)
+    case Branch(left, right) => 1 + size(left) + size(right)
   }
 
 }

@@ -241,10 +241,10 @@ class DataStructuresTests extends FunSuite {
     assertResult(true, "nil nil")(hasSubSequence(Nil, Nil))
   }
 
-  test("tree - size"){
-    import Tree._
+  test("tree - size") {
+    import fpinscala.datastructures.Tree._
     assertResult(1, "1 leaf")(size(Leaf("abc")))
-    assertResult(3, "3 leafs")(size(Branch(Leaf("abc"), Branch(Leaf("def"), Leaf("ghi")))))
+    assertResult(5, "3 leafs + 2 branches")(size(Branch(Leaf("abc"), Branch(Leaf("def"), Leaf("ghi")))))
   }
 
 
