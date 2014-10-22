@@ -210,15 +210,12 @@ object List {
   }
 
   def hasSubSequence[A](sup: List[A], sub: List[A]): Boolean = {
+    @tailrec
     def go(sups: List[A], subs: List[A]): Boolean = {
       (sups, subs) match {
         case (_, Nil) => true
-        case (Cons(hp, xps), Cons(hb, xbs)) =>
-          (if (hp == hb)
-            go(xps, xbs)
-          else
-            false
-            ) || go(xps, sub)
+        case (Cons(hp, xps), Cons(hb, xbs)) if hp == hb => go(xps, xbs)
+        case (Cons(hp, xps), _) => go(xps, sub)
         case (Nil, _) => false
       }
     }
