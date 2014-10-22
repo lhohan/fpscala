@@ -209,4 +209,20 @@ object List {
     case (_, _) => throw new IllegalArgumentException("number of element does not match")
   }
 
+  def hasSubSequence[A](sup: List[A], sub: List[A]): Boolean = {
+    def go(sups: List[A], subs: List[A]): Boolean = {
+      (sups, subs) match {
+        case (_, Nil) => true
+        case (Cons(hp, xps), Cons(hb, xbs)) =>
+          (if (hp == hb)
+            go(xps, xbs)
+          else
+            false
+            ) || go(xps, sub)
+        case (Nil, _) => false
+      }
+    }
+    go(sup, sub)
+  }
+
 }
