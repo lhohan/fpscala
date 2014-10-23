@@ -268,5 +268,16 @@ class DataStructuresTests extends FunSuite {
     }
   }
 
+  test("tree - fold - size") {
+    import fpinscala.datastructures.Tree._
+    assertResult(1, "1 leaf")(sizeViaFold(Leaf("abc")))
+    assertResult(5, "3 leafs + 2 branches")(sizeViaFold(Branch(Leaf("abc"), Branch(Leaf("def"), Leaf("ghi")))))
+  }
+
+  test("tree - fold - maximum") {
+    import fpinscala.datastructures.Tree._
+    assertResult(1, "1 leaf")(maximumViaFold(Leaf(1)))
+    assertResult(3, "3 leafs + 2 branches")(maximumViaFold(Branch(Leaf(1), Branch(Leaf(3), Leaf(2)))))
+  }
 
 }
