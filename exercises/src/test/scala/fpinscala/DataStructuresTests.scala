@@ -260,5 +260,13 @@ class DataStructuresTests extends FunSuite {
     assertResult(4, "3 leafs + 3 branches")(depth(Branch(Leaf(1), Branch(Branch(Leaf(3), Leaf(8)), Leaf(2)))))
   }
 
+  test("tree - map") {
+    import fpinscala.datastructures.Tree._
+    assertResult(Leaf(2), "1 leaf")(map(Leaf(1))((x: Int) => x + 1))
+    assertResult(Branch(Leaf("1"), Branch(Branch(Leaf("3"), Leaf("8")), Leaf("2"))), "3 leafs + 3 branches") {
+      map(Branch(Leaf(1), Branch(Branch(Leaf(3), Leaf(8)), Leaf(2))))((x: Int) => x.toString)
+    }
+  }
+
 
 }
