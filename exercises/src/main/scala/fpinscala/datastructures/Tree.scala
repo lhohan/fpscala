@@ -19,12 +19,9 @@ object Tree {
     case Branch(left, right) => maximum(left) max maximum(right)
   }
 
-  def depth[A](t: Tree[A]): Int = {
-    def depth(x: Tree[A], count: Int): Int = x match {
-      case _: Leaf[A] => count + 1
-      case Branch(left, right) => depth(left, count + 1) max depth(right, count + 1)
-    }
-    depth(t, 0)
+  def depth[A](t: Tree[A]): Int = t match {
+    case _: Leaf[A] => 0
+    case Branch(left, right) => 1 + (depth(left) max depth(right))
   }
 
   def map[A, B](t: Tree[A])(f: A => B): Tree[B] = t match {
@@ -44,7 +41,7 @@ object Tree {
 
   def maximumViaFold(t: Tree[Int]): Int = fold(t)(_.value)(_ max _)
 
-  def mapViaFold[A, B](t: Tree[A])(f: A => B): Tree[B] = fold(t)((leaf: Leaf[A]) => Leaf(f(leaf.value)):Tree[B])((left,right) => Branch(left, right))
+  def mapViaFold[A, B](t: Tree[A])(f: A => B): Tree[B] = fold(t)((leaf: Leaf[A]) => Leaf(f(leaf.value)): Tree[B])((left, right) => Branch(left, right))
 
 
 }
