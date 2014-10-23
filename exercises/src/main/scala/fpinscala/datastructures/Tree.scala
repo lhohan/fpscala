@@ -43,5 +43,6 @@ object Tree {
 
   def mapViaFold[A, B](t: Tree[A])(f: A => B): Tree[B] = fold(t)((leaf: Leaf[A]) => Leaf(f(leaf.value)): Tree[B])((left, right) => Branch(left, right))
 
-
+  def depthViaFold[A](t: Tree[A]): Int = fold(t)(leaf => 0)((left, right) => 1 + (left max right))
+  
 }
