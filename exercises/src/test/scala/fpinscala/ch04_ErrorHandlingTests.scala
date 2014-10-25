@@ -55,4 +55,14 @@ class ch04_ErrorHandlingTests extends FunSuite {
       variance(Seq())
     }
   }
+
+  test("map2") {
+    import fpinscala.errorhandling.Option._
+    import fpinscala.errorhandling._
+
+    assertResult(Some(3), "1 + 2")(map2(Some(1), Some(2))((a: Int, b: Int) => a + b))
+    assertResult(None, "1 + none")(map2(Some(1), None)((a: Int, b: Int) => a + b))
+    assertResult(None, "none + 1")(map2(None, Some(1))((a: Int, b: Int) => a + b))
+
+  }
 }
