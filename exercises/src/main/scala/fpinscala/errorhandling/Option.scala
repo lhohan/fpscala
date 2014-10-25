@@ -25,7 +25,10 @@ sealed trait Option[+A] {
 
   def orElse[B >: A](ob: => Option[B]): Option[B] = this map (Some(_)) getOrElse (ob)
 
-  def filter(f: A => Boolean): Option[A] = sys.error("todo")
+  def filter(f: A => Boolean): Option[A] = {
+    val x: Option[Boolean] = this map (a => f(a))
+    x.flatMap((b: Boolean) => if (b) this else None)
+  }
 }
 
 case class Some[+A](get: A) extends Option[A]
