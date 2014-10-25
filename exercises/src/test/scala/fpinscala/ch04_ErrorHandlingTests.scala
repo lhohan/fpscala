@@ -21,4 +21,12 @@ class ch04_ErrorHandlingTests extends FunSuite {
     assertResult("x", "none")(None.getOrElse("x"))
     assertResult(5, "some")(Some(5).getOrElse(42))
   }
+
+  test("flatMap"){
+    import fpinscala.errorhandling._
+    def f(x:Int) = Some(x+1)
+
+    assertResult(None, "none")(None.flatMap(f))
+    assertResult(Some(6), "some")(Some(5).flatMap(f))
+  }
 }
