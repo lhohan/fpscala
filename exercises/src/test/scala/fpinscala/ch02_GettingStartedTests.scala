@@ -5,7 +5,7 @@ import org.scalatest.FunSuite
 /**
  * Created by hans on 17/10/14.
  */
-class GettingStartedTests extends FunSuite{
+class ch02_GettingStartedTests extends FunSuite{
 
 
   test("isSorted - Int"){

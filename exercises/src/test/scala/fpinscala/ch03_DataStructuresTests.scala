@@ -6,7 +6,7 @@ import org.scalatest.FunSuite
 /**
  * Created by hans on 19/10/14.
  */
-class DataStructuresTests extends FunSuite {
+class ch03_DataStructuresTests extends FunSuite {
 
   import fpinscala.datastructures.List._
 
