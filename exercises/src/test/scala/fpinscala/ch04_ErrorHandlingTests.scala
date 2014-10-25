@@ -45,4 +45,14 @@ class ch04_ErrorHandlingTests extends FunSuite {
     assertResult(None, "some filter false")(Some(5).filter(_ % 2 == 0))
     assertResult(Some(6), "some filter true")(Some(6).filter(_ % 2 == 0))
   }
+
+  test("variance") {
+    import fpinscala.errorhandling.Option._
+    import fpinscala.errorhandling._
+
+    assertResult(Some(2.0), "1,2,3,4,5")(variance(Seq(1.0, 2, 3, 4, 5)))
+    assertResult(None, "empty list") {
+      variance(Seq())
+    }
+  }
 }
