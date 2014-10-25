@@ -29,4 +29,11 @@ class ch04_ErrorHandlingTests extends FunSuite {
     assertResult(None, "none")(None.flatMap(f))
     assertResult(Some(6), "some")(Some(5).flatMap(f))
   }
+
+  test("orElse"){
+    import fpinscala.errorhandling._
+
+    assertResult(Some("default option value"), "none")(None.orElse(Some("default option value")))
+    assertResult(Some(5), "some")(Some(5).orElse(throw new IllegalArgumentException("I should not be evaluated")))
+  }
 }
