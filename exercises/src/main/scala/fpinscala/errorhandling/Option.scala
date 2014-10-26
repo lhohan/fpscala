@@ -71,7 +71,7 @@ object Option {
   }
 
   def sequence[A](a: List[Option[A]]): Option[List[A]] = a match {
-    case Nil => None
+    case Nil => Some(List())
     case ao :: Nil => ao.map(List(_))
     case ao :: as => map2(ao, sequence(as))(_ :: _)
   }

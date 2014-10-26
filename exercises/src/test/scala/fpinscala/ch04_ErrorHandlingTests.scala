@@ -72,6 +72,6 @@ class ch04_ErrorHandlingTests extends FunSuite {
     assertResult(Some(List(1, 2, 4)), "some: 1,2,4")(sequence(List(Some(1), Some(2), Some(4))))
     assertResult(None, "none: first")(sequence(List(None, Some(2), Some(4))))
     assertResult(None, "none: last")(sequence(List(Some(1), Some(2), None)))
-    assertResult(None, "sequence of empty list")(sequence(List()))
+    assertResult(Some(List()), "sequence of empty list")(sequence(List()))
   }
 }
