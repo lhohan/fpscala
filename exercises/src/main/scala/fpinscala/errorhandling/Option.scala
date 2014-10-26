@@ -92,12 +92,16 @@ object Option {
     case e: Exception => None
   }
 
+  // simple implementation, double traversal
+  //  def traverse[A, B](a: List[A])(f: A => Option[B]): Option[List[B]] = sequence( a.map(a_ => f(a_)))
 
   def traverse[A, B](a: List[A])(f: A => Option[B]): Option[List[B]] = a match {
     case Nil => Some(List())
     case h :: as => f(h).flatMap(b_ => traverse(as)(f).map(bs => b_ :: bs))
   }
 
-  // simple implementation, double traversal
-  //  def traverse[A, B](a: List[A])(f: A => Option[B]): Option[List[B]] = sequence( a.map(a_ => f(a_)))
+  // using fold right
+  def traverse_2[A, B](a: List[A])(f: A => Option[B]): Option[List[B]] =
+    a.foldRight[Option[List[B]]](Some(List()))((a_, bs) => f(a_).flatMap(b => bs.map( b :: _)))
+
 }

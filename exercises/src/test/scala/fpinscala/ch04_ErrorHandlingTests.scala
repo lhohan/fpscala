@@ -100,6 +100,14 @@ class ch04_ErrorHandlingTests extends FunSuite {
     import fpinscala.errorhandling._
 
     assertResult(Some(List(1, 2, 4)), "1,2,4")(traverse(List("1", "2", "4"))(s => Try(s.toInt)))
-    assertResult(None, "1,2,4")(traverse(List("1", "two", "4"))(s => Try(s.toInt)))
+    assertResult(None, "1,two,4")(traverse(List("1", "two", "4"))(s => Try(s.toInt)))
+  }
+
+  test("traverse_2") {
+    import fpinscala.errorhandling.Option._
+    import fpinscala.errorhandling._
+
+    assertResult(Some(List(1, 2, 4)), "1,2,4")(traverse_2(List("1", "2", "4"))(s => Try(s.toInt)))
+    assertResult(None, "1,two,4")(traverse_2(List("1", "two", "4"))(s => Try(s.toInt)))
   }
 }
