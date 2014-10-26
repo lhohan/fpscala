@@ -76,10 +76,16 @@ object Option {
     case ao :: as => map2(ao, sequence(as))(_ :: _)
   }
 
-  def sequence_2[A](a: List[Option[A]]): Option[List[A]] = a match {
+  // right fold (type annotation...)
+  def sequence_2[A](a: List[Option[A]]): Option[List[A]] =
+    a.foldRight[Option[List[A]]](Some(List[A]()))((x, acc) => map2(x, acc)(_ :: _))
+
+  // no map2
+  def sequence_3[A](a: List[Option[A]]): Option[List[A]] = a match {
     case Nil => Some(List())
-    case ao :: as => map2(ao, sequence(as))(_ :: _)
+    case ao :: as => ao.flatMap(ao_ => sequence_3(as).map(ao_ :: _))
   }
+
 
   def traverse[A, B](a: List[A])(f: A => Option[B]): Option[List[B]] = sys.error("todo")
 }
