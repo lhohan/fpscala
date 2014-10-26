@@ -86,6 +86,18 @@ object Option {
     case ao :: as => ao.flatMap(ao_ => sequence_3(as).map(ao_ :: _))
   }
 
+  def Try[A](value: => A): Option[A] = try {
+    Some(value)
+  } catch {
+    case e: Exception => None
+  }
 
-  def traverse[A, B](a: List[A])(f: A => Option[B]): Option[List[B]] = sys.error("todo")
+
+  def traverse[A, B](a: List[A])(f: A => Option[B]): Option[List[B]] = a match {
+    case Nil => Some(List())
+    case h :: as => f(h).flatMap(b_ => traverse(as)(f).map(bs => b_ :: bs))
+  }
+
+  // simple implementation, double traversal
+  //  def traverse[A, B](a: List[A])(f: A => Option[B]): Option[List[B]] = sequence( a.map(a_ => f(a_)))
 }

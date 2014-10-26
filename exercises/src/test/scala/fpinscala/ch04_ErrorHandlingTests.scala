@@ -94,4 +94,12 @@ class ch04_ErrorHandlingTests extends FunSuite {
     assertResult(None, "none: last")(sequence_3(List(Some(1), Some(2), None)))
     assertResult(Some(List()), "sequence of empty list")(sequence_3(List()))
   }
+
+  test("traverse") {
+    import fpinscala.errorhandling.Option._
+    import fpinscala.errorhandling._
+
+    assertResult(Some(List(1, 2, 4)), "1,2,4")(traverse(List("1", "2", "4"))(s => Try(s.toInt)))
+    assertResult(None, "1,2,4")(traverse(List("1", "two", "4"))(s => Try(s.toInt)))
+  }
 }
