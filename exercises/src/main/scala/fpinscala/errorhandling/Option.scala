@@ -104,4 +104,7 @@ object Option {
   def traverse_2[A, B](a: List[A])(f: A => Option[B]): Option[List[B]] =
     a.foldRight[Option[List[B]]](Some(List()))((a_, bs) => f(a_).flatMap(b => bs.map(b :: _)))
 
+  // sequence in terms of traverse
+  def sequenceViaTraverse[A](a: List[Option[A]]): Option[List[A]] = traverse(a)(a_ => a_)
+
 }
