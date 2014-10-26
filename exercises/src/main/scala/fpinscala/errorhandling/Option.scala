@@ -70,9 +70,14 @@ object Option {
     b.map(b_ => f(a_, b_))
   }
 
+  // my original
   def sequence[A](a: List[Option[A]]): Option[List[A]] = a match {
     case Nil => Some(List())
-    case ao :: Nil => ao.map(List(_))
+    case ao :: as => map2(ao, sequence(as))(_ :: _)
+  }
+
+  def sequence_2[A](a: List[Option[A]]): Option[List[A]] = a match {
+    case Nil => Some(List())
     case ao :: as => map2(ao, sequence(as))(_ :: _)
   }
 
