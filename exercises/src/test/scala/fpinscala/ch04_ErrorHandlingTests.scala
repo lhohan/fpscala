@@ -120,4 +120,14 @@ class ch04_ErrorHandlingTests extends FunSuite {
     assertResult(None, "none: last")(sequenceViaTraverse(List(Some(1), Some(2), None)))
     assertResult(Some(List()), "sequence of empty list")(sequenceViaTraverse(List()))
   }
+
+  test("either - map") {
+    import fpinscala.errorhandling._
+
+    def f(x: Int) = x + 1
+
+    assertResult(Right(5), "right")(Right(4).map(f))
+    assertResult(Left("error"), "left")(Left("error").map(f))
+
+  }
 }
