@@ -145,8 +145,16 @@ class ch04_ErrorHandlingTests extends FunSuite {
     def f(x: Int) = Right(x + 1)
 
     assertResult(Right(4), "right")(Right(4).orElse(f(4)))
-    assertResult(Right(5), "right")(Left("error").orElse(f(4)))
+    assertResult(Right(5), "right 2")(Left("error").orElse(f(4)))
     assertResult(Left("unexpected error"), "left")(Left("error").orElse(Left("unexpected error")))
+  }
+
+  test("either - map2") {
+    import fpinscala.errorhandling._
+
+    assertResult(Right(7), "right")(Right(4).map2(Right(3))(_ + _))
+    assertResult(Left("error"), "left 1")((Left("error"): Either[String, Int]).map2[String, Int, Int](Right(3))(_ + _))
+    assertResult(Left("error2"), "left 2")(Right(1).map2[String, Int, Int](Left("error2"))(_ + _))
   }
 
 }
