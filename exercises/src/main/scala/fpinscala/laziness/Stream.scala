@@ -1,6 +1,6 @@
 package fpinscala.laziness
 
-import scala.annotation.tailrec
+import scala.collection.mutable.ListBuffer
 
 trait Stream[+A] {
 
@@ -20,15 +20,29 @@ trait Stream[+A] {
   }
 
   //  def toList: List[A] = foldRight(List.empty[A])((el, acc) => el :: acc)
+
+  // below I wrote to avoid having to reverse:
+  //  def toList: List[A] = {
+  //    @tailrec
+  //    def loop(s: Stream[A], acc: List[A]): List[A] =
+  //      s match {
+  //        case Empty => acc
+  //        case Cons(h, t) => loop(t(), acc.++(List(h())))
+  //      }
+  //    loop(this, List[A]())
+  //  }
+
   def toList: List[A] = {
-    @tailrec
-    def loop(s: Stream[A], acc: List[A]): List[A] =
-      s match {
-        case Empty => acc
-        case Cons(h, t) => loop(t(), acc.++(List(h())))
-      }
-    loop(this, List[A]())
+    val lb = new ListBuffer[A]
+    def loop(s: Stream[A]): ListBuffer[A] = s match {
+      case Empty => lb
+      case Cons(h, t) =>
+        lb.append(h())
+        loop(t())
+    }
+    loop(this).toList
   }
+
 
   def take(n: Int): Stream[A] = sys.error("todo")
 
