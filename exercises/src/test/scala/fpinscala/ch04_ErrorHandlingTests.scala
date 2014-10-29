@@ -157,4 +157,14 @@ class ch04_ErrorHandlingTests extends FunSuite {
     assertResult(Left("error2"), "left 2")(Right(1).map2[String, Int, Int](Left("error2"))(_ + _))
   }
 
+  test("either - sequence") {
+    import fpinscala.errorhandling.Either._
+    import fpinscala.errorhandling._
+
+    assertResult(Right(List(4,2,1)), "right")(sequence(List(Right(4), Right(2), Right(1))))
+    assertResult(Left("error"), "error")(sequence(List(Left("error"), Right(2), Right(1))))
+    assertResult(Left("error"), "error 2")(sequence(List(Right(1), Right(2), Left("error"))))
+    assertResult(Right(List()), "empty")(sequence(List()))
+  }
+
 }

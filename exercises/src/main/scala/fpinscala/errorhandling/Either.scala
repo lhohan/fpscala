@@ -32,6 +32,7 @@ sealed trait Either[+E, +A] {
   //  def map2[EE >: E, B, C](b: Either[EE, B])(f: (A, B) => C): Either[EE, C] = flatMap(a => b.map(b => f(a,b)))
 
   def map2[EE >: E, B, C](b: Either[EE, B])(f: (A, B) => C): Either[EE, C] = for {a <- this; b1 <- b} yield f(a, b1)
+
 }
 
 case class Left[+E](get: E) extends Either[E, Nothing]
@@ -56,5 +57,8 @@ object Either {
     catch {
       case e: Exception => Left(e)
     }
+
+  def sequence[E, A](es: List[Either[E, A]]): Either[E, List[A]] =
+    es.foldRight(Right(List()):Either[E, List[A]]){(el, acc) => el.map2(acc)(_ :: _)}
 
 }
