@@ -59,6 +59,9 @@ object Either {
     }
 
   def sequence[E, A](es: List[Either[E, A]]): Either[E, List[A]] =
-    es.foldRight(Right(List()):Either[E, List[A]]){(el, acc) => el.map2(acc)(_ :: _)}
+    es.foldRight(Right(List()): Either[E, List[A]]) { (el, acc) => el.map2(acc)(_ :: _)}
+
+  def traverse[E, A, B](as: List[A])(f: A => Either[E, B]): Either[E, List[B]] =
+    as.foldRight(Right(List()): Either[E, List[B]]) { (el, acc) => f(el).map2(acc)(_ :: _)}
 
 }
