@@ -179,4 +179,14 @@ class ch04_ErrorHandlingTests extends FunSuite {
     assertResult(Right(List()), "empty")(traverse(List())((s: String) => Try(s.toInt)))
   }
 
+  test("either - sequence via traverse") {
+    import fpinscala.errorhandling.Either._
+    import fpinscala.errorhandling._
+
+    assertResult(Right(List(4, 2, 1)), "right")(sequenceViaTraverse(List(Right(4), Right(2), Right(1))))
+    assertResult(Left("error"), "error")(sequenceViaTraverse(List(Left("error"), Right(2), Right(1))))
+    assertResult(Left("error"), "error 2")(sequenceViaTraverse(List(Right(1), Right(2), Left("error"))))
+    assertResult(Right(List()), "empty")(sequenceViaTraverse(List()))
+  }
+
 }
