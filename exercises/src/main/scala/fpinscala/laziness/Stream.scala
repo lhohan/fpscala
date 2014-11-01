@@ -81,6 +81,11 @@ trait Stream[+A] {
 
   def forAll(p: A => Boolean): Boolean = foldRight(true) { (el, acc) => acc && p(el)}
 
+  def takeWhileViaFoldRight(p: A => Boolean): Stream[A] = foldRight(empty[A]) { (el, acc) =>
+    if (p(el)) cons(el, acc)
+    else acc
+  }
+
   def startsWith[B](s: Stream[B]): Boolean = sys.error("todo")
 }
 

@@ -56,4 +56,12 @@ class ch05_LazinessTests extends FunSuite {
     assertResult(true, "empty")(Stream[Int]().forAll(_ < 4))
   }
 
+  test("takeWhileViaFoldRight") {
+    import fpinscala.laziness._
+
+    assertResult(List(1, 2), "base")(Stream(1, 2, 3).takeWhileViaFoldRight(_ < 3).toList)
+    assertResult(List(1, 2, 3), "base")(Stream(1, 2, 3).takeWhileViaFoldRight(_ < 5).toList)
+    assertResult(List(), "empty")(Stream[Int]().takeWhileViaFoldRight(_ < 3).toList)
+  }
+
 }

@@ -93,6 +93,7 @@ trait Stream[+A] {
   def forAll(f: A => Boolean): Boolean =
     foldRight(true)((a,b) => f(a) && b)
 
+  // TODO : is the empty correct?
   def takeWhile_1(f: A => Boolean): Stream[A] =
     foldRight(empty[A])((h,t) => 
       if (f(h)) cons(h,t)
