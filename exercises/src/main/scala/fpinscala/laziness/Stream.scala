@@ -45,12 +45,11 @@ trait Stream[+A] {
 
   import fpinscala.laziness.Stream._
 
-  def take(n: Int): Stream[A] = if (n > 0) {
-    this match {
-      case Empty => throw new RuntimeException("take on empty stream")
-      case Cons(h, t) => cons(h(), t().take(n - 1))
-    }
-  } else Empty
+  def take(n: Int): Stream[A] = this match {
+    case Cons(h, t) if n == 1 => cons(h(), empty[A])
+    case Cons(h, t) => cons(h(), t().take(n - 1))
+    case _ => empty[A]
+  }
 
   def drop(n: Int): Stream[A] = sys.error("todo")
 
