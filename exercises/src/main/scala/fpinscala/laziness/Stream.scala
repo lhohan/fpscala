@@ -1,5 +1,6 @@
 package fpinscala.laziness
 
+import scala.annotation.tailrec
 import scala.collection.mutable.ListBuffer
 
 trait Stream[+A] {
@@ -56,6 +57,22 @@ trait Stream[+A] {
     case Cons(h, t) => t().drop(n - 1)
     case Empty => empty[A]
   }
+
+  // tail recursive version
+  def drop2(n: Int): Stream[A] = {
+    @tailrec
+    def loop(as: Stream[A], i: Int): Stream[A] = {
+      if (i <= 0) as
+      else {
+        as match {
+          case Cons(h, t) => loop(t(), i - 1)
+          case Empty => empty[A]
+        }
+      }
+    }
+    loop(this, n)
+  }
+
 
   def takeWhile(p: A => Boolean): Stream[A] = sys.error("todo")
 

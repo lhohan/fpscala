@@ -30,4 +30,13 @@ class ch05_LazinessTests extends FunSuite {
     assertResult(List(), "empty")(Stream().drop(0).toList)
   }
 
+  test("drop - tailrec") {
+    import fpinscala.laziness._
+
+    assertResult(List(3), "base")(Stream(1, 2, 3).drop2(2).toList)
+    assertResult(List(1, 2, 3), "drop none")(Stream(1, 2, 3).drop2(0).toList)
+    assertResult(List(), "drop all exactly")(Stream(1, 2, 3).drop2(3).toList)
+    assertResult(List(), "empty")(Stream().drop2(0).toList)
+  }
+
 }
