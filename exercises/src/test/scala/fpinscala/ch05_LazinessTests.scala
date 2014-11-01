@@ -71,4 +71,11 @@ class ch05_LazinessTests extends FunSuite {
     assertResult(None, "no head")(Stream().headOption)
   }
 
+  test("map") {
+    import fpinscala.laziness._
+
+    assertResult(List(2,4,6), "base")(Stream(1, 2, 3).map(_*2).toList)
+    assertResult(List(), "empty")(Stream[Int]().map(_*2).toList)
+  }
+
 }
