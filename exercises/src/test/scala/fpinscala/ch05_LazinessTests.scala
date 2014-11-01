@@ -74,8 +74,15 @@ class ch05_LazinessTests extends FunSuite {
   test("map") {
     import fpinscala.laziness._
 
-    assertResult(List(2,4,6), "base")(Stream(1, 2, 3).map(_*2).toList)
-    assertResult(List(), "empty")(Stream[Int]().map(_*2).toList)
+    assertResult(List(2, 4, 6), "base")(Stream(1, 2, 3).map(_ * 2).toList)
+    assertResult(List(), "empty")(Stream[Int]().map(_ * 2).toList)
+  }
+
+  test("filter") {
+    import fpinscala.laziness._
+
+    assertResult(List(1, 3), "base")(Stream(1, 2, 3).filter(_ % 2 != 0).toList)
+    assertResult(List(), "empty")(Stream[Int]().filter(_ % 2 != 0).toList)
   }
 
 }
