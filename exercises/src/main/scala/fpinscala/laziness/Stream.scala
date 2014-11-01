@@ -92,6 +92,8 @@ trait Stream[+A] {
 
   def filter(p: A => Boolean): Stream[A] = foldRight(empty[A]) { (el, acc) => if (p(el)) cons(el, acc) else acc}
 
+  def append[B >: A](bs: => Stream[B]) : Stream[B] = this.foldRight(bs){(el, acc) => cons(el, acc)}
+
   def startsWith[B](s: Stream[B]): Boolean = sys.error("todo")
 }
 

@@ -85,4 +85,13 @@ class ch05_LazinessTests extends FunSuite {
     assertResult(List(), "empty")(Stream[Int]().filter(_ % 2 != 0).toList)
   }
 
+  test("append") {
+    import fpinscala.laziness._
+
+    assertResult(List(1, 2, 3, 4, 5), "base")(Stream(1, 2, 3).append(Stream(4, 5)).toList)
+    assertResult(List(1, 2, 3), "arg empty")(Stream(1, 2, 3).append(Stream()).toList)
+    assertResult(List(4, 5), "empty")(Stream().append(Stream(4, 5)).toList)
+    assertResult(List(), "both empty")(Stream().append(Stream()).toList)
+  }
+
 }
