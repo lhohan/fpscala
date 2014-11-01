@@ -43,8 +43,14 @@ trait Stream[+A] {
     loop(this).toList
   }
 
+  import fpinscala.laziness.Stream._
 
-  def take(n: Int): Stream[A] = sys.error("todo")
+  def take(n: Int): Stream[A] = if (n > 0) {
+    this match {
+      case Empty => throw new RuntimeException("take on empty stream")
+      case Cons(h, t) => cons(h(), t().take(n - 1))
+    }
+  } else Empty
 
   def drop(n: Int): Stream[A] = sys.error("todo")
 
