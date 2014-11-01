@@ -39,4 +39,12 @@ class ch05_LazinessTests extends FunSuite {
     assertResult(List(), "empty")(Stream().drop2(0).toList)
   }
 
+  test("takeWhile") {
+    import fpinscala.laziness._
+
+    assertResult(List(1, 2), "base")(Stream(1, 2, 3).takeWhile(_ < 3).toList)
+    assertResult(List(1, 2, 3), "base")(Stream(1, 2, 3).takeWhile(_ < 5).toList)
+    assertResult(List(), "empty")(Stream[Int]().takeWhile(_ < 3).toList)
+  }
+
 }
