@@ -64,4 +64,11 @@ class ch05_LazinessTests extends FunSuite {
     assertResult(List(), "empty")(Stream[Int]().takeWhileViaFoldRight(_ < 3).toList)
   }
 
+  test("headOption - ViaFoldRight") {
+    import fpinscala.laziness._
+
+    assertResult(Some(1), "head")(Stream(1, 2, 3).headOption)
+    assertResult(None, "no head")(Stream().headOption)
+  }
+
 }

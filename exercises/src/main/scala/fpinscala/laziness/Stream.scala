@@ -86,6 +86,8 @@ trait Stream[+A] {
     else acc
   }
 
+  def headOption: Option[A] = foldRight(None: Option[A])((el, _) => Some(el))
+
   def startsWith[B](s: Stream[B]): Boolean = sys.error("todo")
 }
 
