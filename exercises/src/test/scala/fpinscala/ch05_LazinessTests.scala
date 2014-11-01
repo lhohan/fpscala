@@ -47,4 +47,13 @@ class ch05_LazinessTests extends FunSuite {
     assertResult(List(), "empty")(Stream[Int]().takeWhile(_ < 3).toList)
   }
 
+  test("forAll") {
+    import fpinscala.laziness._
+
+    assertResult(true, "base")(Stream(1, 2, 3).forAll(_ < 4))
+    assertResult(false, "base - false 1")(Stream(1, 2, 3).forAll(_ <= 1))
+    assertResult(false, "base - false 2")(Stream(1, 2, 3).forAll(_ < 1))
+    assertResult(true, "empty")(Stream[Int]().forAll(_ < 4))
+  }
+
 }
