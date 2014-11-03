@@ -100,10 +100,16 @@ class ch05_LazinessTests extends FunSuite {
     assertResult(List("1", "1", "2", "2", "3", "3"), "base")(Stream(1, 2, 3).flatMap(i => Stream(i.toString, i.toString)).toList)
   }
 
-  test("constant infinite stream"){
+  test("constant infinite stream") {
     import fpinscala.laziness.Stream._
 
-    assertResult(List("a","a","a","a","a"), "constant a") (constant("a").take(5).toList)
+    assertResult(List("a", "a", "a", "a", "a"), "constant a")(constant("a").take(5).toList)
+  }
+
+  test("from stream") {
+    import fpinscala.laziness.Stream._
+
+    assertResult(List(5, 6, 7), "from 5")(from(5).take(3).toList)
   }
 
 }
