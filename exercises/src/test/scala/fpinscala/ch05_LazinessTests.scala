@@ -94,4 +94,10 @@ class ch05_LazinessTests extends FunSuite {
     assertResult(List(), "both empty")(Stream().append(Stream()).toList)
   }
 
+  test("flatMap") {
+    import fpinscala.laziness._
+
+    assertResult(List("1", "1", "2", "2", "3", "3"), "base")(Stream(1, 2, 3).flatMap(i => Stream(i.toString, i.toString)).toList)
+  }
+
 }
