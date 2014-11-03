@@ -117,4 +117,10 @@ class ch05_LazinessTests extends FunSuite {
     assertResult(List(0, 1, 1, 2, 3, 5, 8), "fibs 7")(fibs.take(7).toList)
   }
 
+  test("unfold") {
+    import fpinscala.laziness.Stream._
+
+    assertResult(List(5, 6, 7), "unfold 5")(unfold(5)(x => Some((x, x + 1))).take(3).toList)
+  }
+
 }
