@@ -112,4 +112,9 @@ class ch05_LazinessTests extends FunSuite {
     assertResult(List(5, 6, 7), "from 5")(from(5).take(3).toList)
   }
 
+  test("fibs") {
+    import fpinscala.laziness.Stream._
+    assertResult(List(0, 1, 1, 2, 3, 5, 8), "fibs 7")(fibs.take(7).toList)
+  }
+
 }

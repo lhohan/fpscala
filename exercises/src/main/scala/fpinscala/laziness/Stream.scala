@@ -123,5 +123,9 @@ object Stream {
 
   def from(n: Int): Stream[Int] = Stream.cons(n, from(n + 1))
 
+  def fibsInit(a: Int, b: Int): Stream[Int] = Stream.cons(a, fibsInit(b, a + b))
+
+  val fibs = fibsInit(0, 1)
+
   def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] = sys.error("todo")
 }
