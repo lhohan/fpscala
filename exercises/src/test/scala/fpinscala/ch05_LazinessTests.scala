@@ -96,19 +96,16 @@ class ch05_LazinessTests extends FunSuite {
 
   test("flatMap") {
     import fpinscala.laziness._
-
     assertResult(List("1", "1", "2", "2", "3", "3"), "base")(Stream(1, 2, 3).flatMap(i => Stream(i.toString, i.toString)).toList)
   }
 
   test("constant infinite stream") {
     import fpinscala.laziness.Stream._
-
     assertResult(List("a", "a", "a", "a", "a"), "constant a")(constant("a").take(5).toList)
   }
 
   test("from stream") {
     import fpinscala.laziness.Stream._
-
     assertResult(List(5, 6, 7), "from 5")(from(5).take(3).toList)
   }
 
@@ -119,8 +116,27 @@ class ch05_LazinessTests extends FunSuite {
 
   test("unfold") {
     import fpinscala.laziness.Stream._
-
     assertResult(List(5, 6, 7), "unfold 5")(unfold(5)(x => Some((x, x + 1))).take(3).toList)
+  }
+
+  test("ones via unfold") {
+    import fpinscala.laziness.Stream._
+    assertResult(List(1, 1, 1), "3 ones")(onesViaUnfold.take(3).toList)
+  }
+
+  test("constant infinite stream - via unfold") {
+    import fpinscala.laziness.Stream._
+    assertResult(List("a", "a", "a", "a", "a"), "constant a")(constantViaUnfold("a").take(5).toList)
+  }
+
+  test("from stream - via unfold") {
+    import fpinscala.laziness.Stream._
+    assertResult(List(5, 6, 7), "from 5")(fromViaUnfold(5).take(3).toList)
+  }
+
+  test("fibs - via unfold") {
+    import fpinscala.laziness.Stream._
+    assertResult(List(0, 1, 1, 2, 3, 5, 8), "fibs 7")(fibsViaUnfold.take(7).toList)
   }
 
 }
