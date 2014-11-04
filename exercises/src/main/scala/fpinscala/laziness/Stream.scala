@@ -96,10 +96,9 @@ trait Stream[+A] {
 
   def flatMap[B](f: A => Stream[B]): Stream[B] = foldRight(empty[B]) { (el, acc) => f(el) append acc}
 
-  def mapViaUnfold[B](f: A => B): Stream[B] = unfold(this) { as => as match {
+  def mapViaUnfold[B](f: A => B): Stream[B] = unfold(this) {
     case Cons(h, t) => Some(f(h()), t())
     case Empty => None
-  }
   }
 
 
