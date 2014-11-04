@@ -139,4 +139,11 @@ class ch05_LazinessTests extends FunSuite {
     assertResult(List(0, 1, 1, 2, 3, 5, 8), "fibs 7")(fibsViaUnfold.take(7).toList)
   }
 
+  test("map - via unfold") {
+    import fpinscala.laziness._
+
+    assertResult(List(2, 4, 6), "base")(Stream(1, 2, 3).mapViaUnfold(_ * 2).toList)
+    assertResult(List(), "empty")(Stream[Int]().mapViaUnfold(_ * 2).toList)
+  }
+
 }
