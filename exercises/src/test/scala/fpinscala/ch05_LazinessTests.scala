@@ -161,5 +161,14 @@ class ch05_LazinessTests extends FunSuite {
     assertResult(List(), "empty")(Stream[Int]().takeWhileViaUnfold(_ < 3).toList)
   }
 
+  test("zipWith") {
+    import fpinscala.laziness.Stream._
+    import fpinscala.laziness._
+    assertResult(List(1, 2, 2, 3, 4), "ones zipWith fibs")(ones.zipWith(fibs)(_ + _).take(5).toList)
+    assertResult(List(4, 5, 6), "ones zipWith finite stream")(ones.zipWith(Stream(3, 4, 5))(_ + _).take(5).toList)
+    assertResult(List(4, 5, 6), "finite stream zipWith ones")(Stream(3, 4, 5).zipWith(ones)(_ + _).take(5).toList)
+    assertResult(List(), "empty zipWith ones")(empty[Int].zipWith(ones)(_ + _).take(5).toList)
+  }
+
 
 }

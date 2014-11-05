@@ -115,6 +115,9 @@ trait Stream[+A] {
       else None
   }
 
+  def zipWith[B,C](s2: Stream[B])(f: (A,B) => C): Stream[C] = ???
+
+
   def startsWith[B](s: Stream[B]): Boolean = sys.error("todo")
 }
 
