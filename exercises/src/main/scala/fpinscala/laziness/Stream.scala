@@ -101,6 +101,9 @@ trait Stream[+A] {
     case Empty => None
   }
 
+  def takeViaUnfold(n: Int): Stream[A] = ???
+
+  def takeWhileViaUnfold(p: A => Boolean): Stream[A] = ???
 
   def startsWith[B](s: Stream[B]): Boolean = sys.error("todo")
 }

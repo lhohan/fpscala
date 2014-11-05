@@ -146,4 +146,20 @@ class ch05_LazinessTests extends FunSuite {
     assertResult(List(), "empty")(Stream[Int]().mapViaUnfold(_ * 2).toList)
   }
 
+  test("take - via unfold") {
+    import fpinscala.laziness._
+
+    assertResult(List(1, 2), "base")(Stream(1, 2, 3).takeViaUnfold(2).toList)
+    assertResult(List(), "empty")(Stream().takeViaUnfold(0).toList)
+  }
+
+  test("takeWhile - via unfold") {
+    import fpinscala.laziness._
+
+    assertResult(List(1, 2), "base")(Stream(1, 2, 3).takeWhileViaUnfold(_ < 3).toList)
+    assertResult(List(1, 2, 3), "base")(Stream(1, 2, 3).takeWhileViaUnfold(_ < 5).toList)
+    assertResult(List(), "empty")(Stream[Int]().takeWhileViaUnfold(_ < 3).toList)
+  }
+
+
 }
