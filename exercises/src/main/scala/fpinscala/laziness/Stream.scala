@@ -101,7 +101,11 @@ trait Stream[+A] {
     case Empty => None
   }
 
-  def takeViaUnfold(n: Int): Stream[A] = ???
+  def takeViaUnfold(n: Int): Stream[A] = unfold((this, n)) {
+    case (Empty, _) => None
+    case (_, i) if i <= 0 => None
+    case (Cons(h, t), i) => Some((h(), (t(), i - 1)))
+  }
 
   def takeWhileViaUnfold(p: A => Boolean): Stream[A] = ???
 
