@@ -107,7 +107,13 @@ trait Stream[+A] {
     case (Cons(h, t), i) => Some((h(), (t(), i - 1)))
   }
 
-  def takeWhileViaUnfold(p: A => Boolean): Stream[A] = ???
+  def takeWhileViaUnfold(p: A => Boolean): Stream[A] = unfold(this) {
+    case Empty => None
+    case Cons(h, t) =>
+      lazy val h_ = h()
+      if (p(h_)) Some((h(), t()))
+      else None
+  }
 
   def startsWith[B](s: Stream[B]): Boolean = sys.error("todo")
 }
