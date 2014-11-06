@@ -170,5 +170,16 @@ class ch05_LazinessTests extends FunSuite {
     assertResult(List(), "empty zipWith ones")(empty[Int].zipWith(ones)(_ + _).take(5).toList)
   }
 
+  test("zipAll") {
+    import fpinscala.laziness.Stream._
+    import fpinscala.laziness._
+
+    assertResult(List((Some(1), Some(0)), (Some(1), Some(1))), "both infinite")(ones.zipAll(fibs).take(2).toList)
+    assertResult(List((Some(1), Some(3)), (Some(1), None)), "infinite, finite")(ones.zipAll(Stream(3)).take(2).toList)
+    assertResult(List((Some(3), Some(0)), (None, Some(1))), "finite, infinite")(Stream(3).zipAll(fibs).take(2).toList)
+    assertResult(List((None, Some(0)), (None, Some(1))), "empty, infinite")(empty.zipAll(fibs).take(2).toList)
+    assertResult(List((Some(1), None), (Some(1), None)), "infinite, empty")(ones.zipAll(empty).take(2).toList)
+  }
+
 
 }
