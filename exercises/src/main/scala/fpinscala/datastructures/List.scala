@@ -209,17 +209,17 @@ object List {
     case (_, _) => throw new IllegalArgumentException("number of element does not match")
   }
 
-  def hasSubSequence[A](sup: List[A], sub: List[A]): Boolean = {
-    @tailrec
-    def go(sups: List[A], subs: List[A]): Boolean = {
-      (sups, subs) match {
-        case (_, Nil) => true
-        case (Cons(hp, xps), Cons(hb, xbs)) if hp == hb => go(xps, xbs)
-        case (Cons(hp, xps), _) => go(xps, sub)
-        case (Nil, _) => false
-      }
-    }
-    go(sup, sub)
+  def startsWith[A](list: List[A], sub: List[A]): Boolean = (list, sub) match {
+    case (_, Nil) => true
+    case (Cons(hp, xps), Cons(hb, xbs)) if hp == hb => startsWith(xps, xbs)
+    case _ => false
+  }
+
+  @tailrec
+  def hasSubSequence[A](sup: List[A], sub: List[A]): Boolean = (sup, sub) match {
+    case (Nil, _) => false
+    case (p, b) if startsWith(p, b) => true
+    case (Cons(hp, xps), _) => hasSubSequence(xps, sub)
   }
 
 }
