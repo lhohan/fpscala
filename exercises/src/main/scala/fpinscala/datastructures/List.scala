@@ -216,10 +216,10 @@ object List {
   }
 
   @tailrec
-  def hasSubSequence[A](sup: List[A], sub: List[A]): Boolean = (sup, sub) match {
-    case (Nil, _) => false
-    case (p, b) if startsWith(p, b) => true
-    case (Cons(hp, xps), _) => hasSubSequence(xps, sub)
+  def hasSubSequence[A](sup: List[A], sub: List[A]): Boolean = sup match {
+    case Nil => false
+    case list if startsWith(list, sub) => true
+    case Cons(h, t) => hasSubSequence(t, sub)
   }
 
 }
