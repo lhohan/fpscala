@@ -238,7 +238,7 @@ class ch03_DataStructuresTests extends FunSuite {
     assertResult(false, "1,3")(hasSubSequence(List(1, 2, 3, 4), List(1, 3)))
     assertResult(false, "nil sup")(hasSubSequence(Nil, List(1, 3)))
     assertResult(true, "nil sub")(hasSubSequence(List(1, 2, 3, 4), Nil))
-    assertResult(true, "nil nil")(hasSubSequence(Nil, Nil))
+    assertResult(true, "1 1 2 3 4, 1 2 3")(hasSubSequence(List(1,1,2,3,4), List(1,2,3)))
   }
 
   test("tree - size") {
