@@ -181,5 +181,14 @@ class ch05_LazinessTests extends FunSuite {
     assertResult(List((Some(1), None), (Some(1), None)), "infinite, empty")(ones.zipAll(empty).take(2).toList)
   }
 
+  test("startsWith") {
+    import fpinscala.laziness.Stream._
+    import fpinscala.laziness._
+
+    assert(Stream(1, 2, 3).startsWith(Stream(1, 2)), "base")
+    assert(!Stream(1, 2, 3).startsWith(Stream(2, 1)), "base false")
+    assert(!empty.startsWith(Stream(1, 2)), "empty")
+  }
+
 
 }
