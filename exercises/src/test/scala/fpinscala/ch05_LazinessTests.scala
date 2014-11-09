@@ -1,5 +1,6 @@
 package fpinscala
 
+import fpinscala.laziness.Stream
 import org.scalatest.FunSuite
 
 /**
@@ -189,6 +190,10 @@ class ch05_LazinessTests extends FunSuite {
     assert(!Stream(1, 2).startsWith(Stream(1, 2, 3)), "shorter than argument")
     assert(!Stream(1, 2, 3).startsWith(Stream(2, 1)), "base false")
     assert(!empty[Int].startsWith(Stream(1, 2)), "empty")
+  }
+
+  test("tails") {
+    assertResult(List(List(1, 2, 3), List(2, 3), List(3), List()), "base")(Stream(1, 2, 3).tails.toList.map(_.toList))
   }
 
 
