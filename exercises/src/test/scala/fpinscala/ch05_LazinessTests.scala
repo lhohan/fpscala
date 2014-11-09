@@ -186,8 +186,9 @@ class ch05_LazinessTests extends FunSuite {
     import fpinscala.laziness._
 
     assert(Stream(1, 2, 3).startsWith(Stream(1, 2)), "base")
+    assert(!Stream(1, 2).startsWith(Stream(1, 2, 3)), "shorter than argument")
     assert(!Stream(1, 2, 3).startsWith(Stream(2, 1)), "base false")
-    assert(!empty.startsWith(Stream(1, 2)), "empty")
+    assert(!empty[Int].startsWith(Stream(1, 2)), "empty")
   }
 
 

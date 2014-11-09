@@ -127,8 +127,12 @@ trait Stream[+A] {
     case _ => None
   }
 
+  def startsWith[B](s: Stream[B]): Boolean = zipAll(s).forAll {
+    case (Some(_), None) => true
+    case (Some(x1), Some(x2)) => x1 == x2
+    case _ => false
+  }
 
-  def startsWith[B](s: Stream[B]): Boolean = sys.error("todo")
 }
 
 case object Empty extends Stream[Nothing]
