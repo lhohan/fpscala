@@ -193,7 +193,10 @@ class ch05_LazinessTests extends FunSuite {
   }
 
   test("tails") {
+    import fpinscala.laziness.Stream._
+    import fpinscala.laziness._
     assertResult(List(List(1, 2, 3), List(2, 3), List(3), List()), "base")(Stream(1, 2, 3).tails.toList.map(_.toList))
+    assertResult(List(List()), "empty")(empty[Int].tails.toList.map(_.toList))
   }
 
 
