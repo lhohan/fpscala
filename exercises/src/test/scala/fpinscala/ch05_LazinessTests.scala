@@ -1,6 +1,5 @@
 package fpinscala
 
-import fpinscala.laziness.Stream
 import org.scalatest.FunSuite
 
 /**
@@ -197,6 +196,18 @@ class ch05_LazinessTests extends FunSuite {
     import fpinscala.laziness._
     assertResult(List(List(1, 2, 3), List(2, 3), List(3), List()), "base")(Stream(1, 2, 3).tails.toList.map(_.toList))
     assertResult(List(List()), "empty")(empty[Int].tails.toList.map(_.toList))
+  }
+
+  test("hasSubSequence") {
+    import fpinscala.laziness.Stream._
+    import fpinscala.laziness._
+    assertResult(true, "1,2")(Stream(1, 2, 3, 4).hasSubSequence(Stream(1, 2)))
+    assertResult(true, "2,3")(Stream(1, 2, 3, 4).hasSubSequence(Stream(2, 3)))
+    assertResult(true, "4")(Stream(1, 2, 3, 4).hasSubSequence(Stream(4)))
+    assertResult(false, "1,3")(Stream(1, 2, 3, 4).hasSubSequence(Stream(1, 3)))
+    assertResult(false, "nil sup")(empty[Int].hasSubSequence(Stream(1, 3)))
+    assertResult(true, "nil sub")(Stream(1, 2, 3, 4).hasSubSequence(empty[Int]))
+    assertResult(true, "1 1 2 3 4, 1 2 3")(Stream(1, 2, 3, 4).hasSubSequence(Stream(1, 2, 3)))
   }
 
 

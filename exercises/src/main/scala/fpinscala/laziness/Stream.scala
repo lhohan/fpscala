@@ -139,6 +139,8 @@ trait Stream[+A] {
     case (Empty, false) => None
   }
 
+  def hasSubSequence[B](sub: Stream[B]) = ???
+
 }
 
 case object Empty extends Stream[Nothing]
