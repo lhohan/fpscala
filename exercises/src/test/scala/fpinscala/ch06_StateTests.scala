@@ -53,7 +53,8 @@ class ch06_StateTests extends FunSuite {
     }
   }
 
-  test("double3") { // similar to above
+  test("double3") {
+    // similar to above
   }
 
-  }
+}
