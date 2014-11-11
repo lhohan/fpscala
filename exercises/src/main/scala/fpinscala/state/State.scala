@@ -57,7 +57,7 @@ object RNG {
     val (d1, r1) = double(rng)
     val (d2, r2) = double(r1)
     val (d3, r3) = double(r2)
-    ((d1,d2,d3), r2)
+    ((d1,d2,d3), r3)
   }
 
   def ints(count: Int)(rng: RNG): (List[Int], RNG) = ???
