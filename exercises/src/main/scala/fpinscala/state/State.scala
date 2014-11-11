@@ -53,7 +53,12 @@ object RNG {
     (id.swap, r)
   }
 
-  def double3(rng: RNG): ((Double, Double, Double), RNG) = ???
+  def double3(rng: RNG): ((Double, Double, Double), RNG) = {
+    val (d1, r1) = double(rng)
+    val (d2, r2) = double(r1)
+    val (d3, r3) = double(r2)
+    ((d1,d2,d3), r2)
+  }
 
   def ints(count: Int)(rng: RNG): (List[Int], RNG) = ???
 
