@@ -39,7 +39,7 @@ object RNG {
 
   def double(rng: RNG): (Double, RNG) = {
     val (v, r) = rng.nextInt
-    ((v / Int.MaxValue).toDouble, r)
+    ((v / (Int.MaxValue + 1)).toDouble, r)
   }
 
   def intDouble(rng: RNG): ((Int, Double), RNG) = ???
