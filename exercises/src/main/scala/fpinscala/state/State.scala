@@ -33,7 +33,7 @@ object RNG {
 
   def nonNegativeInt(rng: RNG): (Int, RNG) = {
     val (v, r) = rng.nextInt
-    val abs_v = if (v < 0) v * (-1) else v
+    val abs_v = if (v < 0) -v else v
     (abs_v, r)
   }
 
