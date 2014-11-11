@@ -1,3 +1,4 @@
+import fpinscala.state.RNG
 import org.scalatest.FunSuite
 
 /**
@@ -24,6 +25,31 @@ class ch06_StateTests extends FunSuite {
 
     rnds.take(100).toList.foreach { x =>
       assert(x._1 >= 0 && x._1 < 1, s"should be between 0 and 1 (strictly smaller) ${x._1}")
+    }
+  }
+
+  // not sure about following tests only check on type?
+  test("intDouble") {
+    import fpinscala.state.RNG._
+
+    def seed = Simple(37)
+    val rnds = Stream.iterate(intDouble(seed))(r => intDouble(r._2))
+
+    rnds.take(100).toList.foreach {
+      case x: ((Int, Double), RNG) => // OK
+      case x@_ => fail(s"$x")
+    }
+  }
+
+  test("doubleInt") {
+    import fpinscala.state.RNG._
+
+    def seed = Simple(37)
+    val rnds = Stream.iterate(doubleInt(seed))(r => doubleInt(r._2))
+
+    rnds.take(100).toList.foreach {
+      case x: ((Double, Int), RNG) => // OK
+      case x@_ => fail(s"$x")
     }
   }
 
