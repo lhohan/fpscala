@@ -1,4 +1,5 @@
 import fpinscala.state.RNG
+import fpinscala.state.RNG.Simple
 import org.scalatest.FunSuite
 
 /**
@@ -55,6 +56,13 @@ class ch06_StateTests extends FunSuite {
 
   test("double3") {
     // similar to above
+  }
+
+  test("ints") {
+    import fpinscala.state.RNG._
+
+    val (is, _) = ints(5)(Simple(37))
+//    is.foreach(i => println(i))
   }
 
 }

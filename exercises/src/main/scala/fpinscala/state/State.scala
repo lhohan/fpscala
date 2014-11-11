@@ -60,7 +60,13 @@ object RNG {
     ((d1,d2,d3), r3)
   }
 
-  def ints(count: Int)(rng: RNG): (List[Int], RNG) = ???
+  def ints(count: Int)(rng: RNG): (List[Int], RNG) = {
+    (0 to count-1).foldRight((List.empty[Int], rng)){(el, acc) =>
+      val (is, r) = acc
+      val (ni, r1) = r.nextInt
+      (ni :: is, r1)
+    }
+  }
 
   def map2[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] = ???
 
