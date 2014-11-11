@@ -23,6 +23,7 @@ class ch06_StateTests extends FunSuite {
     val rnds = Stream.iterate(double(seed))(r => double(r._2))
 
     rnds.take(100).toList.foreach { x =>
+      println(x)
       assert(x._1 >= 0 && x._1 < 1, s"should be between 0 and 1 (strictly smaller) ${x._1}")
     }
   }
