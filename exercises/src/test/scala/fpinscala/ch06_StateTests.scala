@@ -65,4 +65,15 @@ class ch06_StateTests extends FunSuite {
 //    is.foreach(i => println(i))
   }
 
+  test("doubleElegant") {
+    import fpinscala.state.RNG._
+
+    def seed = Simple(37)
+    val rnds = Stream.iterate(doubleElegant(seed))(r => doubleElegant(r._2))
+
+    rnds.take(100).toList.foreach { x =>
+      assert(x._1 >= 0 && x._1 < 1, s"should be between 0 and 1 (strictly smaller) ${x._1}")
+    }
+  }
+
 }
