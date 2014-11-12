@@ -1,5 +1,4 @@
 import fpinscala.state.RNG
-import fpinscala.state.RNG.{Rand, Simple}
 import org.scalatest.FunSuite
 
 /**
@@ -62,7 +61,7 @@ class ch06_StateTests extends FunSuite {
     import fpinscala.state.RNG._
 
     val (is, _) = ints(5)(Simple(37))
-//    is.foreach(i => println(i))
+    //    is.foreach(i => println(i))
   }
 
   test("doubleElegant") {
@@ -76,8 +75,14 @@ class ch06_StateTests extends FunSuite {
     }
   }
 
-  test("map2"){
-//    val rnd1 : Rand[Int] =
+  test("map2") {
+    import fpinscala.state.RNG._
+
+    val composedRnd = map2(nonNegativeInt, double)((i, d) => s"$i & $d")
+
+    val rnds = Stream.iterate(composedRnd(Simple(37)))(r => composedRnd(r._2))
+
+    rnds.take(5).foreach(x => println(x._1))
 
 
   }

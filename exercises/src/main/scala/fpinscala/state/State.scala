@@ -84,10 +84,16 @@ object RNG {
 
   // ex. 6.5
   def doubleRnd = map(nonNegativeInt)(_ / (Int.MaxValue.toDouble + 1))
+
   def doubleElegant(rng: RNG): (Double, RNG) = doubleRnd(rng)
 
 
-  def map2[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] = ???
+  def map2[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] =
+    rnd => {
+      val (a, ra1) = ra(rnd)
+      val (b, rb1) = rb(ra1)
+      (f(a, b), rb1)
+    }
 
   def sequence[A](fs: List[Rand[A]]): Rand[List[A]] = ???
 
