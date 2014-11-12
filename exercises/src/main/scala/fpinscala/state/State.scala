@@ -83,7 +83,7 @@ object RNG {
   }
 
   // ex. 6.5
-  def doubleElegant(rng: RNG): (Double, RNG) = map(nonNegativeInt)(i => i / (Int.MaxValue.toDouble + 1))(rng)
+  def doubleElegant(rng: RNG): (Double, RNG) = map(nonNegativeInt)(_ / (Int.MaxValue.toDouble + 1))(rng)
 
 
   def map2[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] = ???
