@@ -1,5 +1,5 @@
 import fpinscala.state.RNG
-import fpinscala.state.RNG.Simple
+import fpinscala.state.RNG.{Rand, Simple}
 import org.scalatest.FunSuite
 
 /**
@@ -74,6 +74,12 @@ class ch06_StateTests extends FunSuite {
     rnds.take(100).toList.foreach { x =>
       assert(x._1 >= 0 && x._1 < 1, s"should be between 0 and 1 (strictly smaller) ${x._1}")
     }
+  }
+
+  test("map2"){
+//    val rnd1 : Rand[Int] =
+
+
   }
 
 }
