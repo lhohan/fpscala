@@ -82,9 +82,7 @@ class ch06_StateTests extends FunSuite {
 
     val rnds = Stream.iterate(composedRnd(Simple(37)))(r => composedRnd(r._2))
 
-    rnds.take(5).foreach(x => println(x._1))
-
-
+//    rnds.take(5).foreach(x => println(x._1))
   }
 
 }
