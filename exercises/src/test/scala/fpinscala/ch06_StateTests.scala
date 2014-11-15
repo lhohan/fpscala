@@ -37,7 +37,7 @@ class ch06_StateTests extends FunSuite {
 
     rnds.take(100).toList.foreach {
       case x: ((Int, Double), RNG) => // OK
-      case x@_ => fail(s"$x")
+      case x @ _ => fail(s"$x")
     }
   }
 
@@ -49,7 +49,7 @@ class ch06_StateTests extends FunSuite {
 
     rnds.take(100).toList.foreach {
       case x: ((Double, Int), RNG) => // OK
-      case x@_ => fail(s"$x")
+      case x @ _ => fail(s"$x")
     }
   }
 
@@ -92,7 +92,14 @@ class ch06_StateTests extends FunSuite {
 
     val rnds = Stream.iterate(composedRnd(Simple(37)))(r => composedRnd(r._2))
 
-//    rnds.take(5).foreach(x => println(x._1))
+    //    rnds.take(5).foreach(x => println(x._1))
+  }
+
+  test("ints via seq") {
+    import fpinscala.state.RNG._
+
+    val (is, _) = intsViaSequence(5)(Simple(37))
+//    is.foreach(i => println(i))
   }
 
 }
