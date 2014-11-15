@@ -99,7 +99,16 @@ class ch06_StateTests extends FunSuite {
     import fpinscala.state.RNG._
 
     val (is, _) = intsViaSequence(5)(Simple(37))
-//    is.foreach(i => println(i))
+    //    is.foreach(i => println(i))
+  }
+
+  test("non neg les than") {
+    import fpinscala.state.RNG._
+
+    val (is, _) = nonNegativeLessThan(5)(Simple(37))
+    val rnds = Stream.iterate(nonNegativeLessThan(10)(Simple(37)))(r => nonNegativeLessThan(10)(r._2))
+
+    rnds.take(10).foreach(x => println(x._1))
   }
 
 }

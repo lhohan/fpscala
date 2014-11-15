@@ -94,7 +94,7 @@ object RNG {
     }
 
   def sequence[A](fs: List[Rand[A]]): Rand[List[A]] =
-    fs.foldRight(unit(List.empty[A])) { (r, acc) => map2(r, acc)(_ :: _)}
+    fs.foldRight(unit(List.empty[A])) { (r, acc) => map2(r, acc)(_ :: _) }
 
   def intsViaSequence(count: Int)(rng: RNG): (List[Int], RNG) = {
     val ris = List.fill(count)((r: RNG) => r.nextInt)
@@ -105,6 +105,13 @@ object RNG {
     rnd => {
       val (a, r1) = f(rnd)
       g(a)(r1)
+    }
+
+  def nonNegativeLessThan(n: Int): Rand[Int] =
+    flatMap(nonNegativeInt) { a =>
+      rng => {
+        (a % n, rng)
+      }
     }
 }
 
