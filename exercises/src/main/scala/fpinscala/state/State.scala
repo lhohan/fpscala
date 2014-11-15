@@ -94,14 +94,18 @@ object RNG {
     }
 
   def sequence[A](fs: List[Rand[A]]): Rand[List[A]] =
-    fs.foldRight(unit(List.empty[A])) { (r, acc) => map2(r, acc)(_ :: _) }
+    fs.foldRight(unit(List.empty[A])) { (r, acc) => map2(r, acc)(_ :: _)}
 
   def intsViaSequence(count: Int)(rng: RNG): (List[Int], RNG) = {
     val ris = List.fill(count)((r: RNG) => r.nextInt)
     sequence(ris)(rng)
   }
 
-  def flatMap[A, B](f: Rand[A])(g: A => Rand[B]): Rand[B] = ???
+  def flatMap[A, B](f: Rand[A])(g: A => Rand[B]): Rand[B] =
+    rnd => {
+      val (a, r1) = f(rnd)
+      g(a)(r1)
+    }
 }
 
 case class State[S, +A](run: S => (A, S)) {
