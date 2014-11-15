@@ -109,9 +109,7 @@ object RNG {
 
   def nonNegativeLessThan(n: Int): Rand[Int] =
     flatMap(nonNegativeInt) { a =>
-      rng => {
-        (a % n, rng)
-      }
+      unit(a % n)
     }
 }
 
