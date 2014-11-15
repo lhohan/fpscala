@@ -57,7 +57,6 @@ object List {
   def product2(ns: List[Double]) =
     foldRight(ns, 1.0)(_ * _) // `_ * _` is more concise notation for `(x,y) => x * y`; see sidebar
 
-
   def tail[A](l: List[A]): List[A] = l match {
     case Nil => throw new UnsupportedOperationException("tail not supported on empty list")
     case Cons(_, xs) => xs
@@ -71,15 +70,13 @@ object List {
   def drop[A](l: List[A], n: Int): List[A] =
     if (n <= 0) {
       l
-    }
-    else l match {
+    } else l match {
       case Nil => throw new UnsupportedOperationException("drop not supported on empty list")
       case Cons(_, xs) => drop(xs, n - 1)
     }
 
   //tail in terms of drop
   def tail2[A](l: List[A]): List[A] = drop(l, 1)
-
 
   @tailrec
   def dropWhile[A](l: List[A], f: A => Boolean): List[A] = l match {
@@ -124,21 +121,21 @@ object List {
 
   def productLF(ds: List[Double]): Double = foldLeft(ds, 1.0)(_ * _)
 
-  def reverse[A](ls: List[A]): List[A] = foldLeft(ls, List[A]()) { (acc, el) => Cons(el, acc)}
+  def reverse[A](ls: List[A]): List[A] = foldLeft(ls, List[A]()) { (acc, el) => Cons(el, acc) }
 
   def foldRightViaFoldLeft[A, B](l: List[A], z: B)(f: (B, A) => B): B = foldLeft(reverse(l), z)(f)
 
-  def appendRF[A](a1: List[A], a2: List[A]): List[A] = foldRight(a1, a2) { (el, acc) => Cons(el, acc)}
+  def appendRF[A](a1: List[A], a2: List[A]): List[A] = foldRight(a1, a2) { (el, acc) => Cons(el, acc) }
 
-  def appendLF[A](a1: List[A], a2: List[A]): List[A] = foldLeft(reverse(a1), a2) { (acc, el) => Cons(el, acc)}
+  def appendLF[A](a1: List[A], a2: List[A]): List[A] = foldLeft(reverse(a1), a2) { (acc, el) => Cons(el, acc) }
 
   def concat[A](ls: List[List[A]]): List[A] = foldRight(ls, List[A]())(append)
 
-  def add1(l: List[Int]): List[Int] = foldRight(l, List[Int]()) { (el, acc) => Cons(el + 1, acc)}
+  def add1(l: List[Int]): List[Int] = foldRight(l, List[Int]()) { (el, acc) => Cons(el + 1, acc) }
 
-  def doubleToString(l: List[Double]): List[String] = foldRight(l, List[String]()) { (el, acc) => Cons(el.toString, acc)}
+  def doubleToString(l: List[Double]): List[String] = foldRight(l, List[String]()) { (el, acc) => Cons(el.toString, acc) }
 
-  def map[A, B](l: List[A])(f: A => B): List[B] = foldRight(l, List[B]()) { (el, acc) => Cons(f(el), acc)}
+  def map[A, B](l: List[A])(f: A => B): List[B] = foldRight(l, List[B]()) { (el, acc) => Cons(f(el), acc) }
 
   def map_tr[A, B](l: List[A])(f: A => B): List[B] = {
     val lb = new ListBuffer[B]
@@ -168,7 +165,7 @@ object List {
 
   // not stack safe, a bit coarse too
   def flatMap[A, B](as: List[A])(f: A => List[B]): List[B] = {
-    concat(foldRight(as, List[List[B]]()) { (el, acc) => Cons(f(el), acc)})
+    concat(foldRight(as, List[List[B]]()) { (el, acc) => Cons(f(el), acc) })
   }
 
   // stack safe, short but don't like double traversal
@@ -195,7 +192,8 @@ object List {
     val lb = new ListBuffer[Int]()
     def loop(is1: List[Int], is2: List[Int]): Unit = (is1, is2) match {
       case (Nil, Nil) => ()
-      case (Cons(h1, xs1), Cons(h2, xs2)) => lb.append(h1 + h2); loop(xs1, xs2)
+      case (Cons(h1, xs1), Cons(h2, xs2)) =>
+        lb.append(h1 + h2); loop(xs1, xs2)
       case (_, _) => throw new IllegalArgumentException("number of element does not match")
     }
     loop(is1, is2)

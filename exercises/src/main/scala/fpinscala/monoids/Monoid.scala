@@ -67,23 +67,23 @@ object Monoid {
   case class Stub(chars: String) extends WC
   case class Part(lStub: String, words: Int, rStub: String) extends WC
 
-  def par[A](m: Monoid[A]): Monoid[Par[A]] = 
+  def par[A](m: Monoid[A]): Monoid[Par[A]] =
     sys.error("todo")
 
-  def parFoldMap[A,B](v: IndexedSeq[A], m: Monoid[B])(f: A => B): Par[B] = 
-    sys.error("todo") 
+  def parFoldMap[A, B](v: IndexedSeq[A], m: Monoid[B])(f: A => B): Par[B] =
+    sys.error("todo")
 
   val wcMonoid: Monoid[WC] = sys.error("todo")
 
   def count(s: String): Int = sys.error("todo")
 
-  def productMonoid[A,B](A: Monoid[A], B: Monoid[B]): Monoid[(A, B)] =
+  def productMonoid[A, B](A: Monoid[A], B: Monoid[B]): Monoid[(A, B)] =
     sys.error("todo")
 
-  def functionMonoid[A,B](B: Monoid[B]): Monoid[A => B] =
+  def functionMonoid[A, B](B: Monoid[B]): Monoid[A => B] =
     sys.error("todo")
 
-  def mapMergeMonoid[K,V](V: Monoid[V]): Monoid[Map[K, V]] =
+  def mapMergeMonoid[K, V](V: Monoid[V]): Monoid[Map[K, V]] =
     sys.error("todo")
 
   def bag[A](as: IndexedSeq[A]): Map[A, Int] =

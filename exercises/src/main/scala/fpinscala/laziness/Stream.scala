@@ -73,13 +73,12 @@ trait Stream[+A] {
     loop(this, n)
   }
 
-
   def takeWhile(p: A => Boolean): Stream[A] = this match {
     case Cons(h, t) if p(h()) => cons(h(), t().takeWhile(p))
     case _ => empty[A]
   }
 
-  def forAll(p: A => Boolean): Boolean = foldRight(true) { (el, acc) => acc && p(el)}
+  def forAll(p: A => Boolean): Boolean = foldRight(true) { (el, acc) => acc && p(el) }
 
   def takeWhileViaFoldRight(p: A => Boolean): Stream[A] = foldRight(empty[A]) { (el, acc) =>
     if (p(el)) cons(el, acc)
@@ -88,13 +87,13 @@ trait Stream[+A] {
 
   def headOption: Option[A] = foldRight(None: Option[A])((el, _) => Some(el))
 
-  def map[B](f: A => B): Stream[B] = foldRight(empty[B]) { (el, acc) => cons(f(el), acc)}
+  def map[B](f: A => B): Stream[B] = foldRight(empty[B]) { (el, acc) => cons(f(el), acc) }
 
-  def filter(p: A => Boolean): Stream[A] = foldRight(empty[A]) { (el, acc) => if (p(el)) cons(el, acc) else acc}
+  def filter(p: A => Boolean): Stream[A] = foldRight(empty[A]) { (el, acc) => if (p(el)) cons(el, acc) else acc }
 
-  def append[B >: A](bs: => Stream[B]): Stream[B] = this.foldRight(bs) { (el, acc) => cons(el, acc)}
+  def append[B >: A](bs: => Stream[B]): Stream[B] = this.foldRight(bs) { (el, acc) => cons(el, acc) }
 
-  def flatMap[B](f: A => Stream[B]): Stream[B] = foldRight(empty[B]) { (el, acc) => f(el) append acc}
+  def flatMap[B](f: A => Stream[B]): Stream[B] = foldRight(empty[B]) { (el, acc) => f(el) append acc }
 
   def mapViaUnfold[B](f: A => B): Stream[B] = unfold(this) {
     case Cons(h, t) => Some(f(h()), t())
@@ -134,7 +133,7 @@ trait Stream[+A] {
   }
 
   def tails: Stream[Stream[A]] = unfold((this, true)) {
-    case (c@Cons(h, t), _) => Some((c, (t(), true)))
+    case (c @ Cons(h, t), _) => Some((c, (t(), true)))
     case (Empty, true) => Some(Empty, (Stream(), false))
     case _ => None
   }

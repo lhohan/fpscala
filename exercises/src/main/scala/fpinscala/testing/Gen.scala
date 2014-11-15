@@ -6,7 +6,7 @@ import fpinscala.parallelism._
 import fpinscala.parallelism.Par.Par
 import Gen._
 import Prop._
-import java.util.concurrent.{Executors,ExecutorService}
+import java.util.concurrent.{ Executors, ExecutorService }
 
 /*
 The library developed in this chapter goes through several iterations. This file is just the
@@ -25,8 +25,8 @@ object Gen {
 }
 
 trait Gen[A] {
-  def map[A,B](f: A => B): Gen[B] = ???
-  def flatMap[A,B](f: A => Gen[B]): Gen[B] = ???
+  def map[A, B](f: A => B): Gen[B] = ???
+  def flatMap[A, B](f: A => Gen[B]): Gen[B] = ???
 }
 
 trait SGen[+A] {

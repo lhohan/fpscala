@@ -6,7 +6,8 @@ object FPInScalaBuild extends Build {
     scalaVersion := "2.10.3",
     resolvers += "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/",
     libraryDependencies += "org.scalatest" % "scalatest_2.10" % "2.2.1" % "test"
-  )
+  ) ++ org.scalastyle.sbt.ScalastylePlugin.Settings ++ com.typesafe.sbt.SbtScalariform.scalariformSettings
+
 
   lazy val root =
     Project(id = "fpinscala",

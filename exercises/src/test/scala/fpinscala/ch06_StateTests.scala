@@ -88,7 +88,7 @@ class ch06_StateTests extends FunSuite {
   test("sequence") {
     import fpinscala.state.RNG._
 
-    val composedRnd = sequence(List(nonNegativeInt _, double _))
+    val composedRnd = sequence(List(nonNegativeInt, double))
 
     val rnds = Stream.iterate(composedRnd(Simple(37)))(r => composedRnd(r._2))
 

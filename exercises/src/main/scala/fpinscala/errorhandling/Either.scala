@@ -1,7 +1,6 @@
 package fpinscala.errorhandling
 
-
-import scala.{Either => _, Left => _, Option => _, Right => _}
+import scala.{ Either => _, Left => _, Option => _, Right => _ }
 
 // hide std library `Option` and `Either`, since we are writing our own in this chapter
 
@@ -17,8 +16,8 @@ sealed trait Either[+E, +A] {
   }
 
   def orElse[EE >: E, B >: A](b: => Either[EE, B]): Either[EE, B] = this match {
-    case err@Left(_) => b
-    case r@Right(_) => r
+    case err @ Left(_) => b
+    case r @ Right(_) => r
   }
 
   //  def map2[EE >: E, B, C](b: Either[EE, B])(f: (A, B) => C): Either[EE, C] = this match {
@@ -31,7 +30,7 @@ sealed trait Either[+E, +A] {
 
   //  def map2[EE >: E, B, C](b: Either[EE, B])(f: (A, B) => C): Either[EE, C] = flatMap(a => b.map(b => f(a,b)))
 
-  def map2[EE >: E, B, C](b: Either[EE, B])(f: (A, B) => C): Either[EE, C] = for {a <- this; b1 <- b} yield f(a, b1)
+  def map2[EE >: E, B, C](b: Either[EE, B])(f: (A, B) => C): Either[EE, C] = for { a <- this; b1 <- b } yield f(a, b1)
 
 }
 
@@ -59,10 +58,10 @@ object Either {
     }
 
   def sequence[E, A](es: List[Either[E, A]]): Either[E, List[A]] =
-    es.foldRight(Right(List()): Either[E, List[A]]) { (el, acc) => el.map2(acc)(_ :: _)}
+    es.foldRight(Right(List()): Either[E, List[A]]) { (el, acc) => el.map2(acc)(_ :: _) }
 
   def traverse[E, A, B](as: List[A])(f: A => Either[E, B]): Either[E, List[B]] =
-    as.foldRight(Right(List()): Either[E, List[B]]) { (el, acc) => f(el).map2(acc)(_ :: _)}
+    as.foldRight(Right(List()): Either[E, List[B]]) { (el, acc) => f(el).map2(acc)(_ :: _) }
 
   def sequenceViaTraverse[E, A](es: List[Either[E, A]]): Either[E, List[A]] = traverse(es)(x => x)
 
