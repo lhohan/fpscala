@@ -93,14 +93,8 @@ object RNG {
       (f(a, b), rb1)
     }
 
-  def sequence[A](fs: List[Rand[A]]): Rand[List[A]] = {
-    @tailrec
-    def loop(rs: List[Rand[A]], acc: Rand[List[A]]): Rand[List[A]] = rs match {
-      case h :: Nil => map2(h, acc)(_ :: _)
-      case h :: tail => loop(tail, map2(h, acc)(_ :: _))
-    }
-    loop(fs, unit(List.empty[A]))
-  }
+  def sequence[A](fs: List[Rand[A]]): Rand[List[A]] =
+    fs.foldRight(unit(List.empty[A])) { (r, acc) => map2(r, acc)(_ :: _) }
 
   def flatMap[A, B](f: Rand[A])(g: A => Rand[B]): Rand[B] = ???
 }
