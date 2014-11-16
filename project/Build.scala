@@ -27,6 +27,10 @@ object FPInScalaBuild extends Build {
     Project(id = "answers",
             base = file("answers"),
             settings = opts)
+  lazy val rolldie =
+    Project(id = "rolldie",
+      base = file("rolldie"),
+      settings = opts)
 
   def nio2check(): String = {
     val cls = "java.nio.channels.AsynchronousFileChannel"
