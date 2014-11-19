@@ -80,9 +80,9 @@ object Monoid {
       z <- gen
     } yield (x, y, z))(p =>
       m.op(p._1, m.op(p._2, p._3)) == m.op(m.op(p._1, p._2), p._3)) &&
-    // Identity
-    forAll(gen)((a: A) =>
-      m.op(a, m.zero) == a && m.op(m.zero, a) == a)
+      // Identity
+      forAll(gen)((a: A) =>
+        m.op(a, m.zero) == a && m.op(m.zero, a) == a)
 
   def concatenate[A](as: List[A], m: Monoid[A]): A =
     as.foldLeft(m.zero)(m.op)
@@ -143,7 +143,7 @@ object Monoid {
   }
 
   // we perform the mapping and the reducing both in parallel
-  def parFoldMap[A,B](v: IndexedSeq[A], m: Monoid[B])(f: A => B): Par[B] =
+  def parFoldMap[A, B](v: IndexedSeq[A], m: Monoid[B])(f: A => B): Par[B] =
     Par.parMap(v)(f).flatMap { bs =>
       foldMapV(bs, par(m))(b => Par.lazyUnit(b))
     }
@@ -181,29 +181,28 @@ object Monoid {
     }
   }
 
-  def productMonoid[A,B](A: Monoid[A], B: Monoid[B]): Monoid[(A, B)] =
+  def productMonoid[A, B](A: Monoid[A], B: Monoid[B]): Monoid[(A, B)] =
     new Monoid[(A, B)] {
       def op(x: (A, B), y: (A, B)) =
         (A.op(x._1, y._1), B.op(x._2, y._2))
       val zero = (A.zero, B.zero)
     }
 
-  def functionMonoid[A,B](B: Monoid[B]): Monoid[A => B] =
+  def functionMonoid[A, B](B: Monoid[B]): Monoid[A => B] =
     new Monoid[A => B] {
       def op(f: A => B, g: A => B) = a => B.op(f(a), g(a))
       val zero: A => B = a => B.zero
     }
 
-  def mapMergeMonoid[K,V](V: Monoid[V]): Monoid[Map[K, V]] =
+  def mapMergeMonoid[K, V](V: Monoid[V]): Monoid[Map[K, V]] =
     new Monoid[Map[K, V]] {
-      def zero = Map[K,V]()
+      def zero = Map[K, V]()
       def op(a: Map[K, V], b: Map[K, V]) =
-        (a.keySet ++ b.keySet).foldLeft(zero) { (acc,k) =>
+        (a.keySet ++ b.keySet).foldLeft(zero) { (acc, k) =>
           acc.updated(k, V.op(a.getOrElse(k, V.zero),
-                              b.getOrElse(k, V.zero)))
+            b.getOrElse(k, V.zero)))
         }
     }
-
 
   def bag[A](as: IndexedSeq[A]): Map[A, Int] =
     foldMapV(as, mapMergeMonoid[A, Int](intAddition))((a: A) => Map(a -> 1))
@@ -213,10 +212,10 @@ object Monoid {
 trait Foldable[F[_]] {
   import Monoid._
 
-  def foldRight[A,B](as: F[A])(z: B)(f: (A, B) => B): B =
+  def foldRight[A, B](as: F[A])(z: B)(f: (A, B) => B): B =
     foldMap(as)(f.curried)(endoMonoid[B])(z)
 
-  def foldLeft[A,B](as: F[A])(z: B)(f: (B, A) => B): B =
+  def foldLeft[A, B](as: F[A])(z: B)(f: (B, A) => B): B =
     foldMap(as)(a => (b: B) => f(b, a))(dual(endoMonoid[B]))(z)
 
   def foldMap[A, B](as: F[A])(f: A => B)(mb: Monoid[B]): B =

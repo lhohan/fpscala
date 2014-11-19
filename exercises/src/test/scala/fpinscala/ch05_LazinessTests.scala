@@ -210,5 +210,4 @@ class ch05_LazinessTests extends FunSuite {
     assertResult(true, "1 1 2 3 4, 1 2 3")(Stream(1, 2, 3, 4).hasSubSequence(Stream(1, 2, 3)))
   }
 
-
 }
