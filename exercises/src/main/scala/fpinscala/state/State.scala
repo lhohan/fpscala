@@ -94,7 +94,7 @@ object RNG {
     }
 
   def sequence[A](fs: List[Rand[A]]): Rand[List[A]] =
-    fs.foldRight(unit(List.empty[A])) { (r, acc) => map2(r, acc)(_ :: _)}
+    fs.foldRight(unit(List.empty[A])) { (r, acc) => map2(r, acc)(_ :: _) }
 
   def intsViaSequence(count: Int)(rng: RNG): (List[Int], RNG) = {
     val ris = List.fill(count)((r: RNG) => r.nextInt)
@@ -129,6 +129,7 @@ object RNG {
 }
 
 case class State[S, +A](run: S => (A, S)) {
+
   def map[B](f: A => B): State[S, B] =
     sys.error("todo")
 
@@ -149,6 +150,8 @@ case class Machine(locked: Boolean, candies: Int, coins: Int)
 
 object State {
   type Rand[A] = State[RNG, A]
+
+  def unit[S, A](a: A): State[S, A] = State[S, A](s => (a, s))
 
   def simulateMachine(inputs: List[Input]): State[Machine, (Int, Int)] = ???
 }

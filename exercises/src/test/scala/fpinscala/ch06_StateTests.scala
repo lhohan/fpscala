@@ -111,4 +111,8 @@ class ch06_StateTests extends FunSuite {
     //    rnds.take(10).foreach(x => println(x._1))
   }
 
+  test("state - unit") {
+
+  }
+
 }

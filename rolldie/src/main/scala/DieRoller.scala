@@ -27,6 +27,9 @@ object DieRoller {
     ((if (i < 0) -i else i) % n, r)
   }
 
-  def rollDie: RNG => (Int, RNG) = nonNegativeIntLessThan(6)
+  def rollDie(rng: RNG): (Int, RNG) = {
+    val (i, r) = rng.nextInt
+    ((if (i < 0) -i else i) % 6, r)
+  }
 
 }
