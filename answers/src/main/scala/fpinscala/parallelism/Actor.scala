@@ -1,7 +1,7 @@
 package fpinscala.parallelism
 
-import java.util.concurrent.atomic.{AtomicInteger, AtomicReference}
-import java.util.concurrent.{Callable,ExecutorService}
+import java.util.concurrent.atomic.{ AtomicInteger, AtomicReference }
+import java.util.concurrent.{ Callable, ExecutorService }
 import annotation.tailrec
 
 /*
@@ -36,7 +36,7 @@ import annotation.tailrec
  * @param strategy Execution strategy, for example, a strategy that is backed by an `ExecutorService`
  * @tparam A       The type of messages accepted by this actor.
  */
-final class Actor[A](strategy: Strategy)(handler: A => Unit, onError: Throwable => Unit = throw(_)) {
+final class Actor[A](strategy: Strategy)(handler: A => Unit, onError: Throwable => Unit = throw (_)) {
   self =>
 
   private val tail = new AtomicReference(new Node[A]())
@@ -98,7 +98,7 @@ private class Node[A](var a: A = null.asInstanceOf[A]) extends AtomicReference[N
 object Actor {
 
   /** Create an `Actor` backed by the given `ExecutorService`. */
-  def apply[A](es: ExecutorService)(handler: A => Unit, onError: Throwable => Unit = throw(_)): Actor[A] =
+  def apply[A](es: ExecutorService)(handler: A => Unit, onError: Throwable => Unit = throw (_)): Actor[A] =
     new Actor(Strategy.fromExecutorService(es))(handler, onError)
 }
 
@@ -120,7 +120,7 @@ object Strategy {
    */
   def fromExecutorService(es: ExecutorService): Strategy = new Strategy {
     def apply[A](a: => A): () => A = {
-      val f = es.submit { new Callable[A] { def call = a} }
+      val f = es.submit { new Callable[A] { def call = a } }
       () => f.get
     }
   }

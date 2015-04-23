@@ -78,7 +78,6 @@ object List {
   //tail in terms of drop
   def tail2[A](l: List[A]): List[A] = drop(l, 1)
 
-
   @tailrec
   def dropWhile[A](l: List[A], f: A => Boolean): List[A] = l match {
     case Cons(h, xs) if f(h) => dropWhile(xs, f)

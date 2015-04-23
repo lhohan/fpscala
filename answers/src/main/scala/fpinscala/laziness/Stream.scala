@@ -5,7 +5,7 @@ trait Stream[+A] {
 
   // The natural recursive solution
   def toListRecursive: List[A] = this match {
-    case Cons(h,t) => h() :: t().toListRecursive
+    case Cons(h, t) => h() :: t().toListRecursive
     case _ => List()
   }
 
@@ -19,7 +19,7 @@ trait Stream[+A] {
   def toList: List[A] = {
     @annotation.tailrec
     def go(s: Stream[A], acc: List[A]): List[A] = s match {
-      case Cons(h,t) => go(t(), h() :: acc)
+      case Cons(h, t) => go(t(), h() :: acc)
       case _ => acc
     }
     go(this, List()).reverse
@@ -35,7 +35,7 @@ trait Stream[+A] {
     val buf = new collection.mutable.ListBuffer[A]
     @annotation.tailrec
     def go(s: Stream[A]): List[A] = s match {
-      case Cons(h,t) =>
+      case Cons(h, t) =>
         buf += h()
         go(t())
       case _ => buf.toList
@@ -69,13 +69,13 @@ trait Stream[+A] {
   It's a common Scala style to write method calls without `.` notation, as in `t() takeWhile f`.
   */
   def takeWhile(f: A => Boolean): Stream[A] = this match {
-    case Cons(h,t) if f(h()) => cons(h(), t() takeWhile f)
+    case Cons(h, t) if f(h()) => cons(h(), t() takeWhile f)
     case _ => empty
   }
 
   def foldRight[B](z: => B)(f: (A, => B) => B): B = // The arrow `=>` in front of the argument type `B` means that the function `f` takes its second argument by name and may choose not to evaluate it.
     this match {
-      case Cons(h,t) => f(h(), t().foldRight(z)(f)) // If `f` doesn't evaluate its second argument, the recursion never occurs.
+      case Cons(h, t) => f(h(), t().foldRight(z)(f)) // If `f` doesn't evaluate its second argument, the recursion never occurs.
       case _ => z
     }
 
@@ -86,63 +86,62 @@ trait Stream[+A] {
   Since `&&` is non-strict in its second argument, this terminates the traversal as soon as a nonmatching element is found.
   */
   def forAll(f: A => Boolean): Boolean =
-    foldRight(true)((a,b) => f(a) && b)
+    foldRight(true)((a, b) => f(a) && b)
 
   def takeWhile_1(f: A => Boolean): Stream[A] =
-    foldRight(empty[A])((h,t) =>
-      if (f(h)) cons(h,t)
-      else      empty)
+    foldRight(empty[A])((h, t) =>
+      if (f(h)) cons(h, t)
+      else empty)
 
   def headOption: Option[A] =
-    foldRight(None: Option[A])((h,_) => Some(h))
+    foldRight(None: Option[A])((h, _) => Some(h))
 
   def map[B](f: A => B): Stream[B] =
-    foldRight(empty[B])((h,t) => cons(f(h), t))
+    foldRight(empty[B])((h, t) => cons(f(h), t))
 
   def filter(f: A => Boolean): Stream[A] =
-    foldRight(empty[A])((h,t) =>
+    foldRight(empty[A])((h, t) =>
       if (f(h)) cons(h, t)
       else t)
 
-  def append[B>:A](s: => Stream[B]): Stream[B] =
-    foldRight(s)((h,t) => cons(h,t))
+  def append[B >: A](s: => Stream[B]): Stream[B] =
+    foldRight(s)((h, t) => cons(h, t))
 
   def flatMap[B](f: A => Stream[B]): Stream[B] =
-    foldRight(empty[B])((h,t) => f(h) append t)
+    foldRight(empty[B])((h, t) => f(h) append t)
 
   def mapViaUnfold[B](f: A => B): Stream[B] =
     unfold(this) {
-      case Cons(h,t) => Some((f(h()), t()))
+      case Cons(h, t) => Some((f(h()), t()))
       case _ => None
     }
 
   def takeViaUnfold(n: Int): Stream[A] =
-    unfold((this,n)) {
-      case (Cons(h,t), 1) => Some((h(), (empty, 0)))
-      case (Cons(h,t), n) if n > 1 => Some((h(), (t(), n-1)))
+    unfold((this, n)) {
+      case (Cons(h, t), 1) => Some((h(), (empty, 0)))
+      case (Cons(h, t), n) if n > 1 => Some((h(), (t(), n - 1)))
       case _ => None
     }
 
   def takeWhileViaUnfold(f: A => Boolean): Stream[A] =
     unfold(this) {
-      case Cons(h,t) if f(h()) => Some((h(), t()))
+      case Cons(h, t) if f(h()) => Some((h(), t()))
       case _ => None
     }
 
-  def zipWith[B,C](s2: Stream[B])(f: (A,B) => C): Stream[C] =
+  def zipWith[B, C](s2: Stream[B])(f: (A, B) => C): Stream[C] =
     unfold((this, s2)) {
-      case (Cons(h1,t1), Cons(h2,t2)) =>
+      case (Cons(h1, t1), Cons(h2, t2)) =>
         Some((f(h1(), h2()), (t1(), t2())))
       case _ => None
     }
 
   // special case of `zip`
-  def zip[B](s2: Stream[B]): Stream[(A,B)] =
-    zipWith(s2)((_,_))
+  def zip[B](s2: Stream[B]): Stream[(A, B)] =
+    zipWith(s2)((_, _))
 
-
-  def zipAll[B](s2: Stream[B]): Stream[(Option[A],Option[B])] =
-    zipWithAll(s2)((_,_))
+  def zipAll[B](s2: Stream[B]): Stream[(Option[A], Option[B])] =
+    zipWithAll(s2)((_, _))
 
   def zipWithAll[B, C](s2: Stream[B])(f: (Option[A], Option[B]) => C): Stream[C] =
     Stream.unfold((this, s2)) {
@@ -157,7 +156,7 @@ trait Stream[+A] {
   */
   def startsWith[A](s: Stream[A]): Boolean =
     zipAll(s).takeWhile(!_._2.isEmpty) forAll {
-      case (h,h2) => h == h2
+      case (h, h2) => h == h2
     }
 
   /*
@@ -217,17 +216,17 @@ object Stream {
   }
 
   def from(n: Int): Stream[Int] =
-    cons(n, from(n+1))
+    cons(n, from(n + 1))
 
   val fibs = {
     def go(f0: Int, f1: Int): Stream[Int] =
-      cons(f0, go(f1, f0+f1))
+      cons(f0, go(f1, f0 + f1))
     go(0, 1)
   }
 
   def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] =
     f(z) match {
-      case Some((h,s)) => cons(h, unfold(s)(f))
+      case Some((h, s)) => cons(h, unfold(s)(f))
       case None => empty
     }
 
@@ -235,23 +234,23 @@ object Stream {
   The below two implementations use `fold` and `map` functions in the Option class to implement unfold, thereby doing away with the need to manually pattern match as in the above solution.
    */
   def unfoldViaFold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] =
-    f(z).fold(empty[A])((p: (A,S)) => cons(p._1,unfold(p._2)(f)))
+    f(z).fold(empty[A])((p: (A, S)) => cons(p._1, unfold(p._2)(f)))
 
   def unfoldViaMap[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] =
-    f(z).map((p: (A,S)) => cons(p._1,unfold(p._2)(f))).getOrElse(empty[A])
+    f(z).map((p: (A, S)) => cons(p._1, unfold(p._2)(f))).getOrElse(empty[A])
 
   /*
   Scala provides shorter syntax when the first action of a function literal is to match on an expression.  The function passed to `unfold` in `fibsViaUnfold` is equivalent to `p => p match { case (f0,f1) => ... }`, but we avoid having to choose a name for `p`, only to pattern match on it.
   */
   val fibsViaUnfold =
-    unfold((0,1)) { case (f0,f1) => Some((f0,(f1,f0+f1))) }
+    unfold((0, 1)) { case (f0, f1) => Some((f0, (f1, f0 + f1))) }
 
   def fromViaUnfold(n: Int) =
-    unfold(n)(n => Some((n,n+1)))
+    unfold(n)(n => Some((n, n + 1)))
 
   def constantViaUnfold[A](a: A) =
-    unfold(a)(_ => Some((a,a)))
+    unfold(a)(_ => Some((a, a)))
 
   // could also of course be implemented as constant(1)
-  val onesViaUnfold = unfold(1)(_ => Some((1,1)))
+  val onesViaUnfold = unfold(1)(_ => Some((1, 1)))
 }
