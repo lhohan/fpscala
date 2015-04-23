@@ -55,7 +55,7 @@ object MyModule {
 
   // This definition and `formatAbs` are very similar..
   private def formatFactorial(n: Int) = {
-    val msg = "The absolute value of %d is %d."
+    val msg = "The factorial of %d is %d."
     msg.format(n, factorial(n))
   }
 
@@ -76,6 +76,17 @@ object FormatAbsAndFactorial {
   def main(args: Array[String]): Unit = {
     println(formatResult("absolute value", -42, abs))
     println(formatResult("factorial", 7, factorial))
+  }
+}
+
+object TestFib {
+
+  import MyModule._
+
+  // test implementation of `fib`
+  def main(args: Array[String]): Unit = {
+    println("Expected: 0, 1, 1, 2, 3, 5, 8")
+    println("Actual:   %d, %d, %d, %d, %d, %d, %d".format(fib(0), fib(1), fib(2), fib(3), fib(4), fib(5), fib(6)))
   }
 }
 

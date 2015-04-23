@@ -1,6 +1,7 @@
 package fpinscala.errorhandling
 
-import scala.{ Option => _, Either => _, _ } // hide std library `Option` and `Either`, since we are writing our own in this chapter
+//hide std library `Option` and `Either`, since we are writing our own in this chapter
+import scala.{Option => _, Either => _, _}
 
 sealed trait Option[+A] {
   def map[B](f: A => B): Option[B] = this match {
@@ -8,7 +9,7 @@ sealed trait Option[+A] {
     case Some(a) => Some(f(a))
   }
 
-  def getOrElse[B >: A](default: => B): B = this match {
+  def getOrElse[B>:A](default: => B): B = this match {
     case None => default
     case Some(a) => a
   }
@@ -24,13 +25,13 @@ sealed trait Option[+A] {
     case Some(a) => f(a)
   }
 
-  def orElse[B >: A](ob: => Option[B]): Option[B] =
+  def orElse[B>:A](ob: => Option[B]): Option[B] =
     this map (Some(_)) getOrElse ob
 
   /*
-  Again, we can implement this with explicit pattern matching. 
+  Again, we can implement this with explicit pattern matching.
   */
-  def orElse_1[B >: A](ob: => Option[B]): Option[B] = this match {
+  def orElse_1[B>:A](ob: => Option[B]): Option[B] = this match {
     case None => ob
     case _ => this
   }
@@ -50,18 +51,24 @@ case object None extends Option[Nothing]
 
 object Option {
   def failingFn(i: Int): Int = {
-    val y: Int = throw new Exception("fail!") // `val y: Int = ...` declares `y` as having type `Int`, and sets it equal to the right hand side of the `=`.
+    // `val y: Int = ...` declares `y` as having type `Int`, and sets it equal to the right hand side of the `=`.
+    val y: Int = throw new Exception("fail!")
     try {
       val x = 42 + 5
       x + y
-    } catch { case e: Exception => 43 } // A `catch` block is just a pattern matching block like the ones we've seen. `case e: Exception` is a pattern that matches any `Exception`, and it binds this value to the identifier `e`. The match returns the value 43.
+    }
+    // A `catch` block is just a pattern matching block like the ones we've seen. `case e: Exception` is a pattern
+    // that matches any `Exception`, and it binds this value to the identifier `e`. The match returns the value 43.
+    catch { case e: Exception => 43 }
   }
 
   def failingFn2(i: Int): Int = {
     try {
       val x = 42 + 5
-      x + ((throw new Exception("fail!")): Int) // A thrown Exception can be given any type; here we're annotating it with the type `Int`
-    } catch { case e: Exception => 43 }
+      // A thrown Exception can be given any type; here we're annotating it with the type `Int`
+      x + ((throw new Exception("fail!")): Int)
+    }
+    catch { case e: Exception => 43 }
   }
 
   def mean(xs: Seq[Double]): Option[Double] =
@@ -71,9 +78,9 @@ object Option {
   def variance(xs: Seq[Double]): Option[Double] =
     mean(xs) flatMap (m => mean(xs.map(x => math.pow(x - m, 2))))
 
-  // a bit later in the chapter we'll learn nicer syntax for 
+  // a bit later in the chapter we'll learn nicer syntax for
   // writing functions like this
-  def map2[A, B, C](a: Option[A], b: Option[B])(f: (A, B) => C): Option[C] =
+  def map2[A,B,C](a: Option[A], b: Option[B])(f: (A, B) => C): Option[C] =
     a flatMap (aa => b map (bb => f(aa, bb)))
 
   /*
@@ -85,17 +92,22 @@ object Option {
       case h :: t => h flatMap (hh => sequence(t) map (hh :: _))
     }
   /*
-  It can also be implemented using `foldRight` and `map2`. The type annotation on `foldRight` is needed here; otherwise Scala wrongly infers the result type of the fold as `Some[Nil.type]` and reports a type error (try it!). This is an unfortunate consequence of Scala using subtyping to encode algebraic data types.
+  It can also be implemented using `foldRight` and `map2`. The type annotation on `foldRight` is needed here; otherwise
+  Scala wrongly infers the result type of the fold as `Some[Nil.type]` and reports a type error (try it!). This is an
+  unfortunate consequence of Scala using subtyping to encode algebraic data types.
   */
   def sequence_1[A](a: List[Option[A]]): Option[List[A]] =
-    a.foldRight[Option[List[A]]](Some(Nil))((x, y) => map2(x, y)(_ :: _))
+    a.foldRight[Option[List[A]]](Some(Nil))((x,y) => map2(x,y)(_ :: _))
 
   def traverse[A, B](a: List[A])(f: A => Option[B]): Option[List[B]] =
     a match {
       case Nil => Some(Nil)
-      case h :: t => map2(f(h), traverse(t)(f))(_ :: _)
+      case h::t => map2(f(h), traverse(t)(f))(_ :: _)
     }
 
   def traverse_1[A, B](a: List[A])(f: A => Option[B]): Option[List[B]] =
-    a.foldRight[Option[List[B]]](Some(Nil))((h, t) => map2(f(h), t)(_ :: _))
+    a.foldRight[Option[List[B]]](Some(Nil))((h,t) => map2(f(h),t)(_ :: _))
+
+  def sequenceViaTraverse[A](a: List[Option[A]]): Option[List[A]] =
+    traverse(a)(x => x)
 }
