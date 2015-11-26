@@ -1,8 +1,7 @@
 Note
 ===
 
-This is a copy of my own fork of the below containing **tests** and (my) solutions to the exercises of the repository of the book Functional Programming in Scala.
-
+This is a copy of Functional Programming in Scala repository containing **tests** and (my) solutions to the exercises.
 
 
 Original README of the book:
