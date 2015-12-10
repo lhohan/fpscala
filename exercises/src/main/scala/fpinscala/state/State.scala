@@ -164,5 +164,8 @@ object State {
 
   def unit[S, A](a: A): State[S, A] = State[S, A](s => (a, s))
 
+  def sequence[S, A](ss: List[State[S, A]]): State[S, List[A]] =
+    ss.foldRight(unit[S, List[A]](List())) { (s, acc) => s.map2(acc)(_ :: _) }
+
   def simulateMachine(inputs: List[Input]): State[Machine, (Int, Int)] = ???
 }
