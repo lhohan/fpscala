@@ -1,4 +1,4 @@
-import fpinscala.state.RNG
+import fpinscala.state._
 import org.scalatest.FunSuite
 
 /**
@@ -113,6 +113,19 @@ class ch06_StateTests extends FunSuite {
 
   test("state - unit") {
 
+  }
+
+  test("candy dispenser: basic operation") {
+    import State._
+    val ((coins, candies), machine) = simulateMachine(List(Coin, Turn)).run(Machine(locked = false, 1, 0))
+    assertResult(0)(coins)
+    assertResult(1)(candies)
+  }
+
+  test("candy dispenser: insert coin in locked machine if candy left should unlock") {
+    import State._
+    val (_, machine) = simulateMachine(List(Coin, Turn)).run(Machine(locked = true, 1, 0))
+    assertResult(false)(machine.locked)
   }
 
 }
