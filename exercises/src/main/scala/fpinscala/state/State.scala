@@ -185,30 +185,34 @@ object CandyMachine {
 
   def simulateMachine(inputs: List[Input]): State[Machine, (Int, Int)] = {
 
-    def toNext(machine: Machine, input: Input): ((Int, Int), Machine) = {
-      (input, machine) match {
-        case (_, m: Machine) if m.candies <= 0 => ((machine.coins, machine.candies), machine)
-        case (Coin, m: Machine) if m.candies > 0 && m.locked =>
-          ((machine.coins + 1, machine.candies), machine.copy(coins = machine.coins + 1, locked = false))
-        case (Turn, m: Machine) if !m.locked => ((machine.coins, machine.candies - 1), machine.copy(candies = machine.candies - 1, locked = true))
-        case (Turn, m: Machine) if m.locked => ((machine.coins, machine.candies), machine)
-        case (Coin, m: Machine) if !m.locked => ((machine.coins, machine.candies), machine)
+    def doNothing(m: Machine) = ((m.coins, m.candies), m)
+    def update(m: Machine, input: Input): ((Int, Int), Machine) = {
+      if (m.candies <= 0) {
+        doNothing(m)
+      } else {
+        (input, m.locked) match {
+          case (Turn, false) =>
+            val updatedCandies = m.candies - 1
+            ((m.coins, updatedCandies), m.copy(candies = updatedCandies, locked = true))
+          case (Coin, true) =>
+            val updatedCoins = m.coins + 1
+            ((updatedCoins, m.candies), m.copy(coins = updatedCoins, locked = false))
+          case _ => doNothing(m)
+        }
       }
     }
 
-    def f: Input => State[Machine, (Int, Int)] = { input =>
-      State {
-        machine =>
-          toNext(machine, input)
+    def updateState: Input => State[Machine, (Int, Int)] = { input =>
+      State { machine =>
+        update(machine, input)
       }
     }
 
-    val inputsToState: State[Machine, List[(Int, Int)]] = sequence(inputs.map(input => f(input)))
+    val inputsToState: State[Machine, List[(Int, Int)]] = sequence(inputs.map(input => updateState(input)))
     for {
       _ <- inputsToState
       s <- get
     } yield (s.coins, s.candies)
-
   }
 
 }
