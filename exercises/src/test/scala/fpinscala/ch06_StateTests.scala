@@ -111,22 +111,18 @@ class ch06_StateTests extends FunSuite {
     //    rnds.take(10).foreach(x => println(x._1))
   }
 
-  test("state - unit") {
-
-  }
+  import CandyMachine._
 
   test("candy dispenser: basic operation") {
-    import State._
     val ((coins, candies), machine) = simulateMachine(List(Coin, Turn)).run(Machine(locked = false, 1, 0))
     assertResult(0)(coins)
-    assertResult(1)(candies)
+    assertResult(0)(candies)
   }
 
-  test("candy dispenser: insert coin in locked machine if candy left should unlock") {
-    import State._
+  test("A candy dispenser with 10 coins, 5 candies and inserting a coin and turning 4 times should give 14 coins and 1 candy left") {
     val ((coins, candies), machine) =
-      simulateMachine(List(Coin, Turn, Coin, Turn, Coin, Turn, Coin, Turn)).run(Machine(locked = true, 10, 5))
-    assertResult(false)(machine.locked)
+      simulateMachine(List(Coin, Turn, Coin, Turn, Coin, Turn, Coin, Turn)).run(Machine(locked = true, 5, 10))
+    assertResult(true)(machine.locked)
     assertResult(1)(candies)
     assertResult(14)(coins)
   }

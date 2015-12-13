@@ -1,6 +1,6 @@
 package fpinscala
 
-import fpinscala.state.State._
+import fpinscala.state.CandyMachine._
 import fpinscala.state.{ Coin, Input, Machine, Turn }
 import org.scalacheck.Arbitrary._
 import org.scalacheck.Prop.{ BooleanOperators, forAll }
@@ -18,7 +18,7 @@ class ch06_CandyDispenserSpecs extends Properties("Candy dispenser machine") {
 
       val ((_, resultCandies), resultMachine) = simulateMachine(List(Turn)).run(machine)
       val startCandies = machine.candies
-      (resultCandies == startCandies - 1) :| "result # candies not one less than start candies" &&
+      (resultCandies == startCandies - 1) :| s"result # candies ($resultCandies) not one less than start candies ($startCandies)" &&
         resultMachine.locked :| "machine not locked"
     }
   }
@@ -27,8 +27,8 @@ class ch06_CandyDispenserSpecs extends Properties("Candy dispenser machine") {
     machine.locked ==> {
 
       val ((coins, candies), resultMachine) = simulateMachine(List(Turn)).run(machine)
-      (machine.candies == candies) :| "coins not equal" &&
-        (machine.coins == coins) :| "candies not equal" &&
+      (machine.candies == candies) :| "candies not equal" &&
+        (machine.coins == coins) :| "coins not equal" &&
         (machine == resultMachine) :| "machines not equal"
     }
   }
@@ -38,8 +38,8 @@ class ch06_CandyDispenserSpecs extends Properties("Candy dispenser machine") {
 
       val ((coins, candies), resultMachine) = simulateMachine(List(Coin)).run(machine)
 
-      (machine.candies == candies) :| "coins not equal" &&
-        (machine.coins == coins) :| "candies not equal" &&
+      (machine.candies == candies) :| "candies not equal" &&
+        (machine.coins == coins) :| "coins not equal" &&
         (machine == resultMachine) :| "machines not equal"
     }
   }
@@ -49,15 +49,15 @@ class ch06_CandyDispenserSpecs extends Properties("Candy dispenser machine") {
       (machine.candies <= 0) ==> {
 
         val ((coins, candies), resultMachine) = simulateMachine(List(input)).run(machine)
-        (machine.candies == candies) :| "coins not equal" &&
-          (machine.coins == coins) :| "candies not equal" &&
+        (machine.candies == candies) :| "candies not equal" &&
+          (machine.coins == coins) :| "coins not equal" &&
           (machine == resultMachine) :| "machines not equal"
       }
   }
 
   // If we want 0 candies for example, just putting a condition on generated machines will require too many generations
   // to actually satisfy the condition. So here we create a generator the is biased to zero.
-  lazy val moreFalsesThanTrues: Gen[Boolean] = Gen.frequency((4, false), (1, true))
+  lazy val moreFalsesThanTrues: Gen[Boolean] = Gen.frequency((2, false), (1, true))
   lazy val zeroBiased: Gen[Int] = moreFalsesThanTrues.flatMap { b =>
     if (b) {
       Gen.const(0)

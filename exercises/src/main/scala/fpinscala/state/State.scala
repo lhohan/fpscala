@@ -168,29 +168,47 @@ object State {
   def sequence[S, A](ss: List[State[S, A]]): State[S, List[A]] =
     ss.foldRight(unit[S, List[A]](List())) { (s, acc) => s.map2(acc)(_ :: _) }
 
-  //  def get[S]: State[S, S] = State(s => (s, s))
-  //
-  //  def set[S](s: S): State[S, Unit] = State(_ => ((), s))
-  //
-  //  def modify[S](f: S => S): State[S, Unit] = for {
-  //    s <- get
-  //    _ <- set(f(s))
-  //  } yield ()
+  def get[S]: State[S, S] = State(s => (s, s))
+
+  def set[S](s: S): State[S, Unit] = State(_ => ((), s))
+
+  def modify[S](f: S => S): State[S, Unit] = for {
+    s <- get
+    _ <- set(f(s))
+  } yield ()
+
+}
+
+object CandyMachine {
+
+  import State._
 
   def simulateMachine(inputs: List[Input]): State[Machine, (Int, Int)] = {
 
-    State { machine =>
-      inputs match {
-        case Nil => ((machine.coins, machine.coins), machine)
-        case input :: more => (input, machine) match {
-          case (_, m: Machine) if m.candies <= 0 => ((machine.coins, machine.candies), machine)
-          case (Coin, m: Machine) if m.candies > 0 && m.locked => ((machine.coins, machine.candies), machine.copy(locked = false))
-          case (Turn, m: Machine) if !m.locked => ((machine.coins, machine.candies - 1), machine.copy(locked = true))
-          case (Turn, m: Machine) if m.locked => ((machine.coins, machine.candies), machine)
-          case (Coin, m: Machine) if !m.locked => ((machine.coins, machine.candies), machine)
-        }
+    def toNext(machine: Machine, input: Input): ((Int, Int), Machine) = {
+      (input, machine) match {
+        case (_, m: Machine) if m.candies <= 0 => ((machine.coins, machine.candies), machine)
+        case (Coin, m: Machine) if m.candies > 0 && m.locked =>
+          ((machine.coins + 1, machine.candies), machine.copy(coins = machine.coins + 1, locked = false))
+        case (Turn, m: Machine) if !m.locked => ((machine.coins, machine.candies - 1), machine.copy(candies = machine.candies - 1, locked = true))
+        case (Turn, m: Machine) if m.locked => ((machine.coins, machine.candies), machine)
+        case (Coin, m: Machine) if !m.locked => ((machine.coins, machine.candies), machine)
       }
-
     }
+
+    def f: Input => State[Machine, (Int, Int)] = { input =>
+      State {
+        machine =>
+          toNext(machine, input)
+      }
+    }
+
+    val inputsToState: State[Machine, List[(Int, Int)]] = sequence(inputs.map(input => f(input)))
+    for {
+      _ <- inputsToState
+      s <- get
+    } yield (s.coins, s.candies)
+
   }
+
 }

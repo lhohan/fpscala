@@ -4,7 +4,8 @@ package applicative
 import monads.Functor
 import state._
 import State._
-import StateUtil._ // defined at bottom of this file
+// TODO : Hans keep import ? : commented out after implementing State in exercises.
+//import StateUtil._ // defined at bottom of this file
 import monoids._
 import language.higherKinds
 import language.implicitConversions
