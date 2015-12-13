@@ -183,8 +183,11 @@ object State {
       inputs match {
         case Nil => ((machine.coins, machine.coins), machine)
         case input :: more => (input, machine) match {
-          case (Coin, m: Machine) if m.candies > 0 => ((machine.coins, machine.candies), machine.copy(locked = false))
-          case _ => ((1, 0), machine)
+          case (_, m: Machine) if m.candies <= 0 => ((machine.coins, machine.candies), machine)
+          case (Coin, m: Machine) if m.candies > 0 && m.locked => ((machine.coins, machine.candies), machine.copy(locked = false))
+          case (Turn, m: Machine) if !m.locked => ((machine.coins, machine.candies - 1), machine.copy(locked = true))
+          case (Turn, m: Machine) if m.locked => ((machine.coins, machine.candies), machine)
+          case (Coin, m: Machine) if !m.locked => ((machine.coins, machine.candies), machine)
         }
       }
 

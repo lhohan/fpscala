@@ -102,7 +102,7 @@ class ch06_StateTests extends FunSuite {
     //    is.foreach(i => println(i))
   }
 
-  test("non neg les than") {
+  test("non neg less than") {
     import fpinscala.state.RNG._
 
     val (is, _) = nonNegativeLessThan(5)(Simple(37))
@@ -124,8 +124,11 @@ class ch06_StateTests extends FunSuite {
 
   test("candy dispenser: insert coin in locked machine if candy left should unlock") {
     import State._
-    val (_, machine) = simulateMachine(List(Coin, Turn)).run(Machine(locked = true, 1, 0))
+    val ((coins, candies), machine) =
+      simulateMachine(List(Coin, Turn, Coin, Turn, Coin, Turn, Coin, Turn)).run(Machine(locked = true, 10, 5))
     assertResult(false)(machine.locked)
+    assertResult(1)(candies)
+    assertResult(14)(coins)
   }
 
 }
