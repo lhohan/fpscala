@@ -185,10 +185,10 @@ object CandyMachine {
 
   def simulateMachine(inputs: List[Input]): State[Machine, (Int, Int)] = {
 
-    def doNothing(m: Machine) = ((m.coins, m.candies), m)
+    def returnM(m: Machine) = ((m.coins, m.candies), m)
     def update(m: Machine, input: Input): ((Int, Int), Machine) = {
       if (m.candies <= 0) {
-        doNothing(m)
+        returnM(m)
       } else {
         (input, m.locked) match {
           case (Turn, false) =>
@@ -197,7 +197,7 @@ object CandyMachine {
           case (Coin, true) =>
             val updatedCoins = m.coins + 1
             ((updatedCoins, m.candies), m.copy(coins = updatedCoins, locked = false))
-          case _ => doNothing(m)
+          case _ => returnM(m)
         }
       }
     }
@@ -209,10 +209,18 @@ object CandyMachine {
     }
 
     val inputsToState: State[Machine, List[(Int, Int)]] = sequence(inputs.map(input => updateState(input)))
-    for {
-      _ <- inputsToState
-      s <- get
-    } yield (s.coins, s.candies)
+    inputsToState.map(_.last)
+
+    // this works too:
+    //    for {
+    //      _ <- inputsToState
+    //      s <- get
+    //    } yield (s.coins, s.candies)
+
+    // this does not:
+    //    val states: List[State[Machine, (Int, Int)]] = inputs.map(input => updateState(input))
+    //    states.last
+
   }
 
 }
