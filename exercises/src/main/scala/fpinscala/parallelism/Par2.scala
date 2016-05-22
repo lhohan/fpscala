@@ -133,8 +133,11 @@ object Examples2 {
 
   def parSumExec(ints: IndexedSeq[Int]): Par[Int] = parExec(0)((i: Int) => i)(ints)(_ + _)
 
-  def parMaxExec(ints: IndexedSeq[Int]): Par[Option[Int]] = parExec(None: Option[Int])((i: Int) => Option(i))(ints)(
-    (ma, mb) => ma.flatMap(a => mb.map(b => a max b))
-  )
+  def parMaxExec(ints: IndexedSeq[Int]): Par[Option[Int]] = {
+    val z = None: Option[Int]
+    val f = (i: Int) => Option(i)
+    val combine: (Option[Int], Option[Int]) => Option[Int] = (ma, mb) => ma.flatMap(a => mb.map(b => a max b))
+    parExec(z)(f)(ints)(combine)
+  }
 
 }
