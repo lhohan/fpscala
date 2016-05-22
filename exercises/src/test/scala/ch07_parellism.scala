@@ -55,4 +55,15 @@ class Par2Tests extends FunSuite with Timeouts {
     assert(None === Await.result(wordCount(Nil).run, 100 millis))
   }
 
+  test("map3") {
+    implicit val ec = scala.concurrent.ExecutionContext.global
+
+    val pa = unit("a")
+    val pb = unit("b")
+    val pc = unit("c")
+    val p: Par[String] = pa.map3(pb, pc) { (a, b, c) => println("running map3"); a + b + c }
+
+    assert("abc" === Await.result(p.run, 100 millis))
+  }
+
 }

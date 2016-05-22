@@ -81,6 +81,11 @@ object Par2 {
       }
     }
 
+    def map3[B, C, D](b: Par[B], c: Par[C])(f: (A, B, C) => D): Par[D] = { implicit ec =>
+      val x: Par[C => D] = a.map2(b) { (a_, b_) => f(a_, b_, _) }
+      x.map2(c)((fcd, d) => fcd(d)).run
+    }
+
     //def zip[B](b: Par[B]): Par[(A,B)] = p.map2(b)((_,_))
     def run(implicit ec: ExecutionContext): Future[A] = a(ec)
 
