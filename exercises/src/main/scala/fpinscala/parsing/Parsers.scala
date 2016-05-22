@@ -127,7 +127,7 @@ case class Location(input: String, offset: Int = 0) {
 }
 
 case class ParseError(
-    stack: List[(Location, String)] = List(),
+  stack: List[(Location, String)] = List(),
     otherFailures: List[ParseError] = List()
 ) {
 }

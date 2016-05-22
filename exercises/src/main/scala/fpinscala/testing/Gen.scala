@@ -7,8 +7,6 @@ import fpinscala.parallelism.Par.Par
 import Gen._
 import Prop._
 import java.util.concurrent.{Executors, ExecutorService}
-import language.postfixOps
-import language.implicitConversions
 
 case class Prop(run: (MaxSize, TestCases, RNG) => Result) {
   def &&(p: Prop) = Prop {
