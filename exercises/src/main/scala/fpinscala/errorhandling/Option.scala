@@ -1,6 +1,6 @@
 package fpinscala.errorhandling
 
-import scala.{ Either => _, Option => _, Some => _ }
+import scala.{Either => _, Option => _, Some => _}
 
 // hide std library `Option`, `Some` and `Either`, since we are writing our own in this chapter
 
@@ -59,8 +59,7 @@ object Option {
 
   def variance(xs: Seq[Double]): Option[Double] = {
     mean(xs).flatMap(m =>
-      mean(xs.map(x => math.pow(x - m, 2)))
-    )
+      mean(xs.map(x => math.pow(x - m, 2))))
   }
 
   def map2[A, B, C](a: Option[A], b: Option[B])(f: (A, B) => C): Option[C] = a.flatMap { a_ =>

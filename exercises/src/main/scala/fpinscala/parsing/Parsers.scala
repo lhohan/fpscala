@@ -28,6 +28,8 @@ case class Location(input: String, offset: Int = 0) {
     else ""
 }
 
-case class ParseError(stack: List[(Location, String)] = List(),
-    otherFailures: List[ParseError] = List()) {
+case class ParseError(
+  stack: List[(Location, String)] = List(),
+    otherFailures: List[ParseError] = List()
+) {
 }
