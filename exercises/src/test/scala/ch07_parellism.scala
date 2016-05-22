@@ -2,6 +2,8 @@ import org.scalatest._
 import org.scalatest.concurrent.Timeouts
 import org.scalatest.time.Span
 
+import scala.language.postfixOps
+
 class Par2Tests extends FunSuite with Timeouts {
   import fpinscala.parallelism.Par2._
   import scala.concurrent.duration._
@@ -42,6 +44,15 @@ class Par2Tests extends FunSuite with Timeouts {
     val p = parMaxExec(Vector(100, 200, 300))
     assert(Some(300) === Await.result(p.run, 100 millis))
     assert(None === Await.result(parMaxExec(Vector()).run, 100 millis))
+  }
+
+  test("wordCount") {
+    implicit val ec = scala.concurrent.ExecutionContext.global
+    import fpinscala.parallelism.Examples2._
+
+    val p = wordCount(List("This is what you choose.", "You could be good today.", "Instead you choose tomorrow.", "Marcus Aurelius"))
+    assert(Some(16) === Await.result(p.run, 100 millis))
+    assert(None === Await.result(wordCount(Nil).run, 100 millis))
   }
 
 }

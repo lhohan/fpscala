@@ -11,17 +11,6 @@ object Par2 {
 
   def run[A](a: Par[A])(implicit ec: ExecutionContext): Future[A] = a(ec)
 
-  def map2[A, B, C](a: Par[A], b: Par[B])(f: (A, B) => C): Par[C] = { implicit ec =>
-    val fa = run(a)
-    val fb = run(b)
-    for {
-      a1 <- fa
-      b1 <- fb
-    } yield {
-      f(a1, b1)
-    }
-  }
-
   def fork[A](a: => Par[A]): Par[A] = implicit ec => Future(a).flatMap(_.run)
 
   def lazyUnit[A](a: => A): Par[A] = fork(unit(a))
@@ -29,10 +18,10 @@ object Par2 {
   def asyncF[A, B](f: A => B): A => Par[B] = a => lazyUnit(f(a))
 
   def map[A, B](pa: Par[A])(f: A => B): Par[B] =
-    map2(pa, unit(()))((a, _) => f(a))
+    pa.map2(unit(()))((a, _) => f(a))
 
   def sequence[A](ps: List[Par[A]]): Par[List[A]] =
-    ps.foldRight(unit(List.empty[A]))((p, acc) => map2(p, acc)(_ :: _))
+    ps.foldRight(unit(List.empty[A]))((p, acc) => p.map2(acc)(_ :: _))
 
   def flatMap[A, B](pa: Par[A])(f: A => Par[B]): Par[B] = { implicit ec =>
     val fa: Future[A] = pa(ec)
@@ -130,6 +119,14 @@ object Examples2 {
       val pr: Par[B] = fork(parExec(z)(f)(r)(comb))
       pl.map2(pr) { (a, b) => println(s"exeuting $a and $b"); comb(a, b) }
     }
+
+  type Paragraph = String
+  def wordCount(ps: List[Paragraph]): Par[Option[Int]] = {
+    val z = None: Option[Int]
+    val f = (p: Paragraph) => Option(p.split(" ").length)
+    val combine: (Option[Int], Option[Int]) => Option[Int] = (ma, mb) => ma.flatMap(a => mb.map(b => a + b))
+    parExec(z)(f)(ps.toVector)(combine)
+  }
 
   def parSumExec(ints: IndexedSeq[Int]): Par[Int] = parExec(0)((i: Int) => i)(ints)(_ + _)
 
