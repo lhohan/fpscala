@@ -60,6 +60,19 @@ object Par2 {
     parMap(as)(a => if (f(a)) Some(a) else None).map(_.flatten)
   }
 
+  /**
+    * Ex. 7.7
+    *
+    * map(y)(id) == y
+    * So:
+    * map(map(y)(id'))(id) == map(y)(id') // substitute y on both sides
+    * map(map(y)(g))(id) == map(y)(g)     // substitute 'corresponding' (?) ids by g
+    * map(map(y)(g))(id) == map(y)(id compose g) // definition of id
+    * map(map(y)(g))(f) == map(y)(f compose g)  // q.e.d.?
+    *
+    *
+    */
+
   /* Gives us infix syntax for `Par`. */
   //implicit def toParOps[A](p: Par[A]): ParOps[A] = new ParOps(p)
 
