@@ -1,8 +1,5 @@
 
 
-/**
- * Created by hans on 16/11/14.
- */
 object DieRoller {
 
   // The key to recovering referential transparency: make state updates explicit.
@@ -11,7 +8,7 @@ object DieRoller {
     def nextInt: (Int, RNG)
   }
 
-  // Implementation of RNG that will do the trick. That's all we need for now. Detail in the book.
+  // Implementation of RNG that will do the trick. That's all we need for now. Details in the book.
   case class Simple(seed: Long) extends RNG {
     def nextInt: (Int, RNG) = {
       val newSeed = (seed * 0x5DEECE66DL + 0xBL) & 0xFFFFFFFFFFFFL // `&` is bitwise AND. We use the current seed to generate a new seed.
@@ -21,15 +18,12 @@ object DieRoller {
     }
   }
 
-  // keeping it simple, book's impl. is different but more complex
+  // Keeping it simple, the book's impl. is different but more complex.
   def nonNegativeIntLessThan(n: Int)(rng: RNG): (Int, RNG) = {
     val (i, r) = rng.nextInt
     ((if (i < 0) -i else i) % n, r)
   }
 
-  def rollDie(rng: RNG): (Int, RNG) = {
-    val (i, r) = rng.nextInt
-    ((if (i < 0) -i else i) % 6, r)
-  }
+  def rollDie(rng: RNG): (Int, RNG) = nonNegativeIntLessThan(6)(rng)
 
 }

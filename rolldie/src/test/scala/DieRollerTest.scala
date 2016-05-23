@@ -9,20 +9,11 @@ class DieRollerTest extends FunSuite {
 
   test("roll should be in range 1 to 6") {
 
-    def rolls(n: Int)(rng: RNG): (List[Int], RNG) = {
-      def loop(i: Int, r: RNG, acc: List[Int]): (List[Int], RNG) = i match {
-        case 0 => (acc, r)
-        case _ =>
-          val (next, nextRng) = rollDie(rng)
-          loop(i - 1, nextRng, next :: acc)
-      }
-      loop(n, rng, List())
-    }
+    // Check reproducible result reported by the property-based test.
+    // The seed may be different.
+    val dieRollResults = rollDie(Simple(-2147483648))
+    val result = dieRollResults._1
 
-    val _3Rolls = rolls(3)(Simple(5))._1
-
-    _3Rolls.foreach { roll =>
-      assert(roll > 0 && roll <= 6, s"error: $roll")
-    }
+    assert(result >= 1 && result <= 6, s"error: $result")
   }
 }
