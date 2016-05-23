@@ -13,6 +13,8 @@ object Par2 {
 
   def fork[A](a: => Par[A]): Par[A] = implicit ec => Future(a).flatMap(_.run)
 
+  def delay[A](fa: => Par[A]): Par[A] = ec => fa(ec)
+
   def lazyUnit[A](a: => A): Par[A] = fork(unit(a))
 
   def asyncF[A, B](f: A => B): A => Par[B] = a => lazyUnit(f(a))
