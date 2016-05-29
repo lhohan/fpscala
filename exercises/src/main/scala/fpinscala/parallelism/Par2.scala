@@ -4,6 +4,8 @@ object Par2 {
 
   import scala.concurrent._
   import ExecutionContext.Implicits.global
+  import scala.concurrent.duration._
+  import scala.language.postfixOps
 
   type Par[A] = ExecutionContext => Future[A]
 
@@ -63,17 +65,73 @@ object Par2 {
   }
 
   /**
-    * Ex. 7.7
-    *
-    * map(y)(id) == y
-    * So:
-    * map(map(y)(id'))(id) == map(y)(id') // substitute y on both sides
-    * map(map(y)(g))(id) == map(y)(g)     // substitute 'corresponding' (?) ids by g
-    * map(map(y)(g))(id) == map(y)(id compose g) // definition of id
-    * map(map(y)(g))(f) == map(y)(f compose g)  // q.e.d.?
-    *
-    *
-    */
+   * Below some implementations explicitly wait to be more analogous
+   * to the book. Could be a direct flatMap on future but kind of
+   * gives away the narrative in the book which I think is nice.
+   */
+  def choice[A](p: Par[Boolean])(t: Par[A], f: Par[A]): Par[A] = {
+    ec =>
+      val fb: Future[Boolean] = p.run
+      val b = Await.result(fb, 15 seconds)
+      if (b) t(ec) else f(ec)
+  }
+
+  // Ex. 7.11
+  def choiceN[A](n: Par[Int])(choices: List[Par[A]]): Par[A] = {
+    ec =>
+      val fb: Future[Int] = n.run
+      val i = Await.result(fb, 15 seconds)
+      choices(i)(ec)
+  }
+
+  def choice_choiceN[A](p: Par[Boolean])(t: Par[A], f: Par[A]): Par[A] = {
+    choiceN(p.map(p => if (p) 0 else 1))(List(t, f))
+  }
+
+  def choiceMap[K, V](p: Par[K])(ps: Map[K, Par[V]]): Par[V] = {
+    ec =>
+      val fk = p.run
+      val k = Await.result(fk, 15 seconds)
+      ps(k)(ec)
+  }
+
+  // Ex. 7.13
+  def chooser[A, B](pa: Par[A])(choices: A => Par[B]): Par[B] = {
+    ec =>
+      pa(ec).flatMap(a => choices(a)(ec))
+  }
+
+  def choice_chooser[A](p: Par[Boolean])(t: Par[A], f: Par[A]): Par[A] =
+    chooser(p) { b => if (b) t else f }
+
+  def choiceN_chooser[A](n: Par[Int])(choices: List[Par[A]]): Par[A] =
+    chooser(n) { i => choices(i) }
+
+  // Ex. 7.14
+  def join[A](p: Par[Par[A]]): Par[A] = ec => {
+    val fpa: Future[Par[A]] = p(ec)
+    fpa.flatMap(pa => pa(ec))
+  }
+
+  def flatMap_join[A, B](pa: Par[A])(choices: A => Par[B]): Par[B] = {
+    join(pa.map(choices))
+  }
+
+  def join_flatMap[A](p: Par[Par[A]]): Par[A] =
+    flatMap(p) { x => x }
+
+  /**
+   * Ex. 7.7
+   *
+   * map(y)(id) == y
+   * So:
+   * map(map(y)(id'))(id) == map(y)(id') // substitute y on both sides
+   * map(map(y)(g))(id) == map(y)(g)     // substitute 'corresponding' (?) ids by g
+   * map(map(y)(g))(id) == map(y)(id compose g) // definition of id
+   * map(map(y)(g))(f) == map(y)(f compose g)  // q.e.d.?
+   *
+   *
+   */
 
   /* Gives us infix syntax for `Par`. */
   //implicit def toParOps[A](p: Par[A]): ParOps[A] = new ParOps(p)
