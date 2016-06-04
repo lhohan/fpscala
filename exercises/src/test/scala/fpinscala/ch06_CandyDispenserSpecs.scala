@@ -1,10 +1,10 @@
 package fpinscala
 
 import fpinscala.state.CandyMachine._
-import fpinscala.state.{ Coin, Input, Machine, Turn }
+import fpinscala.state.{Coin, Input, Machine, Turn}
 import org.scalacheck.Arbitrary._
-import org.scalacheck.Prop.{ BooleanOperators, forAll }
-import org.scalacheck.{ Arbitrary, Gen, Properties }
+import org.scalacheck.Prop.{BooleanOperators, forAll}
+import org.scalacheck.{Arbitrary, Gen, Properties}
 
 class ch06_CandyDispenserSpecs extends Properties("Candy dispenser machine") {
   property("Inserting a coin in locked machine if candy left should unlock") = forAll { (machine: Machine) =>
