@@ -6,6 +6,7 @@ import scala.language.higherKinds
 import fpinscala.errorhandling.Either
 
 import scala.language.implicitConversions
+import scala.{Either => _, Left => _, Right => _}
 
 trait Parsers[Parser[+_]] {
   self =>
@@ -19,8 +20,6 @@ trait Parsers[Parser[+_]] {
 
   def or[A](p1: Parser[A], p2: Parser[A]): Parser[A]
 
-  def listOfN[A](n: Int, p: Parser[A]): Parser[List[A]]
-
   def succeeded[A](a: A): Parser[A] = strings(" ") map (_ => a)
 
   def slice[A](p: Parser[A]): Parser[String] = ???
@@ -32,23 +31,35 @@ trait Parsers[Parser[+_]] {
   implicit def asStringParser[A](a: A)(implicit f: A => Parser[String]): ParserOps[String] = ParserOps(f(a))
 
   case class ParserOps[A](p: Parser[A]) {
-    def |[B >: A](p2: Parser[B]): Parser[B] = self.or(p, p2)
+    def |[B >: A](p2: Parser[B]): Parser[B] =
+      self.or(p, p2)
 
-    def or[B >: A](p2: => Parser[B]): Parser[B] = self.or(p, p2)
-
-    def many: Parser[List[A]] = ???
+    def or[B >: A](p2: => Parser[B]): Parser[B] =
+      self.or(p, p2)
 
     // replace later by flatMap when we have it
-    def map[B](f: A => B): Parser[B] = map2(char(' ')) { case (a, _) => f(a) }
+    def map[B](f: A => B): Parser[B] =
+      map2(char(' ')) { case (a, _) => f(a) }
 
     def map2[B, C](pb: => Parser[B])(f: (A, B) => C): Parser[C] =
       self.product(p, pb).map { case (a, b) => f(a, b) }
 
-    def many1: Parser[List[A]] = map2(many) { case (a, as) => a :: as }
+    // return the characters it has seen
+    def many: Parser[List[A]] =
+      map2(p.many) { case (a, as) => a :: as } or succeeded(List.empty[A])
+
+    def many1: Parser[List[A]] =
+      map2(many) { case (a, as) => a :: as }
 
     def product[B](pb: => Parser[B]): Parser[(A, B)] = self.product(p, pb)
 
     def **[B](pb: Parser[B]): Parser[(A, B)] = self.product(p, pb)
+
+    def listOfN(n: Int): Parser[List[A]] =
+      map2 {
+        if (n == 0) succeeded(List.empty[A])
+        else p.listOfN(n - 1)
+      } { case (a, as) => a :: as }
 
   }
 
