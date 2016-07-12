@@ -89,7 +89,8 @@ object Applicative {
       Stream.continually(a) // The infinite, constant stream
 
     override def map2[A, B, C](a: Stream[A], b: Stream[B])( // Combine elements pointwise
-      f: (A, B) => C): Stream[C] =
+      f: (A, B) => C
+    ): Stream[C] =
       a zip b map f.tupled
   }
 
@@ -182,7 +183,8 @@ trait Traverse[F[_]] extends Functor[F] with Foldable[F] { self =>
 
   override def foldMap[A, B](as: F[A])(f: A => B)(mb: Monoid[B]): B =
     traverse[({ type f[x] = Const[B, x] })#f, A, Nothing](
-      as)(f)(monoidApplicative(mb))
+      as
+    )(f)(monoidApplicative(mb))
 
   def traverseS[S, A, B](fa: F[A])(f: A => State[S, B]): State[S, F[B]] =
     traverse[({ type f[x] = State[S, x] })#f, A, B](fa)(f)(Monad.stateMonad)

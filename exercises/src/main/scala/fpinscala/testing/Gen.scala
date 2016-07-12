@@ -53,7 +53,7 @@ object Prop {
     def isFalsified = false
   }
   case class Falsified(
-    failure: FailedCase,
+      failure: FailedCase,
       successes: SuccessCount
   ) extends Result {
     def isFalsified = true

@@ -1,6 +1,6 @@
 package fpinscala.streamingio
 
-import fpinscala.iomonad.{ IO, Monad, Free, unsafePerformIO }
+import fpinscala.iomonad.{IO, Monad, Free, unsafePerformIO}
 import language.implicitConversions
 import language.higherKinds
 import language.postfixOps
@@ -230,17 +230,21 @@ object SimpleStreamTransducers {
 
     case class Emit[I, O](
       head: O,
-      tail: Process[I, O] = Halt[I, O]())
+      tail: Process[I, O] = Halt[I, O]()
+    )
         extends Process[I, O]
 
     case class Await[I, O](
-      recv: Option[I] => Process[I, O])
+      recv: Option[I] => Process[I, O]
+    )
         extends Process[I, O]
 
     case class Halt[I, O]() extends Process[I, O]
 
-    def emit[I, O](head: O,
-      tail: Process[I, O] = Halt[I, O]()): Process[I, O] =
+    def emit[I, O](
+      head: O,
+      tail: Process[I, O] = Halt[I, O]()
+    ): Process[I, O] =
       Emit(head, tail)
 
     // Process forms a monad, and we provide monad syntax for it
@@ -261,8 +265,10 @@ object SimpleStreamTransducers {
      * A helper function to await an element or fall back to another process
      * if there is no input.
      */
-    def await[I, O](f: I => Process[I, O],
-      fallback: Process[I, O] = Halt[I, O]()): Process[I, O] =
+    def await[I, O](
+      f: I => Process[I, O],
+      fallback: Process[I, O] = Halt[I, O]()
+    ): Process[I, O] =
       Await[I, O] {
         case Some(i) => f(i)
         case None => fallback
@@ -444,9 +450,11 @@ object SimpleStreamTransducers {
     def terminated[I]: Process[I, Option[I]] =
       await((i: I) => emit(Some(i), terminated[I]), emit(None))
 
-    def processFile[A, B](f: java.io.File,
+    def processFile[A, B](
+      f: java.io.File,
       p: Process[String, A],
-      z: B)(g: (B, A) => B): IO[B] = IO {
+      z: B
+    )(g: (B, A) => B): IO[B] = IO {
       @annotation.tailrec
       def go(ss: Iterator[String], cur: Process[String, A], acc: B): B =
         cur match {
@@ -701,17 +709,20 @@ object GeneralizedStreamTransducers {
   object Process {
     case class Await[F[_], A, O](
       req: F[A],
-      recv: Either[Throwable, A] => Process[F, O]) extends Process[F, O]
+      recv: Either[Throwable, A] => Process[F, O]
+    ) extends Process[F, O]
 
     case class Emit[F[_], O](
       head: O,
-      tail: Process[F, O]) extends Process[F, O]
+      tail: Process[F, O]
+    ) extends Process[F, O]
 
     case class Halt[F[_], O](err: Throwable) extends Process[F, O]
 
     def emit[F[_], O](
       head: O,
-      tail: Process[F, O] = Halt[F, O](End)): Process[F, O] =
+      tail: Process[F, O] = Halt[F, O](End)
+    ): Process[F, O] =
       Emit(head, tail)
 
     def await[F[_], A, O](req: F[A])(recv: Either[Throwable, A] => Process[F, O]): Process[F, O] =
@@ -788,7 +799,7 @@ object GeneralizedStreamTransducers {
      * See the definition in the body of `Process`.
      */
 
-    import java.io.{ BufferedReader, FileReader }
+    import java.io.{BufferedReader, FileReader}
     val p: Process[IO, String] =
       await(IO(new BufferedReader(new FileReader("lines.txt")))) {
         case Right(b) =>
@@ -807,16 +818,20 @@ object GeneralizedStreamTransducers {
      * See `lines` below for an example use.
      */
     def resource[R, O](acquire: IO[R])(
-      use: R => Process[IO, O])(
-        release: R => Process[IO, O]): Process[IO, O] =
+      use: R => Process[IO, O]
+    )(
+      release: R => Process[IO, O]
+    ): Process[IO, O] =
       eval(acquire) flatMap { r => use(r).onComplete(release(r)) }
 
     /*
      * Like `resource`, but `release` is a single `IO` action.
      */
     def resource_[R, O](acquire: IO[R])(
-      use: R => Process[IO, O])(
-        release: R => IO[Unit]): Process[IO, O] =
+      use: R => Process[IO, O]
+    )(
+      release: R => IO[Unit]
+    ): Process[IO, O] =
       resource(acquire)(use)(release andThen (eval_[IO, Unit, O]))
 
     /*
@@ -869,7 +884,8 @@ object GeneralizedStreamTransducers {
 
     def await1[I, O](
       recv: I => Process1[I, O],
-      fallback: => Process1[I, O] = halt1[I, O]): Process1[I, O] =
+      fallback: => Process1[I, O] = halt1[I, O]
+    ): Process1[I, O] =
       Await(Get[I], (e: Either[Throwable, I]) => e match {
         case Left(End) => fallback
         case Left(err) => Halt(err)
@@ -944,16 +960,20 @@ object GeneralizedStreamTransducers {
     def haltT[I, I2, O]: Tee[I, I2, O] =
       Halt[T[I, I2]#f, O](End)
 
-    def awaitL[I, I2, O](recv: I => Tee[I, I2, O],
-      fallback: => Tee[I, I2, O] = haltT[I, I2, O]): Tee[I, I2, O] =
+    def awaitL[I, I2, O](
+      recv: I => Tee[I, I2, O],
+      fallback: => Tee[I, I2, O] = haltT[I, I2, O]
+    ): Tee[I, I2, O] =
       await[T[I, I2]#f, I, O](L) {
         case Left(End) => fallback
         case Left(err) => Halt(err)
         case Right(a) => Try(recv(a))
       }
 
-    def awaitR[I, I2, O](recv: I2 => Tee[I, I2, O],
-      fallback: => Tee[I, I2, O] = haltT[I, I2, O]): Tee[I, I2, O] =
+    def awaitR[I, I2, O](
+      recv: I2 => Tee[I, I2, O],
+      fallback: => Tee[I, I2, O] = haltT[I, I2, O]
+    ): Tee[I, I2, O] =
       await[T[I, I2]#f, I2, O](R) {
         case Left(End) => fallback
         case Left(err) => Halt(err)
@@ -1036,7 +1056,7 @@ object GeneralizedStreamTransducers {
      * input, so code that uses this channel does not need to be
      * responsible for knowing how to obtain a `Connection`.
      */
-    import java.sql.{ Connection, PreparedStatement, ResultSet }
+    import java.sql.{Connection, PreparedStatement, ResultSet}
 
     def query(conn: IO[Connection]): Channel[IO, Connection => PreparedStatement, Map[String, Any]] =
       resource_ { conn } { conn =>

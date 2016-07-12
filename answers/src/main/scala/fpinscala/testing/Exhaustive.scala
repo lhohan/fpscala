@@ -10,14 +10,14 @@ This source file contains the answers to the last two exercises in the section
 The Gen data type in this file incorporates exhaustive checking of finite domains.
 */
 
-import fpinscala.laziness.{ Stream, Cons, Empty }
+import fpinscala.laziness.{Stream, Cons, Empty}
 import fpinscala.state._
 import fpinscala.parallelism._
 import fpinscala.parallelism.Par.Par
 import Gen._
 import Prop._
 import Status._
-import java.util.concurrent.{ Executors, ExecutorService }
+import java.util.concurrent.{Executors, ExecutorService}
 
 case class Prop(run: (MaxSize, TestCases, RNG) => Result) {
   def &&(p: Prop) = Prop {
@@ -109,10 +109,12 @@ object Prop {
       }
   }
 
-  def run(p: Prop,
+  def run(
+    p: Prop,
     maxSize: Int = 100, // A default argument of `200`
     testCases: Int = 100,
-    rng: RNG = RNG.Simple(System.currentTimeMillis)): Unit = {
+    rng: RNG = RNG.Simple(System.currentTimeMillis)
+  ): Unit = {
     p.run(maxSize, testCases, rng) match {
       case Left(msg) => println("! test failed:\n" + msg)
       case Right((Unfalsified, n)) =>
@@ -150,7 +152,8 @@ object Prop {
 
   val S = weighted(
     choose(1, 4).map(Executors.newFixedThreadPool) -> .75,
-    unit(Executors.newCachedThreadPool) -> .25) // `a -> b` is syntax sugar for `(a,b)`
+    unit(Executors.newCachedThreadPool) -> .25
+  ) // `a -> b` is syntax sugar for `(a,b)`
 
   def forAllPar[A](g: Gen[A])(f: A => Par[Boolean]): Prop =
     forAll(S.map2(g)((_, _))) { case (s, a) => f(a)(s).get }
@@ -189,15 +192,19 @@ case class Gen[+A](sample: State[RNG, A], exhaustive: Stream[Option[A]]) {
     Gen(sample.map(f), exhaustive.map(_.map(f)))
 
   def map2[B, C](g: Gen[B])(f: (A, B) => C): Gen[C] =
-    Gen(sample.map2(g.sample)(f),
-      map2Stream(exhaustive, g.exhaustive)(map2Option(_, _)(f)))
+    Gen(
+      sample.map2(g.sample)(f),
+      map2Stream(exhaustive, g.exhaustive)(map2Option(_, _)(f))
+    )
 
   def flatMap[B](f: A => Gen[B]): Gen[B] =
-    Gen(sample.flatMap(a => f(a).sample),
+    Gen(
+      sample.flatMap(a => f(a).sample),
       exhaustive.flatMap {
         case None => unbounded
         case Some(a) => f(a).exhaustive
-      })
+      }
+    )
 
   /* A method alias for the function we wrote earlier. */
   def listOfN(size: Int): Gen[List[A]] =
@@ -229,16 +236,20 @@ object Gen {
     Gen(State(RNG.boolean), bounded(Stream(true, false)))
 
   def choose(start: Int, stopExclusive: Int): Gen[Int] =
-    Gen(State(RNG.nonNegativeInt).map(n => start + n % (stopExclusive - start)),
-      bounded(Stream.from(start).take(stopExclusive - start)))
+    Gen(
+      State(RNG.nonNegativeInt).map(n => start + n % (stopExclusive - start)),
+      bounded(Stream.from(start).take(stopExclusive - start))
+    )
 
   /* This implementation is rather tricky, but almost impossible to get wrong
    * if you follow the types. It relies on several helper functions (see below).
    */
   def listOfN[A](n: Int, g: Gen[A]): Gen[List[A]] =
-    Gen(State.sequence(List.fill(n)(g.sample)),
+    Gen(
+      State.sequence(List.fill(n)(g.sample)),
       cartesian(Stream.constant(g.exhaustive).take(n)).
-        map(l => sequenceOption(l.toList)))
+        map(l => sequenceOption(l.toList))
+    )
 
   /* `cartesian` generates all possible combinations of a `Stream[Stream[A]]`. For instance:
    *
@@ -266,7 +277,8 @@ object Gen {
    */
   def sequenceOption[A](o: List[Option[A]]): Option[List[A]] =
     o.foldLeft[Option[List[A]]](Some(List()))(
-      (t, h) => map2Option(h, t)(_ :: _)).map(_.reverse)
+      (t, h) => map2Option(h, t)(_ :: _)
+    ).map(_.reverse)
 
   /* Notice we are using the `unbounded` definition here, which is just
    * `Stream(None)` in our current representation of `exhaustive`.
@@ -328,8 +340,10 @@ object Gen {
     def bools: Stream[Boolean] =
       randomStream(uniform.map(_ < g1Threshold))(RNG.Simple(302837L))
 
-    Gen(State(RNG.double).flatMap(d => if (d < g1Threshold) g1._1.sample else g2._1.sample),
-      interleave(bools, g1._1.exhaustive, g2._1.exhaustive))
+    Gen(
+      State(RNG.double).flatMap(d => if (d < g1Threshold) g1._1.sample else g2._1.sample),
+      interleave(bools, g1._1.exhaustive, g2._1.exhaustive)
+    )
   }
 
   /* Produce an infinite random stream from a `Gen` and a starting `RNG`. */

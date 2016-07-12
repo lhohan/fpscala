@@ -6,7 +6,7 @@ import fpinscala.parallelism._
 import fpinscala.parallelism.Par.Par
 import Gen._
 import Prop._
-import java.util.concurrent.{ Executors, ExecutorService }
+import java.util.concurrent.{Executors, ExecutorService}
 import language.postfixOps
 import language.implicitConversions
 
@@ -52,8 +52,10 @@ object Prop {
   case object Passed extends Result {
     def isFalsified = false
   }
-  case class Falsified(failure: FailedCase,
-      successes: SuccessCount) extends Result {
+  case class Falsified(
+    failure: FailedCase,
+      successes: SuccessCount
+  ) extends Result {
     def isFalsified = true
   }
   case object Proved extends Result {
@@ -99,10 +101,12 @@ object Prop {
       prop.run(max, n, rng)
   }
 
-  def run(p: Prop,
+  def run(
+    p: Prop,
     maxSize: Int = 100,
     testCases: Int = 100,
-    rng: RNG = RNG.Simple(System.currentTimeMillis)): Unit =
+    rng: RNG = RNG.Simple(System.currentTimeMillis)
+  ): Unit =
     p.run(maxSize, testCases, rng) match {
       case Falsified(msg, n) =>
         println(s"! Falsified after $n passed tests:\n $msg")
@@ -138,7 +142,8 @@ object Prop {
 
   val S = weighted(
     choose(1, 4).map(Executors.newFixedThreadPool) -> .75,
-    unit(Executors.newCachedThreadPool) -> .25) // `a -> b` is syntax sugar for `(a,b)`
+    unit(Executors.newCachedThreadPool) -> .25
+  ) // `a -> b` is syntax sugar for `(a,b)`
 
   def forAllPar[A](g: Gen[A])(f: A => Par[Boolean]): Prop =
     forAll(S.map2(g)((_, _))) { case (s, a) => f(a)(s).get }
