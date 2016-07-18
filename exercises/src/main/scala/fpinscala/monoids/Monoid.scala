@@ -1,8 +1,8 @@
 package fpinscala.monoids
 
 import fpinscala.parallelism.Nonblocking._
-import fpinscala.parallelism.Nonblocking.Par.toParOps // infix syntax for `Par.map`, `Par.flatMap`, etc
-import language.higherKinds
+
+import scala.language.higherKinds
 
 trait Monoid[A] {
   def op(a1: A, a2: A): A
@@ -57,16 +57,30 @@ object Monoid {
     override def zero: A => A = identity[A]
   }
 
-  // TODO: Placeholder for `Prop`. Remove once you have implemented the `Prop`
+  // TODOX: Placeholder for `Prop`. Remove once you have implemented the `Prop`
   // data type from Part 2.
-  trait Prop {}
+  //  trait Prop {}
 
-  // TODO: Placeholder for `Gen`. Remove once you have implemented the `Gen`
+  // TODOX: Placeholder for `Gen`. Remove once you have implemented the `Gen`
   // data type from Part 2.
 
   import fpinscala.testing._
   import Prop._
-  def monoidLaws[A](m: Monoid[A], gen: Gen[A]): Prop = sys.error("todo")
+  def monoidLaws[A](m: Monoid[A], gen: Gen[A]): Prop = {
+    // TODO use different generator
+    def associativityLaw = forAll(gen.listOfN(3)) {
+      case a1 :: a2 :: a3 :: Nil =>
+        m.op(m.op(a1, a2), a3) == m.op(a1, m.op(a2, a3))
+      case _ => ??? // gen failed?
+    }
+    def zeroLawRight = forAll(gen) { a =>
+      m.op(a, m.zero) == a
+    }
+    def zeroLawLeft = forAll(gen) { a =>
+      m.op(m.zero, a) == a
+    }
+    associativityLaw && zeroLawLeft && zeroLawRight
+  }
 
   def trimMonoid(s: String): Monoid[String] = sys.error("todo")
 
@@ -98,7 +112,7 @@ object Monoid {
   def parFoldMap[A, B](v: IndexedSeq[A], m: Monoid[B])(f: A => B): Par[B] =
     sys.error("todo")
 
-  val wcMonoid: Monoid[WC] = sys.error("todo")
+  //  val wcMonoid: Monoid[WC] = sys.error("todo")
 
   def count(s: String): Int = sys.error("todo")
 
@@ -116,7 +130,6 @@ object Monoid {
 }
 
 trait Foldable[F[_]] {
-  import Monoid._
 
   def foldRight[A, B](as: F[A])(z: B)(f: (A, B) => B): B =
     sys.error("todo")

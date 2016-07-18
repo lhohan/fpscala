@@ -110,6 +110,7 @@ object Prop {
     p.run(maxSize, testCases, rng) match {
       case Falsified(msg, n) =>
         println(s"! Falsified after $n passed tests:\n $msg")
+        throw new AssertionError(s"! Falsified after $n passed tests:\n $msg")
       case Passed =>
         println(s"+ OK, passed $testCases tests.")
       case Proved =>
