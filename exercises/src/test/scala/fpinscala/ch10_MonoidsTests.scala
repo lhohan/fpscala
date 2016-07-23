@@ -24,4 +24,8 @@ class ch10_MonoidsTests extends FunSuite {
     //    def endoGen(g: Gen[Int]): Gen[Int => Int] = g.flatMap { a: Int => Gen.boolean.map(b => if (b) { x: Int => a * x } else { x: Int => a + x }) }
     Prop.run(monoidLaws(endoMonoid[Int], endoGen(Gen.smallInt)))
   }
+
+  test("ex 10.5 foldMap") {
+    assert(14 == foldMap(List(1, 2, 3, 4), intAddition)(_ + 1))
+  }
 }
