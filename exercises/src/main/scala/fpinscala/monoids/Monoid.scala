@@ -97,30 +97,90 @@ object Monoid {
   def foldLeft[A, B](as: List[A])(z: B)(f: (B, A) => B): B =
     foldMap(as, endoMonoid[B]) { a => f(_, a) }(z)
 
-  def foldMapV[A, B](as: IndexedSeq[A], m: Monoid[B])(f: A => B): B =
-    sys.error("todo")
+  def foldMapV[A, B](as: IndexedSeq[A], m: Monoid[B])(f: A => B): B = as match {
+    case IndexedSeq() => m.zero
+    case IndexedSeq(a) => f(a)
+    case _ =>
+      val (as1, as2) = as.splitAt(as.length / 2)
+      val b1 = foldMapV(as1, m)(f)
+      val b2 = foldMapV(as2, m)(f)
+      m.op(b1, b2)
+  }
 
-  def ordered(ints: IndexedSeq[Int]): Boolean =
-    sys.error("todo")
+  def ordered(ints: IndexedSeq[Int]): Boolean = {
+    val m = new Monoid[(Int, Boolean)] {
+      override def op(m1: (Int, Boolean), m2: (Int, Boolean)): (Int, Boolean) = {
+        val (a1, sortedSoFar) = m1
+        if (sortedSoFar) {
+          val (a2, _) = m2
+          (a2, a1 <= a2)
+        } else {
+          (a1, false)
+        }
+      }
+
+      override def zero: (Int, Boolean) = (Int.MinValue, true)
+    }
+    foldMapV(ints, m)(a => (a, true))._2
+  }
 
   sealed trait WC
 
   case class Stub(chars: String) extends WC
 
-  case class Part(lStub: String, words: Int, rStub: String) extends WC
+  case class Part(lStub: String, words: Int, rStub: String) extends WC {
+    override def toString = s"lStub: $lStub - $words - rStub: $rStub"
+  }
 
-  def par[A](m: Monoid[A]): Monoid[Par[A]] =
-    sys.error("todo")
+  def par[A](m: Monoid[A]): Monoid[Par[A]] = new Monoid[Par[A]] {
+    override def op(p1: Par[A], p2: Par[A]): Par[A] = Par.map2(p1, p2) { (a1, a2) => m.op(a1, a2) }
 
-  def parFoldMap[A, B](v: IndexedSeq[A], m: Monoid[B])(f: A => B): Par[B] =
-    sys.error("todo")
+    override def zero: Par[A] = Par.unit(m.zero)
+  }
 
-  //  val wcMonoid: Monoid[WC] = sys.error("todo")
+  def parFoldMap[A, B](v: IndexedSeq[A], m: Monoid[B])(f: A => B): Par[B] = {
+    val pm = par(m)
+    v match {
+      case IndexedSeq() => pm.zero
+      case IndexedSeq(a) => Par.lazyUnit(f(a))
+      case _ =>
+        val (as1, as2) = v.splitAt(v.length / 2)
+        val b1 = parFoldMap(as1, m)(f)
+        val b2 = parFoldMap(as2, m)(f)
+        pm.op(b1, b2)
+    }
+  }
 
-  def count(s: String): Int = sys.error("todo")
+  val wcMonoid: Monoid[WC] = new Monoid[WC] {
+
+    override def op(wc1: WC, wc2: WC): WC = (wc1, wc2) match {
+      case (Stub(cs1), Stub(cs2)) => Stub(cs1 + cs2)
+      case (Stub(cs), Part(l2, c2, r2)) => Part(cs + l2, c2, r2)
+      case (Part(l1, c1, r1), Stub(cs)) => Part(l1, c1, r1 + cs)
+      case (Part(l1, c1, r1), Part(l2, c2, r2)) =>
+        val joinedWordCount = if ((r1 + l2).isEmpty) 0 else 1
+        val words = c1 + c2 + joinedWordCount
+        Part(l1, words, r2)
+    }
+
+    override def zero: WC = Part("", 0, "")
+  }
+
+  def count(s: String): Int = {
+    def toWC(c: Char): WC = if (c.isWhitespace) Part("", 0, "") else Stub(c.toString)
+    def wordOrNot(chars: String): SuccessCount = {
+      if (chars.isEmpty) 0 else 1
+    }
+    foldMapV(s.toCharArray.toIndexedSeq, wcMonoid)(toWC) match {
+      case Stub(chars) => wordOrNot(chars)
+      case Part(left, c, right) => wordOrNot(left) + c + wordOrNot(right)
+    }
+  }
 
   def productMonoid[A, B](A: Monoid[A], B: Monoid[B]): Monoid[(A, B)] =
     sys.error("todo")
+
+  // idea (hans): create maxInt Monoid and combine with booleanAnd to implement:  def ordered2(ints: IndexedSeq[Int]): Boolean = {
 
   def functionMonoid[A, B](B: Monoid[B]): Monoid[A => B] =
     sys.error("todo")

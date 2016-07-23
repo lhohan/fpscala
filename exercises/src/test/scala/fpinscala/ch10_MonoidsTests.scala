@@ -1,6 +1,9 @@
 package fpinscala
 
+import java.util.concurrent.Executors
+
 import fpinscala.monoids.Monoid._
+import fpinscala.parallelism.Nonblocking.Par
 import fpinscala.testing._
 import org.scalatest.FunSuite
 
@@ -33,8 +36,36 @@ class ch10_MonoidsTests extends FunSuite {
     assert("12345" == foldRight(List(1, 2, 3, 4))("5")((a, b) => a + b))
     assert(5 == foldRight(List.empty[Int])(5)((a, b) => a + b))
   }
+
   test("ex 10.6 foldLeft") {
     assert("54321" == foldLeft(List(1, 2, 3, 4))("5")((a, b) => a + b))
+  }
 
+  test("ex 10.7 foldMapV") {
+    assert(80 == foldMapV(IndexedSeq(1, 2, 3, 4, 6, 7, 8, 9), intAddition)(_ * 2))
+    assert(0 == foldMapV(IndexedSeq(), intAddition)(identity[Int]))
+    assert(10 == foldMapV(IndexedSeq(5), intAddition)(_ * 2))
+  }
+
+  test("ex 10.8 parFoldMap") {
+    val es = Executors.newFixedThreadPool(4)
+    assert(80 == Par.run(es)(parFoldMap(IndexedSeq(1, 2, 3, 4, 6, 7, 8, 9), intAddition)(_ * 2)))
+    assert(0 == Par.run(es)(parFoldMap(IndexedSeq(), intAddition)(identity[Int])))
+    assert(10 == Par.run(es)(parFoldMap(IndexedSeq(5), intAddition)(_ * 2)))
+  }
+
+  test("ex 10.9 ordered") {
+    assert(ordered(IndexedSeq(1, 2, 3, 4, 6, 7, 8, 9)))
+    assert(ordered(IndexedSeq()))
+    assert(!ordered(IndexedSeq(1, 2, 3, 100, 6, 7, 8, 9)))
+    assert(!ordered(IndexedSeq(100, 1, 2, 3, 6, 4, 7, 8, 9)))
+  }
+
+  test("ex 10.10, 10.11 word count") {
+    assert(16 == count("ScalaTest provides a domain specific language (DSL) for expressing assertions in tests using the word should."))
+    assert(1 == count("ScalaTest "))
+    assert(1 == count(" ScalaTest "))
+    assert(1 == count(" ScalaTest"))
+    assert(0 == count("     "))
   }
 }
