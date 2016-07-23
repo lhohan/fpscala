@@ -67,11 +67,9 @@ object Monoid {
   import fpinscala.testing._
   import Prop._
   def monoidLaws[A](m: Monoid[A], gen: Gen[A]): Prop = {
-    // TODO use different generator
-    def associativityLaw = forAll(gen.listOfN(3)) {
-      case a1 :: a2 :: a3 :: Nil =>
-        m.op(m.op(a1, a2), a3) == m.op(a1, m.op(a2, a3))
-      case _ => ??? // gen failed?
+    def associativityLaw = forAll(gen.listOfN(3)) { t3 =>
+      val (a1, a2, a3) = (t3(0), t3(1), t3(2))
+      m.op(m.op(a1, a2), a3) == m.op(a1, m.op(a2, a3))
     }
     def zeroLawRight = forAll(gen) { a =>
       m.op(a, m.zero) == a
