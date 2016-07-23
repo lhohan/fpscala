@@ -28,4 +28,13 @@ class ch10_MonoidsTests extends FunSuite {
   test("ex 10.5 foldMap") {
     assert(14 == foldMap(List(1, 2, 3, 4), intAddition)(_ + 1))
   }
+
+  test("ex 10.6 foldRight") {
+    assert("12345" == foldRight(List(1, 2, 3, 4))("5")((a, b) => a + b))
+    assert(5 == foldRight(List.empty[Int])(5)((a, b) => a + b))
+  }
+  test("ex 10.6 foldLeft") {
+    assert("54321" == foldLeft(List(1, 2, 3, 4))("5")((a, b) => a + b))
+
+  }
 }
