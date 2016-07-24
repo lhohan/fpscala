@@ -2,6 +2,7 @@ package fpinscala
 
 import java.util.concurrent.Executors
 
+import fpinscala.monoids.{StreamFoldable, IndexedSeqFoldable, ListFoldable}
 import fpinscala.monoids.Monoid._
 import fpinscala.parallelism.Nonblocking.Par
 import fpinscala.testing._
@@ -67,5 +68,12 @@ class ch10_MonoidsTests extends FunSuite {
     assert(1 == count(" ScalaTest "))
     assert(1 == count(" ScalaTest"))
     assert(0 == count("     "))
+  }
+
+  test("ex 10.12 Foldable[List], etc") {
+    assert("12345" == ListFoldable.foldMap(List(1, 2, 3, 4, 5))(_.toString)(stringMonoid))
+    assert("12345" == IndexedSeqFoldable.foldMap(IndexedSeq(1, 2, 3, 4, 5))(_.toString)(stringMonoid))
+    assert("12345" == StreamFoldable.foldMap(Stream(1, 2, 3, 4, 5))(_.toString)(stringMonoid))
+
   }
 }

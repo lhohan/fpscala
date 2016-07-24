@@ -194,14 +194,14 @@ object Monoid {
 
 trait Foldable[F[_]] {
 
-  def foldRight[A, B](as: F[A])(z: B)(f: (A, B) => B): B = ???
-  //    foldMap(as) { a => f(a, _) }(Monoid.endoMonoid[B])(z)
+  def foldRight[A, B](as: F[A])(z: B)(f: (A, B) => B): B =
+    foldMap(as) { a => b: B => f(a, b) }(Monoid.endoMonoid[B])(z)
 
-  def foldLeft[A, B](as: F[A])(z: B)(f: (B, A) => B): B = ???
-  //    foldMap(as) { a => f(_, a) }(Monoid.endoMonoid[B])(z)
+  def foldLeft[A, B](as: F[A])(z: B)(f: (B, A) => B): B =
+    foldMap(as) { a => b: B => f(b, a) }(Monoid.endoMonoid[B])(z)
 
   def foldMap[A, B](as: F[A])(f: A => B)(mb: Monoid[B]): B =
-    sys.error("todo")
+    foldLeft(as)(mb.zero)((acc, a) => mb.op(acc, f(a)))
 
   def concatenate[A](as: F[A])(m: Monoid[A]): A =
     foldLeft(as)(m.zero)(m.op)
