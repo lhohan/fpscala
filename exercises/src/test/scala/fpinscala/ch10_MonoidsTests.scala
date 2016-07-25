@@ -2,8 +2,8 @@ package fpinscala
 
 import java.util.concurrent.Executors
 
-import fpinscala.monoids._
 import fpinscala.monoids.Monoid._
+import fpinscala.monoids._
 import fpinscala.parallelism.Nonblocking.Par
 import fpinscala.testing._
 import org.scalatest.FunSuite
@@ -14,15 +14,15 @@ class ch10_MonoidsTests extends FunSuite {
     assert(intAddition.op(1, 2) == 3)
   }
 
+  def optionGen[A](g: Gen[A]): Gen[Option[A]] = g.flatMap(a => Gen.boolean.map(b => if (b) Some(a) else None))
+
   test("test monoids using laws") {
     Prop.run(monoidLaws(intAddition, Gen.smallInt))
     Prop.run(monoidLaws(intMultiplication, Gen.smallInt))
     Prop.run(monoidLaws(booleanAnd, Gen.boolean))
     Prop.run(monoidLaws(booleanOr, Gen.boolean))
 
-    def optionGen[A](g: Gen[A]): Gen[Option[A]] = g.flatMap(a => Gen.boolean.map(b => if (b) Some(a) else None))
     Prop.run(monoidLaws(optionMonoid[Int], optionGen(Gen.smallInt)))
-
     // TODO check below property: fails
     def endoGen(g: Gen[Int]): Gen[Int => Int] = g.map { a: Int => x: Int => a * x }
     //    def endoGen(g: Gen[Int]): Gen[Int => Int] = g.flatMap { a: Int => Gen.boolean.map(b => if (b) { x: Int => a * x } else { x: Int => a + x }) }
@@ -104,5 +104,16 @@ class ch10_MonoidsTests extends FunSuite {
     def pairGen[A, B](ga: Gen[A], gb: Gen[B]): Gen[(A, B)] = ga.flatMap(a => gb.map(b => (a, b)))
 
     Prop.run(monoidLaws(productMonoid(intAddition, stringMonoid), pairGen(Gen.smallInt, Gen.stringN(10))))
+  }
+
+  test("Using product monoid to check if seq is ordered") {
+    // check if max int monoid is in fact a monoid
+    Prop.run(monoidLaws(maxIntMonoid, optionGen(Gen.smallInt)))
+
+    // All return true: we need flatMap?
+    //    assert(ordered2(IndexedSeq(1, 2, 3, 4, 6, 7, 8, 9)))
+    //    assert(ordered2(IndexedSeq()))
+    //    assert(!ordered2(IndexedSeq(1, 2, 3, 100, 6, 7, 8, 9)))
+    //    assert(!ordered2(IndexedSeq(100, 1, 2, 3, 6, 4, 7, 8, 9)))
   }
 }

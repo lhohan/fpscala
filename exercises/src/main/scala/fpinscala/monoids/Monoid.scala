@@ -189,7 +189,24 @@ object Monoid {
       override def zero: (A, B) = (ma.zero, mb.zero)
     }
 
-  // idea (hans): create maxInt Monoid and combine with booleanAnd to implement:  def ordered2(ints: IndexedSeq[Int]): Boolean = {
+  // idea (hans): create maxInt Monoid and combine with booleanAnd to implement:
+  // START
+  val maxIntMonoid = new Monoid[Option[Int]] {
+    override def op(a1: Option[Int], a2: Option[Int]): Option[Int] = (a1, a2) match {
+      case (Some(i1), Some(i2)) => Some(i1 max i2)
+      case (Some(i1), None) => Some(i1)
+      case (None, Some(i2)) => Some(i2)
+      case (None, None) => None
+    }
+
+    override def zero: Option[Int] = None
+  }
+
+  def ordered2(ints: IndexedSeq[Int]): Boolean = foldMapV(ints, productMonoid(maxIntMonoid, booleanAnd)) {
+    i => (Some(i), true)
+  }._2
+  // END: will always be true. Conclusion (?): product are independent types while here we want the boolean part to
+  // be dependent on the max part. Looks like we need flatMap.?
 
   def functionMonoid[A, B](B: Monoid[B]): Monoid[A => B] =
     sys.error("todo")
