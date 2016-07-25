@@ -168,7 +168,7 @@ object Monoid {
 
   def count(s: String): Int = {
     def toWC(c: Char): WC = if (c.isWhitespace) Part("", 0, "") else Stub(c.toString)
-    def wordOrNot(chars: String): SuccessCount = {
+    def wordOrNot(chars: String): Int = {
       if (chars.isEmpty) 0 else 1
     }
     foldMapV(s.toCharArray.toIndexedSeq, wcMonoid)(toWC) match {
@@ -205,17 +205,32 @@ object Monoid {
   def ordered2(ints: IndexedSeq[Int]): Boolean = foldMapV(ints, productMonoid(maxIntMonoid, booleanAnd)) {
     i => (Some(i), true)
   }._2
+
   // END: will always be true. Conclusion (?): product are independent types while here we want the boolean part to
   // be dependent on the max part. Looks like we need flatMap.?
 
   def functionMonoid[A, B](B: Monoid[B]): Monoid[A => B] =
-    sys.error("todo")
+    new Monoid[(A) => B] {
+      override def op(a1: (A) => B, a2: (A) => B): (A) => B = (a: A) => B.op(a1(a), a2(a))
+
+      override def zero: (A) => B = (a: A) => B.zero
+    }
 
   def mapMergeMonoid[K, V](V: Monoid[V]): Monoid[Map[K, V]] =
-    sys.error("todo")
+    new Monoid[Map[K, V]] {
+      def zero = Map[K, V]()
+
+      def op(a: Map[K, V], b: Map[K, V]) =
+        (a.keySet ++ b.keySet).foldLeft(zero) { (acc, k) =>
+          acc.updated(k, V.op(
+            a.getOrElse(k, V.zero),
+            b.getOrElse(k, V.zero)
+          ))
+        }
+    }
 
   def bag[A](as: IndexedSeq[A]): Map[A, Int] =
-    sys.error("todo")
+    IndexedSeqFoldable.foldMap(as)((a: A) => Map(a -> 1))(mapMergeMonoid(intAddition))
 }
 
 trait Foldable[F[_]] {

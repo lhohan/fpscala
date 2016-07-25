@@ -116,4 +116,17 @@ class ch10_MonoidsTests extends FunSuite {
     //    assert(!ordered2(IndexedSeq(1, 2, 3, 100, 6, 7, 8, 9)))
     //    assert(!ordered2(IndexedSeq(100, 1, 2, 3, 6, 4, 7, 8, 9)))
   }
+
+  test("ex 10.17 function monoid") {
+    val fm = functionMonoid[Int, Int](intAddition)
+    val f1: Int => Int = (x: Int) => x * 2
+    val f2: Int => Int = (x: Int) => x + 3
+    assert(18 == fm.op(f1, f2)(5))
+  }
+
+  test("ex 10.18 bag") {
+    assert(Map("a" -> 2, "rose" -> 2, "is" -> 1) == bag(Vector("a", "rose", "is", "a", "rose")))
+    assert(Map() == bag(Vector()))
+  }
+
 }
