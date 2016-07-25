@@ -83,4 +83,13 @@ class ch10_MonoidsTests extends FunSuite {
     assert("1024" == TreeFoldable.foldRight(Branch(Leaf(5), Branch(Leaf(1), Leaf(2))))("")((x, s) => s + x * 2))
 
   }
+
+  test("ex 10.14 OptionFoldable") {
+    assert(15 == OptionFoldable.foldLeft(Some(5))(10) { (a, b) => a + b })
+    assert(10 == OptionFoldable.foldLeft(None.asInstanceOf[Option[Int]])(10) { (a, b) => a + b })
+    assert(15 == OptionFoldable.foldRight(Some(5))(10) { (a, b) => a + b })
+    assert(10 == OptionFoldable.foldRight(None.asInstanceOf[Option[Int]])(10) { (a, b) => a + b })
+    assert("5-" == OptionFoldable.foldMap(Some(5))(_ + "-")(stringMonoid))
+    assert("" == OptionFoldable.foldMap(None.asInstanceOf[Option[Int]])(_ + "-")(stringMonoid))
+  }
 }
