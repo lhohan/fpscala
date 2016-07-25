@@ -92,4 +92,17 @@ class ch10_MonoidsTests extends FunSuite {
     assert("5-" == OptionFoldable.foldMap(Some(5))(_ + "-")(stringMonoid))
     assert("" == OptionFoldable.foldMap(None.asInstanceOf[Option[Int]])(_ + "-")(stringMonoid))
   }
+
+  test("ex 10.15 generic toList") {
+    assert(List(5) == OptionFoldable.toList(Some(5)))
+    assert(List.empty[Int] == OptionFoldable.toList(None.asInstanceOf[Option[Int]]))
+    assert(List(5, 1, 2) == TreeFoldable.toList(Branch(Leaf(5), Branch(Leaf(1), Leaf(2)))))
+    assert(List(5) == TreeFoldable.toList(Leaf(5)))
+  }
+
+  test("ex 10.16 product monoid") {
+    def pairGen[A, B](ga: Gen[A], gb: Gen[B]): Gen[(A, B)] = ga.flatMap(a => gb.map(b => (a, b)))
+
+    Prop.run(monoidLaws(productMonoid(intAddition, stringMonoid), pairGen(Gen.smallInt, Gen.stringN(10))))
+  }
 }

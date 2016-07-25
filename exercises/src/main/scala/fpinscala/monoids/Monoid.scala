@@ -177,8 +177,17 @@ object Monoid {
     }
   }
 
-  def productMonoid[A, B](A: Monoid[A], B: Monoid[B]): Monoid[(A, B)] =
-    sys.error("todo")
+  def productMonoid[A, B](ma: Monoid[A], mb: Monoid[B]): Monoid[(A, B)] =
+    new Monoid[(A, B)] {
+
+      override def op(ab1: (A, B), ab2: (A, B)): (A, B) = {
+        val (a1, b1) = ab1
+        val (a2, b2) = ab2
+        (ma.op(a1, a2), mb.op(b1, b2))
+      }
+
+      override def zero: (A, B) = (ma.zero, mb.zero)
+    }
 
   // idea (hans): create maxInt Monoid and combine with booleanAnd to implement:  def ordered2(ints: IndexedSeq[Int]): Boolean = {
 
@@ -207,7 +216,7 @@ trait Foldable[F[_]] {
     foldLeft(as)(m.zero)(m.op)
 
   def toList[A](as: F[A]): List[A] =
-    sys.error("todo")
+    foldLeft(as)(List.empty[A])((acc, a) => acc :+ a)
 }
 
 object ListFoldable extends Foldable[List] {
