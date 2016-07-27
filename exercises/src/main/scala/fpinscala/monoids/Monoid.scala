@@ -84,6 +84,27 @@ object Monoid {
     associativityLaw && zeroLawLeft && zeroLawRight
   }
 
+  def monoidLawsFunction1[A](maa: Monoid[A => A], gen: Gen[A], ma: Monoid[A]): Prop = {
+
+    def fGen = gen.map(a => (a0: A) => ma.op(a, a0))
+
+    val associativityLaw = forAll(gen ** fGen.listOfN(3)) {
+      case (arg, t3) =>
+        val (f1, f2, f3) = (t3(0), t3(1), t3(2))
+        maa.op(maa.op(f1, f2), f3)(arg) == maa.op(f1, maa.op(f2, f3))(arg)
+    }
+    def zeroLawRight = forAll(gen ** fGen) {
+      case (arg, f) =>
+        maa.op(f, maa.zero)(arg) == f(arg)
+    }
+    def zeroLawLeft = forAll(gen ** fGen) {
+      case (arg, f) =>
+        maa.op(maa.zero, f)(arg) == f(arg)
+    }
+
+    associativityLaw && zeroLawLeft && zeroLawRight
+  }
+
   def trimMonoid(s: String): Monoid[String] = sys.error("todo")
 
   def concatenate[A](as: List[A], m: Monoid[A]): A = as.foldLeft(m.zero)(m.op)

@@ -23,10 +23,7 @@ class ch10_MonoidsTests extends FunSuite {
     Prop.run(monoidLaws(booleanOr, Gen.boolean))
 
     Prop.run(monoidLaws(optionMonoid[Int], optionGen(Gen.smallInt)))
-    // TODO check below property: fails
-    def endoGen(g: Gen[Int]): Gen[Int => Int] = g.map { a: Int => x: Int => a * x }
-    //    def endoGen(g: Gen[Int]): Gen[Int => Int] = g.flatMap { a: Int => Gen.boolean.map(b => if (b) { x: Int => a * x } else { x: Int => a + x }) }
-    Prop.run(monoidLaws(endoMonoid[Int], endoGen(Gen.smallInt)))
+    Prop.run(monoidLawsFunction1(endoMonoid[Int], Gen.smallInt, intAddition))
   }
 
   test("ex 10.5 foldMap") {
