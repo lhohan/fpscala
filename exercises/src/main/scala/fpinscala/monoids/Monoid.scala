@@ -129,20 +129,27 @@ object Monoid {
   }
 
   def ordered(ints: IndexedSeq[Int]): Boolean = {
-    val m = new Monoid[(Int, Boolean)] {
-      override def op(m1: (Int, Boolean), m2: (Int, Boolean)): (Int, Boolean) = {
-        val (a1, sortedSoFar) = m1
-        if (sortedSoFar) {
-          val (a2, _) = m2
-          (a2, a1 <= a2)
-        } else {
-          (a1, false)
-        }
+    type Range = (Int, Int)
+    type IsOrdered = Boolean
+    case class Status(range: Option[Range], isOrdered: IsOrdered)
+    val m = new Monoid[Status] {
+      override def op(s1: Status, s2: Status): Status = (s1, s2) match {
+        case (Status(Some((l1, r1)), true), Status(Some((l2, r2)), true)) =>
+          if (r1 <= l2) {
+            Status(Some(l1, r2), true)
+          } else {
+            Status(None, false)
+          }
+        case (Status(None, true), Status(Some((l2, r2)), true)) => Status(Some(l2, r2), true)
+        case (Status(Some((l1, r1)), true), Status(None, true)) => Status(Some(l1, r1), true)
+        case (Status(None, true), Status(None, true)) => Status(None, true)
+        case _ => Status(None, false)
       }
 
-      override def zero: (Int, Boolean) = (Int.MinValue, true)
+      override def zero = Status(None, true)
     }
-    foldMapV(ints, m)(a => (a, true))._2
+    val result = foldMapV(ints, m)(i => Status(Some((i, i)), true))
+    result.isOrdered
   }
 
   sealed trait WC

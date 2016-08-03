@@ -57,6 +57,18 @@ class ch10_MonoidsTests extends FunSuite {
     assert(ordered(IndexedSeq()))
     assert(!ordered(IndexedSeq(1, 2, 3, 100, 6, 7, 8, 9)))
     assert(!ordered(IndexedSeq(100, 1, 2, 3, 6, 4, 7, 8, 9)))
+    assert(!ordered(IndexedSeq(1, 3, 2, 4)))
+  }
+
+  test("ex. 10.9 ordered: property based") {
+    def asc(a: Int, b: Int) = a <= b
+    def isSorted(items: List[Int]): Boolean =
+      fpinscala.gettingstarted.PolymorphicFunctions.isSorted(items.toArray, asc)
+
+    val gen = {
+      Gen.choose(0, 10).flatMap(length => Gen.listOfN(length, Gen.smallInt)).map(_.toArray)
+    }
+    Prop.run(Prop.forAll(gen)(shuffle => isSorted(shuffle) == ordered(shuffle)))
   }
 
   test("ex 10.10, 10.11 word count") {
