@@ -61,14 +61,17 @@ class ch10_MonoidsTests extends FunSuite {
   }
 
   test("ex. 10.9 ordered: property based") {
-    def asc(a: Int, b: Int) = a <= b
-    def isSorted(items: List[Int]): Boolean =
-      fpinscala.gettingstarted.PolymorphicFunctions.isSorted(items.toArray, asc)
-
+    def asc(a: Int, b: Int): Boolean = {
+      a <= b
+    }
+    def isSorted(items: Array[Int]): Boolean = {
+      fpinscala.gettingstarted.PolymorphicFunctions.isSorted(items, asc)
+    }
     val gen = {
       Gen.choose(0, 10).flatMap(length => Gen.listOfN(length, Gen.smallInt)).map(_.toArray)
     }
-    Prop.run(Prop.forAll(gen)(shuffle => isSorted(shuffle) == ordered(shuffle)))
+
+    Prop.run(Prop.forAll(gen)(arr => isSorted(arr) == ordered(arr)))
   }
 
   test("ex 10.10, 10.11 word count") {
