@@ -3,9 +3,9 @@ package monads
 
 import parsing._
 import testing._
-import parallelism._
+import fpinscala.parallelism.Nonblocking._
 import state._
-import parallelism.Par._
+
 import language.higherKinds
 
 trait Functor[F[_]] {
@@ -61,19 +61,104 @@ object Monad {
       ma flatMap f
   }
 
-  val parMonad: Monad[Par] = ???
+  val parMonad: Monad[Par] = new Monad[Par] {
+    override def flatMap[A, B](ma: Par[A])(f: (A) => Par[B]): Par[B] = {
+      Par.flatMap(ma)(f)
+    }
 
-  def parserMonad[P[+_]](p: Parsers[P]): Monad[P] = ???
+    override def unit[A](a: => A): Par[A] = {
+      Par.unit(a)
+    }
+  }
 
-  val optionMonad: Monad[Option] = ???
+  def parserMonad[P[+_]](p: Parsers[P]): Monad[P] = new Monad[P] {
+    override def flatMap[A, B](ma: P[A])(f: (A) => P[B]): P[B] = {
+      p.flatMap(ma)(f)
+    }
 
-  val streamMonad: Monad[Stream] = ???
+    override def unit[A](a: => A): P[A] = p.succeed(a)
+  }
 
-  val listMonad: Monad[List] = ???
+  val optionMonad: Monad[Option] = new Monad[Option] {
+    override def flatMap[A, B](ma: Option[A])(f: (A) => Option[B]): Option[B] = {
+      ma.flatMap(f)
+    }
 
-  def stateMonad[S] = ???
+    override def unit[A](a: => A): Option[A] = Option.apply(a)
+  }
 
-  val idMonad: Monad[Id] = ???
+  val streamMonad: Monad[Stream] = new Monad[Stream] {
+    override def flatMap[A, B](ma: Stream[A])(f: (A) => Stream[B]): Stream[B] = {
+      ma.flatMap(f)
+    }
+
+    override def unit[A](a: => A): Stream[A] = Stream.apply(a)
+  }
+
+  val listMonad: Monad[List] = new Monad[List] {
+    override def flatMap[A, B](ma: List[A])(f: (A) => List[B]): List[B] = {
+      ma.flatMap(f)
+    }
+
+    override def unit[A](a: => A): List[A] = {
+      List(a)
+    }
+  }
+
+  // ex11.2: attempt 1 : OK
+  //  type MyState[A] = State[Int, A]
+  //  def stateMonad[A]: Monad[MyState] = new Monad[MyState] {
+  //    override def unit[A](a: => A): MyState[A] = {
+  //      State(s => (a, s))
+  //    }
+  //
+  //    override def flatMap[A, B](ma: MyState[A])(f: (A) => MyState[B]): MyState[B] = {
+  //      ma.flatMap(f)
+  //    }
+  //  }
+
+  // ex11.2: attempt 2: NOK
+  //  def stateMonad2[A]: Monad[State[Int, A]] = new Monad[State[Int, A]] {
+  //    override def unit[A](a: => A): State[Int, A] = {
+  //      State(s => (a, s))
+  //    }
+  //
+  //    override def flatMap[A, B](ma: State[Int, A])(f: (A) => State[Int, B]): State[Int, B] = {
+  //      ma.flatMap(f)
+  //    }
+  //  }
+
+  // ex11.2: attempt 3: Compiles
+  //  type MyState[A] = State[Int, A]
+  //  type t1[A] = ({ type MyState[A] = State[Int, A] })#MyState[A]
+  //  def stateMonad[A]: Monad[t1] = new Monad[t1] {
+  //    override def unit[A](a: => A): t1[A] = {
+  //      State(s => (a, s))
+  //    }
+  //
+  //    override def flatMap[A, B](ma: t1[A])(f: (A) => t1[B]): t1[B] = {
+  //      ma.flatMap(f)
+  //    }
+  //  }
+
+  // ex11.2: attempt 4
+  //  type MyState[A] = State[Int, A]
+  //  type t1[A] = ({ type MyState[A] = State[Int, A] })#MyState[A]
+  // parametrizing t1 gives us something like:
+  type t2[A, S] = ({ type MyState[A] = State[S, A] })#MyState[A]
+  // The above seems to partially apply a type, so removing it and putting it in the Monad works:
+  def stateMonad[S] = new Monad[({ type MyState[A] = State[S, A] })#MyState] {
+    // I could not refere to MyState in the method definitions?
+    override def unit[A](a: => A): State[S, A] = {
+      State(s => (a, s))
+    }
+
+    override def flatMap[A, B](ma: State[S, A])(f: (A) => State[S, B]): State[S, B] = {
+      ma.flatMap(f)
+    }
+  }
+
+  //  val idMonad: Monad[Id] = ???
 
   def readerMonad[R] = ???
 }
