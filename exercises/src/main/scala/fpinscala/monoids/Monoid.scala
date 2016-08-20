@@ -115,8 +115,21 @@ object Monoid {
   def foldRight[A, B](as: List[A])(z: B)(f: (A, B) => B): B =
     foldMap(as, endoMonoid[B]) { a => f(a, _) }(z)
 
+  def dual[A](m: Monoid[A]) = new Monoid[A] {
+    override def op(a1: A, a2: A): A = m.op(a2, a1)
+
+    override def zero: A = m.zero
+  }
+
   def foldLeft[A, B](as: List[A])(z: B)(f: (B, A) => B): B =
-    foldMap(as, endoMonoid[B]) { a => f(_, a) }(z)
+    foldMap(as, dual(endoMonoid[B])) { a => f(_, a) }(z)
+
+  //  def dualMonoid[A](m: Monoid[A]): Monoid[A] = new Monoid[A] {
+  //    def op(a1: A, a2: A) = m.op(a2, a1)
+  //    val zero = m.zero
+  //  }
+  //def foldLeft[A, B](as: List[A])(z: B)(f: (B, A) => B): B =
+  //foldMap(as, dualMonoid(endoMonoid[B]))(a => b => f(b, a))(z)
 
   def foldMapV[A, B](as: IndexedSeq[A], m: Monoid[B])(f: A => B): B = as match {
     case IndexedSeq() => m.zero
@@ -136,15 +149,10 @@ object Monoid {
 
     val m = new Monoid[Ordered] {
       override def op(s1: Ordered, s2: Ordered): Ordered = (s1, s2) match {
-        case (Ordered(Some((l1, r1)), true), Ordered(Some((l2, r2)), true)) =>
-          if (r1 <= l2) {
-            Ordered(Some(l1, r2), true)
-          } else {
-            Ordered(None, false)
-          }
-        case (Ordered(None, true), Ordered(sr, true)) => Ordered(sr, true)
-        case (Ordered(sr, true), Ordered(None, true)) => Ordered(sr, true)
-        case (Ordered(None, true), Ordered(None, true)) => Ordered(None, true)
+        case (Ordered(Some((l1, r1)), true), Ordered(Some((l2, r2)), true)) => Ordered(Some(l1, r2), r1 <= l2)
+        case (Ordered(None, true), x @ Ordered(sr, true)) => x
+        case (x @ Ordered(sr, true), Ordered(None, true)) => x
+        case (x @ Ordered(None, true), Ordered(None, true)) => x
         case _ => Ordered(None, false)
       }
 
@@ -198,7 +206,7 @@ object Monoid {
   }
 
   def count(s: String): Int = {
-    def toWC(c: Char): WC = if (c.isWhitespace) Part("", 0, "") else Stub(c.toString)
+    def toWC(c: Char): WC = if (c.isWhitespace) wcMonoid.zero else Stub(c.toString)
     def wordOrNot(chars: String): Int = {
       if (chars.isEmpty) 0 else 1
     }
@@ -270,7 +278,7 @@ trait Foldable[F[_]] {
     foldMap(as) { a => b: B => f(a, b) }(Monoid.endoMonoid[B])(z)
 
   def foldLeft[A, B](as: F[A])(z: B)(f: (B, A) => B): B =
-    foldMap(as) { a => b: B => f(b, a) }(Monoid.endoMonoid[B])(z)
+    foldMap(as) { a => b: B => f(b, a) }(Monoid.dual(Monoid.endoMonoid[B]))(z)
 
   def foldMap[A, B](as: F[A])(f: A => B)(mb: Monoid[B]): B =
     foldLeft(as)(mb.zero)((acc, a) => mb.op(acc, f(a)))
@@ -331,7 +339,7 @@ object TreeFoldable extends Foldable[Tree] {
 
   override def foldRight[A, B](as: Tree[A])(z: B)(f: (A, B) => B) = as match {
     case Leaf(a) => f(a, z)
-    case Branch(left, right) => foldRight(right)(foldRight(left)(z)(f))(f)
+    case Branch(left, right) => foldRight(left)(foldRight(right)(z)(f))(f)
   }
 }
 

@@ -36,7 +36,7 @@ class ch10_MonoidsTests extends FunSuite {
   }
 
   test("ex 10.6 foldLeft") {
-    assert("54321" == foldLeft(List(1, 2, 3, 4))("5")((a, b) => a + b))
+    assert("51234" == foldLeft(List(1, 2, 3, 4))("5")((a, b) => a + b))
   }
 
   test("ex 10.7 foldMapV") {
@@ -92,7 +92,9 @@ class ch10_MonoidsTests extends FunSuite {
   test("ex 10.13 TreeFoldable") {
     assert("1024" == TreeFoldable.foldLeft(Branch(Leaf(5), Branch(Leaf(1), Leaf(2))))("")((s, x) => s + x * 2))
     assert("10" == TreeFoldable.foldLeft(Leaf(5))("")((s, x) => s + x * 2))
-    assert("1024" == TreeFoldable.foldRight(Branch(Leaf(5), Branch(Leaf(1), Leaf(2))))("")((x, s) => s + x * 2))
+    assert("4210" == TreeFoldable.foldRight(Branch(Leaf(5), Branch(Leaf(1), Leaf(2))))("")((x, s) => s + x * 2))
+    assert(17 == TreeFoldable.foldRight(Branch(Leaf(5), Branch(Leaf(1), Leaf(2))))(1)((x, s) => s + x * 2))
+    assert(17 == TreeFoldable.foldLeft(Branch(Leaf(5), Branch(Leaf(1), Leaf(2))))(1)((s, x) => s + x * 2))
 
   }
 
@@ -106,6 +108,7 @@ class ch10_MonoidsTests extends FunSuite {
   }
 
   test("ex 10.15 generic toList") {
+    assert(List(1, 2, 3, 4, 5) == ListFoldable.toList(List(1, 2, 3, 4, 5)))
     assert(List(5) == OptionFoldable.toList(Some(5)))
     assert(List.empty[Int] == OptionFoldable.toList(None.asInstanceOf[Option[Int]]))
     assert(List(5, 1, 2) == TreeFoldable.toList(Branch(Leaf(5), Branch(Leaf(1), Leaf(2)))))
