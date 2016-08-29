@@ -1,12 +1,12 @@
 package fpinscala
 package monads
 
-import parsing._
-import testing._
 import fpinscala.parallelism.Nonblocking._
-import state._
+import fpinscala.parsing._
+import fpinscala.state._
+import fpinscala.testing._
 
-import language.higherKinds
+import scala.language.higherKinds
 
 trait Functor[F[_]] {
   def map[A, B](fa: F[A])(f: A => B): F[B]
@@ -35,16 +35,55 @@ trait Monad[M[_]] extends Functor[M] {
   def map2[A, B, C](ma: M[A], mb: M[B])(f: (A, B) => C): M[C] =
     flatMap(ma)(a => map(mb)(b => f(a, b)))
 
-  def sequence[A](lma: List[M[A]]): M[List[A]] = ???
+  def sequence[A](lma: List[M[A]]): M[List[A]] =
+    lma.foldRight(unit(List.empty[A])) { (ma, acc) => map2(ma, acc)(_ :: _) }
 
-  def traverse[A, B](la: List[A])(f: A => M[B]): M[List[B]] = ???
+  def sequence_[A](lma: List[M[A]]): M[List[A]] =
+    traverse(lma)(ma => ma)
 
-  def replicateM[A](n: Int, ma: M[A]): M[List[A]] = ???
+  def traverse[A, B](la: List[A])(f: A => M[B]): M[List[B]] =
+    la.foldRight(unit(List.empty[B])) { (a, acc) => map2(f(a), acc)(_ :: _) }
 
-  def compose[A, B, C](f: A => M[B], g: B => M[C]): A => M[C] = ???
+  def replicateM[A](n: Int, ma: M[A]): M[List[A]] = sequence(List.fill(n)(ma))
+
+  def filterM[A](ms: List[A])(f: A => M[Boolean]): M[List[A]] =
+    ms.foldRight(unit(List.empty[A])) { (a, acc) => map2(f(a), acc) { (b, as) => if (b) a :: as else as } }
+  //    ms match {
+  //      case Nil => unit(List.empty[A])
+  //      case a :: as =>
+  //        val mb = f(a)
+  //        map2(mb, filterM(as)(f))((b, xs) => if (b) a :: xs else xs)
+  //    }
+
+  def compose[A, B, C](f: A => M[B], g: B => M[C]): A => M[C] =
+    a => flatMap(f(a))(g)
 
   // Implement in terms of `compose`:
-  def _flatMap[A, B](ma: M[A])(f: A => M[B]): M[B] = ???
+  def _flatMap[A, B](ma: M[A])(f: A => M[B]): M[B] = {
+    val g: Unit => M[A] = _ => ma
+    val c1: (Unit) => M[B] = compose(g, f)
+    c1(())
+  }
+
+  //exercise 11.9
+  /*
+  compose(compose(f, g), h) == compose(f, compose(g, h))
+  compose(a => flatMap(f(a))(g), h) == compose(f, a => flatMap(g(a))(h))
+  b => flatMap((a => flatMap(f(a))(g)))(h) == b => flatMap(f(b))(a => flatMap(g(a))(h)))
+  b => flatMap(flatMap(f(b)(g)))(h) == b => flatMap(f(b))(a => flatMap(g(a))(h)))
+
+  apply to x:
+
+  flatMap(flatMap(f(x)(g)))(h) == flatMap(f(x))(a => flatMap(g(a))(h)))
+
+  subst f(x) = y or just x again:
+
+  flatMap(flatMap(x)(g))(h) == flatMap(x)(a => flatMap(g(a))(h))
+
+  infix notation:
+
+  x.flatMap(g).flatMap(h) == x.flatMap(a => g(a).flatMap(h))
+   */
 
   def join[A](mma: M[M[A]]): M[A] = ???
 
