@@ -85,10 +85,76 @@ trait Monad[M[_]] extends Functor[M] {
   x.flatMap(g).flatMap(h) == x.flatMap(a => g(a).flatMap(h))
    */
 
-  def join[A](mma: M[M[A]]): M[A] = ???
+  // ex. 11.10
+  /*
+  left:
+  -----
+
+  compose(f, unit) == f
+  a => flatMap(f(a))(unit) == f
+
+  apply to v:
+
+  flatMap(f(v))(unit) = f(v)
+
+  subst f(v) = x:
+
+  flatMap(x)(unit) == x
+  q.e.d
+
+  right:
+  ------
+
+  compose(unit, f) == f
+  a => flatMap(unit(a))(f) == f
+
+  apply to v:
+
+  flatMap(unit(v))(f) = f(v)
+  q.e.d.
+   */
+
+  // ex. 11.11
+  /*
+  Option:
+  left
+  -----
+  flatMap(None)(f) == None
+  Trivial
+
+  flatMap(Some(v))(unit) == Some(v)
+  unit(v) == Some(v)
+  Some(v) == Some(v)
+  q.e.d
+
+  right:
+  ------
+  flatMap(unit(None))(f) == f(None)
+  flatMap(Some(None))(f) == f(None)
+  f(None) == f(None)
+
+  q.e.d.
+
+  flatMap(unit(Some(v)))(f) == f(Some(v))
+  Same as for None
+  q.e.d
+   */
+
+  def join[A](mma: M[M[A]]): M[A] = flatMap(mma)(ma => ma)
 
   // Implement in terms of `join`:
-  def __flatMap[A, B](ma: M[A])(f: A => M[B]): M[B] = ???
+  def __flatMap[A, B](ma: M[A])(f: A => M[B]): M[B] = join(map(ma)(f))
+
+  // ex. 11.14
+  /*
+  easy first, identity:
+  join(unit(x)) == x
+  join(map(x)(unit)) == x
+
+  assoc.
+  in F[F[F[A]]] it should not matter if we first join the outer 2 F's or the inner two, result should be the same
+  join(join(x)) == join(map(x)(join)) ??
+   */
 }
 
 case class Reader[R, A](run: R => A)

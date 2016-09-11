@@ -107,10 +107,27 @@ class ch11_MonadTests extends FunSuite {
     assert(List(1, 1, 1) == h("1"))
     assert(List() == h("abc"))
   }
+
   test("11.8 - flatMap in terms of compose") {
     assert(Some(6) == optionMonad._flatMap(Some(5))(i => Some(i + 1)))
     assert(None == optionMonad._flatMap(Some(5))(i => None))
     assert(None == optionMonad._flatMap(None.asInstanceOf[Option[Int]])(i => Some(i + 1)))
+  }
+
+  test("11.12 - join") {
+    assert(Some(5) == optionMonad.join(Some(Some(5))))
+    assert(None == optionMonad.join(None))
+
+    assert(List(1, 2, 3, 4, 5) == listMonad.join(List(List(1, 2, 3), List(4, 5))))
+    assert(List(1, 2, 3, 4, 5) == listMonad.join(List(List(), List(1, 2, 3, 4, 5))))
+    assert(List() == listMonad.join(List(List())))
+    assert(List() == listMonad.join(List()))
+  }
+
+  test("11.13 - flatMap in terms of join") {
+    assert(Some(6) == optionMonad.__flatMap(Some(5))(i => Some(i + 1)))
+    assert(None == optionMonad.__flatMap(Some(5))(i => None))
+    assert(None == optionMonad.__flatMap(None.asInstanceOf[Option[Int]])(i => Some(i + 1)))
   }
 
 }
