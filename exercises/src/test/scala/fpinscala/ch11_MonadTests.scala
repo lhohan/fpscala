@@ -2,8 +2,10 @@ package fpinscala
 
 import java.util.concurrent.Executors
 
+import fpinscala.monads.{Id, Reader}
 import fpinscala.monads.Monad._
 import fpinscala.parallelism.Nonblocking.Par
+import fpinscala.state.State
 import org.scalatest.FunSuite
 
 import scala.util.Try
@@ -128,6 +130,82 @@ class ch11_MonadTests extends FunSuite {
     assert(Some(6) == optionMonad.__flatMap(Some(5))(i => Some(i + 1)))
     assert(None == optionMonad.__flatMap(Some(5))(i => None))
     assert(None == optionMonad.__flatMap(None.asInstanceOf[Option[Int]])(i => Some(i + 1)))
+  }
+
+  test("11.17 - id monad") {
+    val i6: Id[Int] = idMonad.unit(6)
+    val ii6 = idMonad.unit(i6)
+    assert(Id(6) == idMonad.join(ii6))
+    import scala.language.implicitConversions
+    implicit def toId[A](a: A): Id[A] = Id(a)
+    val x = for {
+      a <- 6
+      b <- 7
+    } yield a + b
+    assert(13 == x.value)
+  }
+
+  test("11.18 - state monad: sequence") {
+    // sequence applies all single state transition into a cumulative state transition.
+    type myState[A] = State[Int, A]
+    def doCount(s: String): myState[String] = State {
+      counter => (s, counter + 1)
+    }
+
+    val cmds = List("cd", "ls", "pwd")
+    val counter = stateMonad.sequence(cmds.map { cmd => doCount(cmd) })
+
+    val totalCounted_state = counter.run(0)._2
+    assert(3 == totalCounted_state, "sequence of accumulated single incremental counts should result in the total count")
+  }
+
+  test("11.19 - state monad: replicateM") {
+    type myState[A] = State[Int, A]
+    def doCount(s: String): myState[String] = State {
+      counter => (s, counter + 1)
+    }
+
+    val cmds = List("cd", "ls", "open chrome")
+    val counter = stateMonad.replicateM(5, doCount("abc"))
+
+    val totalCounted_state = counter.run(0)._2
+    assert(5 == totalCounted_state, "replicate M applies the state transition n times")
+  }
+
+  test("11.20 - state laws") {
+    val F = stateMonad[Int]
+
+    // law: running the state monad with initial state, no other transitions, returns the initial state
+    val r1 = for {
+      s <- getState[Int]
+    } yield s
+    assert(5 == r1.run(5)._2, "law: running the state monad with initial state, no other transitions, returns the initial state")
+
+    val r2 = for {
+      _ <- setState[Int](3)
+      _ <- setState[Int](2)
+      _ <- setState[Int](1)
+      s <- getState
+    } yield s
+    assert(1 == r2.run(0)._2, "law: setting the state, should return the last set state when getting the state")
+
+    val r3 = for {
+      x <- F.unit("abc")
+    } yield x
+    assert("abc" == r3.run(2)._1, "law: unit value should be returned when 'directly' running the state monad.")
+
+  }
+
+  test("11.21 - Reader monad") {
+    val F = readerMonad[Int]
+    def r(i: Int) = F.unit(i)
+    def reader(i: Int) = F.map(r(i))((i: Int) => i * 2)
+    def replicateM(i: Int) = readerMonad.replicateM(3, reader(i))
+    assert(List(4, 4, 4) == replicateM(2).run(0), "replicating of the reader monad: read and apply function n times")
+
+    val sequence = readerMonad.sequence(List(reader(3), reader(5)))
+    assert(List(6, 10) == sequence.run(0), "...")
+
   }
 
 }

@@ -67,16 +67,20 @@ trait Monad[M[_]] extends Functor[M] {
 
   //exercise 11.9
   /*
+
+  Note: interesting observation one could consider going back between Kleisli arrows and 'standard' Monad laws: since
+  the arrows are functions and you want to go to the Monad representation, you will probably have to apply these
+   functions (to general arguments).
+
   compose(compose(f, g), h) == compose(f, compose(g, h))
   compose(a => flatMap(f(a))(g), h) == compose(f, a => flatMap(g(a))(h))
-  b => flatMap((a => flatMap(f(a))(g)))(h) == b => flatMap(f(b))(a => flatMap(g(a))(h)))
-  b => flatMap(flatMap(f(b)(g)))(h) == b => flatMap(f(b))(a => flatMap(g(a))(h)))
+  (b => flatMap((a => flatMap(f(a))(g))))(b)(h) == b => flatMap(f(b))(a => flatMap(g(a))(h)))
+  apply both sides to y
+  flatMap((a => flatMap(f(a))(g)))(y)(h) == flatMap(f(y))(a => flatMap(g(a))(h))
+  applying left side `a => ` arrow using `y`
+  flatMap(flatMap(f(y)(g)))(h) == flatMap(f(y))(a => flatMap(g(a))(h)))
 
-  apply to x:
-
-  flatMap(flatMap(f(x)(g)))(h) == flatMap(f(x))(a => flatMap(g(a))(h)))
-
-  subst f(x) = y or just x again:
+  subst f(y) = x :
 
   flatMap(flatMap(x)(g))(h) == flatMap(x)(a => flatMap(g(a))(h))
 
@@ -147,17 +151,47 @@ trait Monad[M[_]] extends Functor[M] {
 
   // ex. 11.14
   /*
-  easy first, identity:
-  join(unit(x)) == x
-  join(map(x)(unit)) == x
+  Associative law:
 
-  assoc.
-  in F[F[F[A]]] it should not matter if we first join the outer 2 F's or the inner two, result should be the same
-  join(join(x)) == join(map(x)(join)) ??
+   x.flatMap(f).flatMap(g) == x.flatMap(a => f(a).flatMap(g))
+   flatMap(flatMap(x)(f))(g) == flatMap(x)(a => f(a).flatMap(g))
+   join(map(join(map(x)(f))(g)) == join(map(x)(a => join(map(f(a))(g))))
+   map(join(map(x)(f))(g) == map(x)(a => join(map(f(a))(g)))
+
+  Should become (https://github.com/fpinscala/fpinscala/wiki/Chapter-11:-Monads):
+  join(join(x)) == join(map(x)(join))
+
+ Identity laws:
+   flatMap(x)(unit) == x
+   join(map(x))(unit) == x
+
+
+   flatMap(unit(y))(f) == f(y)
+   join(map(unit(y)))(f) == f(y)
+
+ */
+  // ex. 11.15
+  /*
+  assoc. law for Par:
+  x.flatMap(f).flatMap(g) == x.flatMap(a => f(a).flatMap(g))
+  compose(compose(f, g), h) == compose(f, compose(g, h))
+  join(join(x)) == join(map(x)(join))
+
+  Considering x of type Par[Par[Par[A]]]:
+  Meaning of `join` for `Par`: `join` starts an inner computation, waits for it to finish and return the result.
+  So: associativity law for parallel computations: it does not matter if the outer computation is started first and then
+  the inner one or vice versa, the end result should be the same.
+
+
+  Considering x of type Parser[Parser[Parser[A]]]:
+  x.flatMap(f).flatMap(g) == x.flatMap(a => f(a).flatMap(g))
+
+  Meaning of `flatMap` for `Parser`: 'runs' a parser and then uses its result to select a second parser to run in sequence.
+  So: associativity law for parsing: given 2 'parser selection functions', f and g, it should not matter if we first
+  apply f and then g or vice versa, the result should be the same.
+
    */
 }
-
-case class Reader[R, A](run: R => A)
 
 object Monad {
   val genMonad = new Monad[Gen] {
@@ -251,9 +285,10 @@ object Monad {
   //  type t1[A] = ({ type MyState[A] = State[Int, A] })#MyState[A]
   // parametrizing t1 gives us something like:
   type t2[A, S] = ({ type MyState[A] = State[S, A] })#MyState[A]
+
   // The above seems to partially apply a type, so removing it and putting it in the Monad works:
   def stateMonad[S] = new Monad[({ type MyState[A] = State[S, A] })#MyState] {
-    // I could not refere to MyState in the method definitions?
+    // I could not refer to MyState in the method definitions?
     override def unit[A](a: => A): State[S, A] = {
       State(s => (a, s))
     }
@@ -263,20 +298,49 @@ object Monad {
     }
   }
 
-  //  val idMonad: Monad[Id] = ???
+  def getState[S]: State[S, S] = State(s => (s, s))
+  def setState[S](s: S): State[S, Unit] = State(_ => ((), s))
 
-  def readerMonad[R] = ???
+  val idMonad: Monad[Id] = new Monad[Id] {
+    override def flatMap[A, B](ma: Id[A])(f: (A) => Id[B]): Id[B] = ma.flatMap(f)
+
+    override def unit[A](a: => A): Id[A] = Id(a)
+  }
+
+  def readerMonad[R] = Reader.readerMonad[R]
 }
 
 case class Id[A](value: A) {
-  def map[B](f: A => B): Id[B] = ???
-  def flatMap[B](f: A => Id[B]): Id[B] = ???
+  def map[B](f: A => B): Id[B] = Id(f(value))
+  def flatMap[B](f: A => Id[B]): Id[B] = f(value)
+}
+
+case class Reader[R, A](run: R => A) {
+
+  def flatMap[B](f: A => Reader[R, B]): Reader[R, B] = Reader { r =>
+    val a = run(r)
+    f(a).run(r)
+  }
+
+  // map is function composition
+  def map[B](f: A => B): Reader[R, B] = Reader { r =>
+    run.andThen(f)(r)
+  }
+
 }
 
 object Reader {
   def readerMonad[R] = new Monad[({ type f[x] = Reader[R, x] })#f] {
-    def unit[A](a: => A): Reader[R, A] = ???
-    override def flatMap[A, B](st: Reader[R, A])(f: A => Reader[R, B]): Reader[R, B] = ???
+    override def unit[A](a: => A): Reader[R, A] = Reader(_ => a)
+    override def flatMap[A, B](st: Reader[R, A])(f: A => Reader[R, B]): Reader[R, B] = st.flatMap(f)
+
+    def get = Reader[R, R](r => r) // like State monad but simpler
+    def read = get
+  }
+
+  // join is curried functional application with the same argument twice
+  def join[R, A](x: Reader[R, Reader[R, A]]): Reader[R, A] = Reader { r =>
+    x.run(r).run(r)
   }
 }
 
