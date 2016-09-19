@@ -149,27 +149,33 @@ class ch11_MonadTests extends FunSuite {
     // sequence applies all single state transition into a cumulative state transition.
     type myState[A] = State[Int, A]
     def doCount(s: String): myState[String] = State {
-      counter => (s, counter + 1)
+      counter => (s + " executed!", counter + 1)
     }
 
     val cmds = List("cd", "ls", "pwd")
-    val counter = stateMonad.sequence(cmds.map { cmd => doCount(cmd) })
+    val states: List[myState[String]] = cmds.map { cmd => doCount(cmd) }
+    val sequence: State[Int, List[String]] = stateMonad.sequence(states)
+    val counter = sequence
 
-    val totalCounted_state = counter.run(0)._2
+    val result: (List[String], Int) = counter.run(0)
+    val strings = result._1
+    assert(List("cd executed!", "ls executed!", "pwd executed!") == strings)
+    val totalCounted_state = result._2
     assert(3 == totalCounted_state, "sequence of accumulated single incremental counts should result in the total count")
   }
 
   test("11.19 - state monad: replicateM") {
     type myState[A] = State[Int, A]
     def doCount(s: String): myState[String] = State {
-      counter => (s, counter + 1)
+      counter => (s.reverse, counter + 1)
     }
 
     val cmds = List("cd", "ls", "open chrome")
     val counter = stateMonad.replicateM(5, doCount("abc"))
-
-    val totalCounted_state = counter.run(0)._2
-    assert(5 == totalCounted_state, "replicate M applies the state transition n times")
+    val result: (List[String], Int) = counter.run(0)
+    assert(List("cba", "cba", "cba", "cba", "cba") == result._1)
+    val totalCounted_state = result._2
+    assert(5 == totalCounted_state, "replicate M applies the same state transition n times")
   }
 
   test("11.20 - state laws") {
@@ -197,14 +203,12 @@ class ch11_MonadTests extends FunSuite {
   }
 
   test("11.21 - Reader monad") {
-    val F = readerMonad[Int]
-    def r(i: Int) = F.unit(i)
-    def reader(i: Int) = F.map(r(i))((i: Int) => i * 2)
-    def replicateM(i: Int) = readerMonad.replicateM(3, reader(i))
-    assert(List(4, 4, 4) == replicateM(2).run(0), "replicating of the reader monad: read and apply function n times")
+    val replicated = readerMonad.replicateM(3, Reader[Int, Int](x => x + 10))
+    assert(List(12, 12, 12) == replicated.run(2), "replicating of the reader monad: apply function n times with same arg and return the result")
 
-    val sequence = readerMonad.sequence(List(reader(3), reader(5)))
-    assert(List(6, 10) == sequence.run(0), "...")
+    val readers: List[Reader[Int, Int]] = List(Reader(x => (x + 1) * 2), Reader(x => x / 2))
+    val sequenced: Reader[Int, List[Int]] = readerMonad.sequence(readers)
+    assert(List(10, 2) == sequenced.run(4), "sequence turn a list of functions in to a function that takes one argument and returns the results in a list")
 
   }
 
