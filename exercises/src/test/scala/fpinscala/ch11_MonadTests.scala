@@ -210,6 +210,13 @@ class ch11_MonadTests extends FunSuite {
     val sequenced: Reader[Int, List[Int]] = readerMonad.sequence(readers)
     assert(List(10, 2) == sequenced.run(4), "sequence turn a list of functions in to a function that takes one argument and returns the results in a list")
 
+    val r = Reader[Int, String]((x: Int) => x.toString + "!")
+    val getter = for {
+      _ <- r
+      x <- readerMonad.get
+    } yield x
+    val context = getter.run(5)
+    assert(5 == context, "The reader monad allows to get the passed input/context")
   }
 
 }
