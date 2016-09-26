@@ -19,19 +19,19 @@ trait Applicative[F[_]] extends Functor[F] {
     apply(f2)(fb)
   }
 
-//  def map2[A, B, C](fa: F[A], fb: F[B])(f: (A, B) => C): F[C] = {
-//    val curr: A => B => C = f.curried
-//    val f1: F[B => C] = map(fa)(curr)
-//    apply(f1)(fb)
-//  }
+  //  def map2[A, B, C](fa: F[A], fb: F[B])(f: (A, B) => C): F[C] = {
+  //    val curr: A => B => C = f.curried
+  //    val f1: F[B => C] = map(fa)(curr)
+  //    apply(f1)(fb)
+  //  }
 
-  def map3[A, B, C, D](fa: F[A], fb: F[B], fc: F[C])(f: (A, B,C) => D): F[D] = {
+  def map3[A, B, C, D](fa: F[A], fb: F[B], fc: F[C])(f: (A, B, C) => D): F[D] = {
     val curr: A => B => C => D = f.curried
     val f1: F[(A) => (B) => (C) => D] = unit(curr)
     apply(apply(apply(f1)(fa))(fb))(fc)
   }
 
-  def map4[A, B, C, D, E](fa: F[A], fb: F[B], fc: F[C], fd: F[D])(f: (A, B,C, D) => E): F[E] = {
+  def map4[A, B, C, D, E](fa: F[A], fb: F[B], fc: F[C], fd: F[D])(f: (A, B, C, D) => E): F[E] = {
     val curr: A => B => C => D => E = f.curried
     val f1: F[(A) => (B) => (C) => D => E] = unit(curr)
     apply(apply(apply(apply(f1)(fa))(fb))(fc))(fd)
@@ -66,7 +66,7 @@ trait Applicative[F[_]] extends Functor[F] {
 case class Tree[+A](head: A, tail: List[Tree[A]])
 
 trait Monad[F[_]] extends Applicative[F] {
-  def flatMap[A, B](ma: F[A])(f: A => F[B]): F[B] = join(map(ma)(f))
+  def flatMap[A, B](ma: F[A])(f: A => F[B]): F[B]
 
   def join[A](mma: F[F[A]]): F[A] = flatMap(mma)(ma => ma)
 
@@ -75,10 +75,21 @@ trait Monad[F[_]] extends Applicative[F] {
 
   override def apply[A, B](mf: F[A => B])(ma: F[A]): F[B] =
     flatMap(mf)(f => map(ma)(a => f(a)))
+
+  override def map[A, B](fa: F[A])(f: (A) => B): F[B] = flatMap(fa)(a => unit(f(a)))
 }
 
 object Monad {
-  def eitherMonad[E]: Monad[({ type f[x] = Either[E, x] })#f] = ???
+  def eitherMonad[E]: Monad[({ type f[x] = Either[E, x] })#f] = new Monad[({ type f[x] = scala.Either[E, x] })#f] {
+    override def unit[A](a: => A): Either[E, A] = Right(a)
+
+    override def flatMap[A, B](ma: Either[E, A])(f: (A) => Either[E, B]): Either[E, B] = {
+      ma match {
+        case Right(a) => f(a)
+        case Left(e) => Left(e)
+      }
+    }
+  }
 
   def stateMonad[S] = new Monad[({ type f[x] = State[S, x] })#f] {
     def unit[A](a: => A): State[S, A] = State(s => (a, s))
