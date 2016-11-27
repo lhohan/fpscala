@@ -15,7 +15,7 @@ trait Functor[F[_]] {
     (map(fab)(_._1), map(fab)(_._2))
 
   def codistribute[A, B](e: Either[F[A], F[B]]): F[Either[A, B]] = e match {
-    case Left(fa) => map(fa)(Left(_))
+    case Left(fa)  => map(fa)(Left(_))
     case Right(fb) => map(fb)(Right(_))
   }
 }
@@ -36,18 +36,26 @@ trait Monad[M[_]] extends Functor[M] {
     flatMap(ma)(a => map(mb)(b => f(a, b)))
 
   def sequence[A](lma: List[M[A]]): M[List[A]] =
-    lma.foldRight(unit(List.empty[A])) { (ma, acc) => map2(ma, acc)(_ :: _) }
+    lma.foldRight(unit(List.empty[A])) { (ma, acc) =>
+      map2(ma, acc)(_ :: _)
+    }
 
   def sequence_[A](lma: List[M[A]]): M[List[A]] =
     traverse(lma)(ma => ma)
 
   def traverse[A, B](la: List[A])(f: A => M[B]): M[List[B]] =
-    la.foldRight(unit(List.empty[B])) { (a, acc) => map2(f(a), acc)(_ :: _) }
+    la.foldRight(unit(List.empty[B])) { (a, acc) =>
+      map2(f(a), acc)(_ :: _)
+    }
 
   def replicateM[A](n: Int, ma: M[A]): M[List[A]] = sequence(List.fill(n)(ma))
 
   def filterM[A](ms: List[A])(f: A => M[Boolean]): M[List[A]] =
-    ms.foldRight(unit(List.empty[A])) { (a, acc) => map2(f(a), acc) { (b, as) => if (b) a :: as else as } }
+    ms.foldRight(unit(List.empty[A])) { (a, acc) =>
+      map2(f(a), acc) { (b, as) =>
+        if (b) a :: as else as
+      }
+    }
   //    ms match {
   //      case Nil => unit(List.empty[A])
   //      case a :: as =>
@@ -60,7 +68,7 @@ trait Monad[M[_]] extends Functor[M] {
 
   // Implement in terms of `compose`:
   def _flatMap[A, B](ma: M[A])(f: A => M[B]): M[B] = {
-    val g: Unit => M[A] = _ => ma
+    val g: Unit => M[A]    = _ => ma
     val c1: (Unit) => M[B] = compose(g, f)
     c1(())
   }
@@ -169,7 +177,7 @@ trait Monad[M[_]] extends Functor[M] {
    flatMap(unit(y))(f) == f(y)
    join(map(unit(y)))(f) == f(y)
 
- */
+   */
   // ex. 11.15
   /*
   assoc. law for Par:
@@ -190,7 +198,7 @@ trait Monad[M[_]] extends Functor[M] {
   So: associativity law for parsing: given 2 'parser selection functions', f and g, it should not matter if we first
   apply f and then g or vice versa, the result should be the same.
 
-   */
+ */
 }
 
 object Monad {
@@ -210,7 +218,7 @@ object Monad {
     }
   }
 
-  def parserMonad[P[+_]](p: Parsers[P]): Monad[P] = new Monad[P] {
+  def parserMonad[P[+ _]](p: Parsers[P]): Monad[P] = new Monad[P] {
     override def flatMap[A, B](ma: P[A])(f: (A) => P[B]): P[B] = {
       p.flatMap(ma)(f)
     }
@@ -298,7 +306,7 @@ object Monad {
     }
   }
 
-  def getState[S]: State[S, S] = State(s => (s, s))
+  def getState[S]: State[S, S]          = State(s => (s, s))
   def setState[S](s: S): State[S, Unit] = State(_ => ((), s))
 
   val idMonad: Monad[Id] = new Monad[Id] {
@@ -311,7 +319,7 @@ object Monad {
 }
 
 case class Id[A](value: A) {
-  def map[B](f: A => B): Id[B] = Id(f(value))
+  def map[B](f: A => B): Id[B]         = Id(f(value))
   def flatMap[B](f: A => Id[B]): Id[B] = f(value)
 }
 
@@ -332,9 +340,10 @@ case class Reader[R, A](run: R => A) {
 object Reader {
   def readerMonad[R] = new Monad[({ type f[x] = Reader[R, x] })#f] {
     override def unit[A](a: => A): Reader[R, A] = Reader(_ => a)
-    override def flatMap[A, B](st: Reader[R, A])(f: A => Reader[R, B]): Reader[R, B] = st.flatMap(f)
+    override def flatMap[A, B](st: Reader[R, A])(f: A => Reader[R, B]): Reader[R, B] =
+      st.flatMap(f)
 
-    def get = Reader[R, R](r => r) // like State monad but simpler
+    def get  = Reader[R, R](r => r) // like State monad but simpler
     def read = get
   }
 
@@ -343,4 +352,3 @@ object Reader {
     x.run(r).run(r)
   }
 }
-

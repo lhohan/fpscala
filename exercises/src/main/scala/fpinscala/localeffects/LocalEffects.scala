@@ -3,32 +3,34 @@ package fpinscala.localeffects
 import fpinscala.monads._
 
 object Mutable {
-  def quicksort(xs: List[Int]): List[Int] = if (xs.isEmpty) xs else {
-    val arr = xs.toArray
-    def swap(x: Int, y: Int) = {
-      val tmp = arr(x)
-      arr(x) = arr(y)
-      arr(y) = tmp
-    }
-    def partition(l: Int, r: Int, pivot: Int) = {
-      val pivotVal = arr(pivot)
-      swap(pivot, r)
-      var j = l
-      for (i <- l until r) if (arr(i) < pivotVal) {
-        swap(i, j)
-        j += 1
+  def quicksort(xs: List[Int]): List[Int] =
+    if (xs.isEmpty) xs
+    else {
+      val arr = xs.toArray
+      def swap(x: Int, y: Int) = {
+        val tmp = arr(x)
+        arr(x) = arr(y)
+        arr(y) = tmp
       }
-      swap(j, r)
-      j
+      def partition(l: Int, r: Int, pivot: Int) = {
+        val pivotVal = arr(pivot)
+        swap(pivot, r)
+        var j = l
+        for (i <- l until r) if (arr(i) < pivotVal) {
+          swap(i, j)
+          j += 1
+        }
+        swap(j, r)
+        j
+      }
+      def qs(l: Int, r: Int): Unit = if (l < r) {
+        val pi = partition(l, r, l + (r - l) / 2)
+        qs(l, pi - 1)
+        qs(pi + 1, r)
+      }
+      qs(0, arr.length - 1)
+      arr.toList
     }
-    def qs(l: Int, r: Int): Unit = if (l < r) {
-      val pi = partition(l, r, l + (r - l) / 2)
-      qs(l, pi - 1)
-      qs(pi + 1, r)
-    }
-    qs(0, arr.length - 1)
-    arr.toList
-  }
 }
 
 sealed trait ST[S, A] { self =>
@@ -70,9 +72,10 @@ sealed trait STRef[S, A] {
 }
 
 object STRef {
-  def apply[S, A](a: A): ST[S, STRef[S, A]] = ST(new STRef[S, A] {
-    var cell = a
-  })
+  def apply[S, A](a: A): ST[S, STRef[S, A]] =
+    ST(new STRef[S, A] {
+      var cell = a
+    })
 }
 
 trait RunnableST[A] {
@@ -100,12 +103,13 @@ sealed abstract class STArray[S, A](implicit manifest: Manifest[A]) {
 
   def fill(xs: Map[Int, A]): ST[S, Unit] = ???
 
-  def swap(i: Int, j: Int): ST[S, Unit] = for {
-    x <- read(i)
-    y <- read(j)
-    _ <- write(i, y)
-    _ <- write(j, x)
-  } yield ()
+  def swap(i: Int, j: Int): ST[S, Unit] =
+    for {
+      x <- read(i)
+      y <- read(j)
+      _ <- write(i, y)
+      _ <- write(j, x)
+    } yield ()
 }
 
 object STArray {
@@ -129,15 +133,17 @@ object Immutable {
   def qs[S](a: STArray[S, Int], l: Int, r: Int): ST[S, Unit] = ???
 
   def quicksort(xs: List[Int]): List[Int] =
-    if (xs.isEmpty) xs else ST.runST(new RunnableST[List[Int]] {
-      def apply[S] = for {
-        arr <- STArray.fromList(xs)
-        size <- arr.size
-        _ <- qs(arr, 0, size - 1)
-        sorted <- arr.freeze
-      } yield sorted
-    })
+    if (xs.isEmpty) xs
+    else
+      ST.runST(new RunnableST[List[Int]] {
+        def apply[S] =
+          for {
+            arr    <- STArray.fromList(xs)
+            size   <- arr.size
+            _      <- qs(arr, 0, size - 1)
+            sorted <- arr.freeze
+          } yield sorted
+      })
 }
 
 import scala.collection.mutable.HashMap
-

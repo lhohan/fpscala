@@ -7,12 +7,13 @@ import fpinscala.testing.Prop._
 import language.higherKinds
 import language.implicitConversions
 
-trait Parsers[Parser[+_]] { self => // so inner classes may call methods of trait
+trait Parsers[Parser[+ _]] { self => // so inner classes may call methods of trait
   def run[A](p: Parser[A])(input: String): Either[ParseError, A]
 
   implicit def string(s: String): Parser[String]
   implicit def operators[A](p: Parser[A]) = ParserOps[A](p)
-  implicit def asStringParser[A](a: A)(implicit f: A => Parser[String]): ParserOps[String] = ParserOps(f(a))
+  implicit def asStringParser[A](a: A)(implicit f: A => Parser[String]): ParserOps[String] =
+    ParserOps(f(a))
 
   def char(c: Char): Parser[Char] =
     string(c.toString) map (_.charAt(0))
@@ -49,7 +50,7 @@ trait Parsers[Parser[+_]] { self => // so inner classes may call methods of trai
 
   /*
   These can be implemented using a for-comprehension, which delegates to the `flatMap` and `map` implementations we've provided on `ParserOps`, or they can be implemented in terms of these functions directly.
-  */
+   */
   def product[A, B](p: Parser[A], p2: => Parser[B]): Parser[(A, B)] =
     flatMap(p)(a => map(p2)(b => (a, b)))
 
@@ -66,16 +67,16 @@ trait Parsers[Parser[+_]] { self => // so inner classes may call methods of trai
   def attempt[A](p: Parser[A]): Parser[A]
 
   /**
-   * Sequences two parsers, ignoring the result of the first.
-   * We wrap the ignored half in slice, since we don't care about its result.
-   */
+    * Sequences two parsers, ignoring the result of the first.
+    * We wrap the ignored half in slice, since we don't care about its result.
+    */
   def skipL[B](p: Parser[Any], p2: => Parser[B]): Parser[B] =
     map2(slice(p), p2)((_, b) => b)
 
   /**
-   * Sequences two parsers, ignoring the result of the second.
-   * We wrap the ignored half in slice, since we don't care about its result.
-   */
+    * Sequences two parsers, ignoring the result of the second.
+    * We wrap the ignored half in slice, since we don't care about its result.
+    */
   def skipR[A](p: Parser[A], p2: => Parser[Any]): Parser[A] =
     map2(p, slice(p2))((a, b) => a)
 
@@ -101,9 +102,9 @@ trait Parsers[Parser[+_]] { self => // so inner classes may call methods of trai
     token(quoted label "string literal")
 
   /**
-   * C/Java style floating point literals, e.g .1, -1.0, 1e9, 1E-23, etc.
-   * Result is left as a string to keep full precision
-   */
+    * C/Java style floating point literals, e.g .1, -1.0, 1e9, 1E-23, etc.
+    * Result is left as a string to keep full precision
+    */
   def doubleString: Parser[String] =
     token("[-+]?([0-9]*\\.)?[0-9]+([eE][-+]?[0-9]+)?".r)
 
@@ -140,11 +141,12 @@ trait Parsers[Parser[+_]] { self => // so inner classes may call methods of trai
     p <* eof
 
   case class ParserOps[A](p: Parser[A]) {
-    def |[B >: A](p2: => Parser[B]): Parser[B] = self.or(p, p2) // use `self` to explicitly disambiguate reference to the `or` method on the `trait`
+    def |[B >: A](p2: => Parser[B]): Parser[B] =
+      self.or(p, p2) // use `self` to explicitly disambiguate reference to the `or` method on the `trait`
     def or[B >: A](p2: => Parser[B]): Parser[B] = self.or(p, p2)
 
     def map[B](f: A => B): Parser[B] = self.map(p)(f)
-    def many = self.many(p)
+    def many                         = self.many(p)
 
     def slice: Parser[String] = self.slice(p)
 
@@ -160,12 +162,12 @@ trait Parsers[Parser[+_]] { self => // so inner classes may call methods of trai
 
     def scope(msg: String): Parser[A] = self.scope(msg)(p)
 
-    def *>[B](p2: => Parser[B]) = self.skipL(p, p2)
-    def <*(p2: => Parser[Any]) = self.skipR(p, p2)
-    def token = self.token(p)
-    def sep(separator: Parser[Any]) = self.sep(p, separator)
-    def sep1(separator: Parser[Any]) = self.sep1(p, separator)
-    def as[B](b: B): Parser[B] = self.map(self.slice(p))(_ => b)
+    def *>[B](p2: => Parser[B])                 = self.skipL(p, p2)
+    def <*(p2: => Parser[Any])                  = self.skipR(p, p2)
+    def token                                   = self.token(p)
+    def sep(separator: Parser[Any])             = self.sep(p, separator)
+    def sep1(separator: Parser[Any])            = self.sep1(p, separator)
+    def as[B](b: B): Parser[B]                  = self.map(self.slice(p))(_ => b)
     def opL(op: Parser[(A, A) => A]): Parser[A] = self.opL(p)(op)
   }
   object Laws {
@@ -181,7 +183,7 @@ case class Location(input: String, offset: Int = 0) {
 
   lazy val line = input.slice(0, offset + 1).count(_ == '\n') + 1
   lazy val col = input.slice(0, offset + 1).lastIndexOf('\n') match {
-    case -1 => offset + 1
+    case -1        => offset + 1
     case lineStart => offset - lineStart
   }
 
@@ -212,18 +214,18 @@ case class ParseError(stack: List[(Location, String)] = List()) {
     latest map (_._1)
 
   /**
-   * Display collapsed error stack - any adjacent stack elements with the
-   * same location are combined on one line. For the bottommost error, we
-   * display the full line, with a caret pointing to the column of the error.
-   * Example:
-   *
-   * 1.1 file 'companies.json'; array
-   * 5.1 object
-   * 5.2 key-value
-   * 5.10 ':'
-   *
-   * { "MSFT" ; 24,
-   */
+    * Display collapsed error stack - any adjacent stack elements with the
+    * same location are combined on one line. For the bottommost error, we
+    * display the full line, with a caret pointing to the column of the error.
+    * Example:
+    *
+    * 1.1 file 'companies.json'; array
+    * 5.1 object
+    * 5.2 key-value
+    * 5.10 ':'
+    *
+    * { "MSFT" ; 24,
+    */
   override def toString =
     if (stack.isEmpty) "no error message"
     else {
@@ -231,7 +233,8 @@ case class ParseError(stack: List[(Location, String)] = List()) {
       val context =
         collapsed.lastOption.map("\n\n" + _._1.currentLine).getOrElse("") +
           collapsed.lastOption.map("\n" + _._1.columnCaret).getOrElse("")
-      collapsed.map { case (loc, msg) => loc.line.toString + "." + loc.col + " " + msg }.mkString("\n") +
+      collapsed.map { case (loc, msg) => loc.line.toString + "." + loc.col + " " + msg }
+        .mkString("\n") +
         context
     }
 
@@ -239,13 +242,9 @@ case class ParseError(stack: List[(Location, String)] = List()) {
    * messages at the same location have their messages merged,
    * separated by semicolons */
   def collapseStack(s: List[(Location, String)]): List[(Location, String)] =
-    s.groupBy(_._1).
-      mapValues(_.map(_._2).mkString("; ")).
-      toList.sortBy(_._1.offset)
+    s.groupBy(_._1).mapValues(_.map(_._2).mkString("; ")).toList.sortBy(_._1.offset)
 
   def formatLoc(l: Location): String = l.line + "." + l.col
 }
 
-object Parsers {
-
-}
+object Parsers {}

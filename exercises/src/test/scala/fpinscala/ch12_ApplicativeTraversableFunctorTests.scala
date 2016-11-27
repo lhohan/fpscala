@@ -23,7 +23,7 @@ class ch12_ApplicativeTraversableFunctorTests extends FunSuite {
     2 5
     3 6
     so sequencing means 'transposition of a matrix'
-     */
+   */
 
   }
 
@@ -60,8 +60,15 @@ class ch12_ApplicativeTraversableFunctorTests extends FunSuite {
         validPhone(phone)
       )(WebForm(_, _, _))
 
-    assert(Success(WebForm("Dale", "2015-12-22", 1234567890)) == validWebForm("Dale", "2015-12-22", "1234567890"))
-    assert(Failure("Name cannot be empty", Vector("Birthdate must be in the form yyyy-MM-dd", "Phone number must be 10 digits")) == validWebForm("", "invlaid date", "123456789"))
+    assert(
+      Success(WebForm("Dale", "2015-12-22", 1234567890)) == validWebForm("Dale",
+                                                                         "2015-12-22",
+                                                                         "1234567890"))
+    assert(Failure("Name cannot be empty",
+                   Vector("Birthdate must be in the form yyyy-MM-dd",
+                          "Phone number must be 10 digits")) == validWebForm("",
+                                                                             "invlaid date",
+                                                                             "123456789"))
 
   }
 }

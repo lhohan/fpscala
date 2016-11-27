@@ -3,8 +3,8 @@ package fpinscala
 import org.scalatest.FunSuite
 
 /**
- * Created by hans on 17/10/14.
- */
+  * Created by hans on 17/10/14.
+  */
 class ch02_GettingStartedTests extends FunSuite {
 
   test("isSorted - Int") {
@@ -27,7 +27,9 @@ class ch02_GettingStartedTests extends FunSuite {
     assertResult(true, "one") { isSorted(Array("abc"), gt1) }
     assertResult(true, "sorted 2") { isSorted(Array("abc", "abcdef"), gt1) }
     assertResult(true, "sorted 2 - same") { isSorted(Array("ab", "ab"), gt1) }
-    assertResult(true, "sorted - 1") { isSorted(Array("a", "ab", "xy", "qwerty", "qwertyuiop"), gt1) }
+    assertResult(true, "sorted - 1") {
+      isSorted(Array("a", "ab", "xy", "qwerty", "qwertyuiop"), gt1)
+    }
     assertResult(false, "unsorted - 1") { isSorted(Array("abcd", "abcdef", "a"), gt1) }
   }
 
@@ -44,9 +46,9 @@ class ch02_GettingStartedTests extends FunSuite {
     // - one takes and array I determines it is empty or not giving back a boolean
     // - the other takes that boolean and turns it into a char 'F' or 'T'
 
-    def isEmpty[T](a: Array[T]) = a.isEmpty
+    def isEmpty[T](a: Array[T])      = a.isEmpty
     def boolToChar(b: Boolean): Char = if (b) 'T' else 'F'
-    def h = compose(boolToChar, isEmpty[String])
+    def h                            = compose(boolToChar, isEmpty[String])
     assertResult('T') { h(Array()) }
     assertResult('F') { h(Array("not empty")) }
   }

@@ -6,12 +6,12 @@ import scala.{Either => _, Option => _, Some => _}
 
 sealed trait Option[+A] {
   def map[B](f: A => B): Option[B] = this match {
-    case None => None
+    case None    => None
     case Some(a) => Some(f(a))
   }
 
   def getOrElse[B >: A](default: => B): B = this match {
-    case None => default
+    case None    => default
     case Some(a) => a
   }
 
@@ -58,8 +58,7 @@ object Option {
     else Some(xs.sum / xs.length)
 
   def variance(xs: Seq[Double]): Option[Double] = {
-    mean(xs).flatMap(m =>
-      mean(xs.map(x => math.pow(x - m, 2))))
+    mean(xs).flatMap(m => mean(xs.map(x => math.pow(x - m, 2))))
   }
 
   def map2[A, B, C](a: Option[A], b: Option[B])(f: (A, B) => C): Option[C] = a.flatMap { a_ =>
@@ -68,7 +67,7 @@ object Option {
 
   // my original
   def sequence[A](a: List[Option[A]]): Option[List[A]] = a match {
-    case Nil => Some(List())
+    case Nil      => Some(List())
     case ao :: as => map2(ao, sequence(as))(_ :: _)
   }
 
@@ -78,21 +77,22 @@ object Option {
 
   // no map2
   def sequence_3[A](a: List[Option[A]]): Option[List[A]] = a match {
-    case Nil => Some(List())
+    case Nil      => Some(List())
     case ao :: as => ao.flatMap(ao_ => sequence_3(as).map(ao_ :: _))
   }
 
-  def Try[A](value: => A): Option[A] = try {
-    Some(value)
-  } catch {
-    case e: Exception => None
-  }
+  def Try[A](value: => A): Option[A] =
+    try {
+      Some(value)
+    } catch {
+      case e: Exception => None
+    }
 
   // simple implementation, double traversal
   //  def traverse[A, B](a: List[A])(f: A => Option[B]): Option[List[B]] = sequence( a.map(a_ => f(a_)))
 
   def traverse[A, B](a: List[A])(f: A => Option[B]): Option[List[B]] = a match {
-    case Nil => Some(List())
+    case Nil     => Some(List())
     case h :: as => f(h).flatMap(b_ => traverse(as)(f).map(bs => b_ :: bs))
   }
 

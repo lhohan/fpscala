@@ -3,8 +3,8 @@ package fpinscala
 import org.scalatest.FunSuite
 
 /**
- * Created by hans on 29/10/14.
- */
+  * Created by hans on 29/10/14.
+  */
 class ch05_LazinessTests extends FunSuite {
 
   test("toList") {
@@ -82,7 +82,7 @@ class ch05_LazinessTests extends FunSuite {
     import fpinscala.laziness._
 
     assertResult(List(1, 3), "base")(Stream(1, 2, 3).filter(_ % 2 != 0).toList)
-    assertResult(List(), "empty")(Stream[Int]().filter(_ % 2 != 0).toList)
+    assertResult(List(), "empty")(Stream[Int]().filter(_      % 2 != 0).toList)
   }
 
   test("append") {
@@ -96,7 +96,8 @@ class ch05_LazinessTests extends FunSuite {
 
   test("flatMap") {
     import fpinscala.laziness._
-    assertResult(List("1", "1", "2", "2", "3", "3"), "base")(Stream(1, 2, 3).flatMap(i => Stream(i.toString, i.toString)).toList)
+    assertResult(List("1", "1", "2", "2", "3", "3"), "base")(
+      Stream(1, 2, 3).flatMap(i => Stream(i.toString, i.toString)).toList)
   }
 
   test("constant infinite stream") {
@@ -126,7 +127,8 @@ class ch05_LazinessTests extends FunSuite {
 
   test("constant infinite stream - via unfold") {
     import fpinscala.laziness.Stream._
-    assertResult(List("a", "a", "a", "a", "a"), "constant a")(constantViaUnfold("a").take(5).toList)
+    assertResult(List("a", "a", "a", "a", "a"), "constant a")(
+      constantViaUnfold("a").take(5).toList)
   }
 
   test("from stream - via unfold") {
@@ -164,9 +166,12 @@ class ch05_LazinessTests extends FunSuite {
   test("zipWith") {
     import fpinscala.laziness.Stream._
     import fpinscala.laziness._
-    assertResult(List(1, 2, 2, 3, 4), "ones zipWith fibs")(ones.zipWith(fibs)(_ + _).take(5).toList)
-    assertResult(List(4, 5, 6), "ones zipWith finite stream")(ones.zipWith(Stream(3, 4, 5))(_ + _).take(5).toList)
-    assertResult(List(4, 5, 6), "finite stream zipWith ones")(Stream(3, 4, 5).zipWith(ones)(_ + _).take(5).toList)
+    assertResult(List(1, 2, 2, 3, 4), "ones zipWith fibs")(
+      ones.zipWith(fibs)(_ + _).take(5).toList)
+    assertResult(List(4, 5, 6), "ones zipWith finite stream")(
+      ones.zipWith(Stream(3, 4, 5))(_ + _).take(5).toList)
+    assertResult(List(4, 5, 6), "finite stream zipWith ones")(
+      Stream(3, 4, 5).zipWith(ones)(_ + _).take(5).toList)
     assertResult(List(), "empty zipWith ones")(empty[Int].zipWith(ones)(_ + _).take(5).toList)
   }
 
@@ -174,11 +179,16 @@ class ch05_LazinessTests extends FunSuite {
     import fpinscala.laziness.Stream._
     import fpinscala.laziness._
 
-    assertResult(List((Some(1), Some(0)), (Some(1), Some(1))), "both infinite")(ones.zipAll(fibs).take(2).toList)
-    assertResult(List((Some(1), Some(3)), (Some(1), None)), "infinite, finite")(ones.zipAll(Stream(3)).take(2).toList)
-    assertResult(List((Some(3), Some(0)), (None, Some(1))), "finite, infinite")(Stream(3).zipAll(fibs).take(2).toList)
-    assertResult(List((None, Some(0)), (None, Some(1))), "empty, infinite")(empty.zipAll(fibs).take(2).toList)
-    assertResult(List((Some(1), None), (Some(1), None)), "infinite, empty")(ones.zipAll(empty).take(2).toList)
+    assertResult(List((Some(1), Some(0)), (Some(1), Some(1))), "both infinite")(
+      ones.zipAll(fibs).take(2).toList)
+    assertResult(List((Some(1), Some(3)), (Some(1), None)), "infinite, finite")(
+      ones.zipAll(Stream(3)).take(2).toList)
+    assertResult(List((Some(3), Some(0)), (None, Some(1))), "finite, infinite")(
+      Stream(3).zipAll(fibs).take(2).toList)
+    assertResult(List((None, Some(0)), (None, Some(1))), "empty, infinite")(
+      empty.zipAll(fibs).take(2).toList)
+    assertResult(List((Some(1), None), (Some(1), None)), "infinite, empty")(
+      ones.zipAll(empty).take(2).toList)
   }
 
   test("startsWith") {
@@ -194,7 +204,8 @@ class ch05_LazinessTests extends FunSuite {
   test("tails") {
     import fpinscala.laziness.Stream._
     import fpinscala.laziness._
-    assertResult(List(List(1, 2, 3), List(2, 3), List(3), List()), "base")(Stream(1, 2, 3).tails.toList.map(_.toList))
+    assertResult(List(List(1, 2, 3), List(2, 3), List(3), List()), "base")(
+      Stream(1, 2, 3).tails.toList.map(_.toList))
     assertResult(List(List()), "empty")(empty[Int].tails.toList.map(_.toList))
   }
 

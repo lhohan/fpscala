@@ -110,10 +110,14 @@ object Monoid {
   def concatenate[A](as: List[A], m: Monoid[A]): A = as.foldLeft(m.zero)(m.op)
 
   def foldMap[A, B](as: List[A], m: Monoid[B])(f: A => B): B =
-    as.foldLeft(m.zero) { (acc, a) => m.op(acc, f(a)) }
+    as.foldLeft(m.zero) { (acc, a) =>
+      m.op(acc, f(a))
+    }
 
   def foldRight[A, B](as: List[A])(z: B)(f: (A, B) => B): B =
-    foldMap(as, endoMonoid[B]) { a => f(a, _) }(z)
+    foldMap(as, endoMonoid[B]) { a =>
+      f(a, _)
+    }(z)
 
   def dual[A](m: Monoid[A]) = new Monoid[A] {
     override def op(a1: A, a2: A): A = m.op(a2, a1)
@@ -122,7 +126,9 @@ object Monoid {
   }
 
   def foldLeft[A, B](as: List[A])(z: B)(f: (B, A) => B): B =
-    foldMap(as, dual(endoMonoid[B])) { a => f(_, a) }(z)
+    foldMap(as, dual(endoMonoid[B])) { a =>
+      f(_, a)
+    }(z)
 
   //  def dualMonoid[A](m: Monoid[A]): Monoid[A] = new Monoid[A] {
   //    def op(a1: A, a2: A) = m.op(a2, a1)
@@ -132,28 +138,29 @@ object Monoid {
   //foldMap(as, dualMonoid(endoMonoid[B]))(a => b => f(b, a))(z)
 
   def foldMapV[A, B](as: IndexedSeq[A], m: Monoid[B])(f: A => B): B = as match {
-    case IndexedSeq() => m.zero
+    case IndexedSeq()  => m.zero
     case IndexedSeq(a) => f(a)
     case _ =>
       val (as1, as2) = as.splitAt(as.length / 2)
-      val b1 = foldMapV(as1, m)(f)
-      val b2 = foldMapV(as2, m)(f)
+      val b1         = foldMapV(as1, m)(f)
+      val b2         = foldMapV(as2, m)(f)
       m.op(b1, b2)
   }
 
   def ordered(ints: IndexedSeq[Int]): Boolean = {
 
-    type Range = (Int, Int)
+    type Range     = (Int, Int)
     type IsOrdered = Boolean
     case class Ordered(range: Option[Range], isOrdered: IsOrdered)
 
     val m = new Monoid[Ordered] {
       override def op(s1: Ordered, s2: Ordered): Ordered = (s1, s2) match {
-        case (Ordered(Some((l1, r1)), true), Ordered(Some((l2, r2)), true)) => Ordered(Some(l1, r2), r1 <= l2)
-        case (Ordered(None, true), x @ Ordered(sr, true)) => x
-        case (x @ Ordered(sr, true), Ordered(None, true)) => x
+        case (Ordered(Some((l1, r1)), true), Ordered(Some((l2, r2)), true)) =>
+          Ordered(Some(l1, r2), r1 <= l2)
+        case (Ordered(None, true), x @ Ordered(sr, true))   => x
+        case (x @ Ordered(sr, true), Ordered(None, true))   => x
         case (x @ Ordered(None, true), Ordered(None, true)) => x
-        case _ => Ordered(None, false)
+        case _                                              => Ordered(None, false)
       }
 
       override def zero = Ordered(None, true)
@@ -180,12 +187,12 @@ object Monoid {
   def parFoldMap[A, B](v: IndexedSeq[A], m: Monoid[B])(f: A => B): Par[B] = {
     val pm = par(m)
     v match {
-      case IndexedSeq() => pm.zero
+      case IndexedSeq()  => pm.zero
       case IndexedSeq(a) => Par.lazyUnit(f(a))
       case _ =>
         val (as1, as2) = v.splitAt(v.length / 2)
-        val b1 = parFoldMap(as1, m)(f)
-        val b2 = parFoldMap(as2, m)(f)
+        val b1         = parFoldMap(as1, m)(f)
+        val b2         = parFoldMap(as2, m)(f)
         pm.op(b1, b2)
     }
   }
@@ -193,12 +200,12 @@ object Monoid {
   val wcMonoid: Monoid[WC] = new Monoid[WC] {
 
     override def op(wc1: WC, wc2: WC): WC = (wc1, wc2) match {
-      case (Stub(cs1), Stub(cs2)) => Stub(cs1 + cs2)
+      case (Stub(cs1), Stub(cs2))       => Stub(cs1 + cs2)
       case (Stub(cs), Part(l2, c2, r2)) => Part(cs + l2, c2, r2)
       case (Part(l1, c1, r1), Stub(cs)) => Part(l1, c1, r1 + cs)
       case (Part(l1, c1, r1), Part(l2, c2, r2)) =>
         val joinedWordCount = if ((r1 + l2).isEmpty) 0 else 1
-        val words = c1 + c2 + joinedWordCount
+        val words           = c1 + c2 + joinedWordCount
         Part(l1, words, r2)
     }
 
@@ -211,7 +218,7 @@ object Monoid {
       if (chars.isEmpty) 0 else 1
     }
     foldMapV(s.toCharArray.toIndexedSeq, wcMonoid)(toWC) match {
-      case Stub(chars) => wordOrNot(chars)
+      case Stub(chars)          => wordOrNot(chars)
       case Part(left, c, right) => wordOrNot(left) + c + wordOrNot(right)
     }
   }
@@ -233,17 +240,18 @@ object Monoid {
   val maxIntMonoid = new Monoid[Option[Int]] {
     override def op(a1: Option[Int], a2: Option[Int]): Option[Int] = (a1, a2) match {
       case (Some(i1), Some(i2)) => Some(i1 max i2)
-      case (Some(i1), None) => Some(i1)
-      case (None, Some(i2)) => Some(i2)
-      case (None, None) => None
+      case (Some(i1), None)     => Some(i1)
+      case (None, Some(i2))     => Some(i2)
+      case (None, None)         => None
     }
 
     override def zero: Option[Int] = None
   }
 
-  def ordered2(ints: IndexedSeq[Int]): Boolean = foldMapV(ints, productMonoid(maxIntMonoid, booleanAnd)) {
-    i => (Some(i), true)
-  }._2
+  def ordered2(ints: IndexedSeq[Int]): Boolean =
+    foldMapV(ints, productMonoid(maxIntMonoid, booleanAnd)) { i =>
+      (Some(i), true)
+    }._2
 
   // END: will always be true. Conclusion (?): product are independent types while here we want the boolean part to
   // be dependent on the max part. Looks like we need flatMap.?
@@ -261,10 +269,11 @@ object Monoid {
 
       def op(a: Map[K, V], b: Map[K, V]) =
         (a.keySet ++ b.keySet).foldLeft(zero) { (acc, k) =>
-          acc.updated(k, V.op(
-            a.getOrElse(k, V.zero),
-            b.getOrElse(k, V.zero)
-          ))
+          acc.updated(k,
+                      V.op(
+                        a.getOrElse(k, V.zero),
+                        b.getOrElse(k, V.zero)
+                      ))
         }
     }
 
@@ -275,10 +284,14 @@ object Monoid {
 trait Foldable[F[_]] {
 
   def foldRight[A, B](as: F[A])(z: B)(f: (A, B) => B): B =
-    foldMap(as) { a => b: B => f(a, b) }(Monoid.endoMonoid[B])(z)
+    foldMap(as) { a => b: B =>
+      f(a, b)
+    }(Monoid.endoMonoid[B])(z)
 
   def foldLeft[A, B](as: F[A])(z: B)(f: (B, A) => B): B =
-    foldMap(as) { a => b: B => f(b, a) }(Monoid.dual(Monoid.endoMonoid[B]))(z)
+    foldMap(as) { a => b: B =>
+      f(b, a)
+    }(Monoid.dual(Monoid.endoMonoid[B]))(z)
 
   def foldMap[A, B](as: F[A])(f: A => B)(mb: Monoid[B]): B =
     foldLeft(as)(mb.zero)((acc, a) => mb.op(acc, f(a)))
@@ -328,17 +341,17 @@ case class Branch[A](left: Tree[A], right: Tree[A]) extends Tree[A]
 
 object TreeFoldable extends Foldable[Tree] {
   override def foldMap[A, B](as: Tree[A])(f: A => B)(mb: Monoid[B]): B = as match {
-    case Leaf(a) => f(a)
+    case Leaf(a)             => f(a)
     case Branch(left, right) => mb.op(foldMap(left)(f)(mb), foldMap(right)(f)(mb))
   }
 
   override def foldLeft[A, B](as: Tree[A])(z: B)(f: (B, A) => B) = as match {
-    case Leaf(a) => f(z, a)
+    case Leaf(a)             => f(z, a)
     case Branch(left, right) => foldLeft(right)(foldLeft(left)(z)(f))(f)
   }
 
   override def foldRight[A, B](as: Tree[A])(z: B)(f: (A, B) => B) = as match {
-    case Leaf(a) => f(a, z)
+    case Leaf(a)             => f(a, z)
     case Branch(left, right) => foldRight(left)(foldRight(right)(z)(f))(f)
   }
 }
@@ -354,4 +367,3 @@ object OptionFoldable extends Foldable[Option] {
     as.map(a => f(a, z)).getOrElse(z)
 
 }
-

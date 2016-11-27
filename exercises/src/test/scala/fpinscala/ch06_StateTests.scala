@@ -2,8 +2,8 @@ import fpinscala.state._
 import org.scalatest.FunSuite
 
 /**
- * Created by hans on 29/10/14.
- */
+  * Created by hans on 29/10/14.
+  */
 class ch06_StateTests extends FunSuite {
 
   test("nonNegativeInt") {
@@ -37,7 +37,7 @@ class ch06_StateTests extends FunSuite {
 
     rnds.take(100).toList.foreach {
       case x: ((Int, Double), RNG) => // OK
-      case x @ _ => fail(s"$x")
+      case x @ _                   => fail(s"$x")
     }
   }
 
@@ -49,7 +49,7 @@ class ch06_StateTests extends FunSuite {
 
     rnds.take(100).toList.foreach {
       case x: ((Double, Int), RNG) => // OK
-      case x @ _ => fail(s"$x")
+      case x @ _                   => fail(s"$x")
     }
   }
 
@@ -106,7 +106,8 @@ class ch06_StateTests extends FunSuite {
     import fpinscala.state.RNG._
 
     val (is, _) = nonNegativeLessThan(5)(Simple(37))
-    val rnds = Stream.iterate(nonNegativeLessThan(10)(Simple(37)))(r => nonNegativeLessThan(10)(r._2))
+    val rnds =
+      Stream.iterate(nonNegativeLessThan(10)(Simple(37)))(r => nonNegativeLessThan(10)(r._2))
 
     //    rnds.take(10).foreach(x => println(x._1))
   }
@@ -114,14 +115,17 @@ class ch06_StateTests extends FunSuite {
   import CandyMachine._
 
   test("candy dispenser: basic operation") {
-    val ((coins, candies), machine) = simulateMachine(List(Coin, Turn)).run(Machine(locked = false, 1, 0))
+    val ((coins, candies), machine) =
+      simulateMachine(List(Coin, Turn)).run(Machine(locked = false, 1, 0))
     assertResult(0)(coins)
     assertResult(0)(candies)
   }
 
-  test("A candy dispenser with 10 coins, 5 candies and inserting a coin and turning 4 times should give 14 coins and 1 candy left") {
+  test(
+    "A candy dispenser with 10 coins, 5 candies and inserting a coin and turning 4 times should give 14 coins and 1 candy left") {
     val ((coins, candies), machine) =
-      simulateMachine(List(Coin, Turn, Coin, Turn, Coin, Turn, Coin, Turn)).run(Machine(locked = true, 5, 10))
+      simulateMachine(List(Coin, Turn, Coin, Turn, Coin, Turn, Coin, Turn))
+        .run(Machine(locked = true, 5, 10))
     assertResult(true)(machine.locked)
     assertResult(1)(candies)
     assertResult(14)(coins)

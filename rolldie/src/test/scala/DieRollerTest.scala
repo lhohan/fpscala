@@ -1,8 +1,8 @@
 import org.scalatest.FunSuite
 
 /**
- * Created by hans on 16/11/14.
- */
+  * Created by hans on 16/11/14.
+  */
 class DieRollerTest extends FunSuite {
 
   import DieRoller._

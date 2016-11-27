@@ -8,15 +8,17 @@ which may be `Nil` or another `Cons`.
 case class Cons[+A](head: A, tail: List[A]) extends List[A]
 
 object List { // `List` companion object. Contains functions for creating and working with lists.
-  def sum(ints: List[Int]): Int = ints match { // A function that uses pattern matching to add up a list of integers
-    case Nil => 0 // The sum of the empty list is 0.
-    case Cons(x, xs) => x + sum(xs) // The sum of a list starting with `x` is `x` plus the sum of the rest of the list.
-  }
+  def sum(ints: List[Int]): Int =
+    ints match { // A function that uses pattern matching to add up a list of integers
+      case Nil => 0 // The sum of the empty list is 0.
+      case Cons(x, xs) =>
+        x + sum(xs) // The sum of a list starting with `x` is `x` plus the sum of the rest of the list.
+    }
 
   def product(ds: List[Double]): Double = ds match {
-    case Nil => 1.0
+    case Nil          => 1.0
     case Cons(0.0, _) => 0.0
-    case Cons(x, xs) => x * product(xs)
+    case Cons(x, xs)  => x * product(xs)
   }
 
   def apply[A](as: A*): List[A] = // Variadic function syntax
@@ -24,22 +26,22 @@ object List { // `List` companion object. Contains functions for creating and wo
     else Cons(as.head, apply(as.tail: _*))
 
   val x = List(1, 2, 3, 4, 5) match {
-    case Cons(x, Cons(2, Cons(4, _))) => x
-    case Nil => 42
+    case Cons(x, Cons(2, Cons(4, _)))          => x
+    case Nil                                   => 42
     case Cons(x, Cons(y, Cons(3, Cons(4, _)))) => x + y
-    case Cons(h, t) => h + sum(t)
-    case _ => 101
+    case Cons(h, t)                            => h + sum(t)
+    case _                                     => 101
   }
 
   def append[A](a1: List[A], a2: List[A]): List[A] =
     a1 match {
-      case Nil => a2
+      case Nil        => a2
       case Cons(h, t) => Cons(h, append(t, a2))
     }
 
   def foldRight[A, B](as: List[A], z: B)(f: (A, B) => B): B = // Utility functions
     as match {
-      case Nil => z
+      case Nil         => z
       case Cons(x, xs) => f(x, foldRight(xs, z)(f))
     }
 
@@ -51,7 +53,7 @@ object List { // `List` companion object. Contains functions for creating and wo
 
   /*
   3. The third case is the first that matches, with `x` bound to 1 and `y` bound to 2.
-  */
+   */
 
   /*
   Although we could return `Nil` when the input list is empty, we choose to throw an exception instead. This is
@@ -60,19 +62,19 @@ object List { // `List` companion object. Contains functions for creating and wo
 
   It's generally good practice when pattern matching to use `_` for any variables you don't intend to use on the
   right hand side of a pattern. This makes it clear the value isn't relevant.
-  */
+   */
   def tail[A](l: List[A]): List[A] =
     l match {
-      case Nil => sys.error("tail of empty list")
+      case Nil        => sys.error("tail of empty list")
       case Cons(_, t) => t
     }
 
   /*
   If a function body consists solely of a match expression, we'll often put the match on the same line as the
   function signature, rather than introducing another level of nesting.
-  */
+   */
   def setHead[A](l: List[A], h: A): List[A] = l match {
-    case Nil => sys.error("setHead on empty list")
+    case Nil        => sys.error("setHead on empty list")
     case Cons(_, t) => Cons(h, t)
   }
 
@@ -82,23 +84,24 @@ object List { // `List` companion object. Contains functions for creating and wo
   is not indicative of a programming error. If you pay attention to how you use `drop`, it's often in cases where the
   length of the input list is unknown, and the number of elements to be dropped is being computed from something else.
   If `drop` threw an exception, we'd have to first compute or check the length and only drop up to that many elements.
-  */
+   */
   def drop[A](l: List[A], n: Int): List[A] =
     if (n <= 0) l
-    else l match {
-      case Nil => Nil
-      case Cons(_, t) => drop(t, n - 1)
-    }
+    else
+      l match {
+        case Nil        => Nil
+        case Cons(_, t) => drop(t, n - 1)
+      }
 
   /*
   Somewhat overkill, but to illustrate the feature we're using a _pattern guard_, to only match a `Cons` whose head
   satisfies our predicate, `f`. The syntax is to add `if <cond>` after the pattern, before the `=>`, where `<cond>` can
   use any of the variables introduced by the pattern.
-  */
+   */
   def dropWhile[A](l: List[A], f: A => Boolean): List[A] =
     l match {
       case Cons(h, t) if f(h) => dropWhile(t, f)
-      case _ => l
+      case _                  => l
     }
 
   /*
@@ -110,21 +113,21 @@ object List { // `List` companion object. Contains functions for creating and wo
 
   Another common convention is to accumulate the output list in reverse order, then reverse it at the end, which
   doesn't require even local mutation. We'll write a reverse function later in this chapter.
-  */
+   */
   def init[A](l: List[A]): List[A] =
     l match {
-      case Nil => sys.error("init of empty list")
+      case Nil          => sys.error("init of empty list")
       case Cons(_, Nil) => Nil
-      case Cons(h, t) => Cons(h, init(t))
+      case Cons(h, t)   => Cons(h, init(t))
     }
   def init2[A](l: List[A]): List[A] = {
     import collection.mutable.ListBuffer
     val buf = new ListBuffer[A]
     @annotation.tailrec
     def go(cur: List[A]): List[A] = cur match {
-      case Nil => sys.error("init of empty list")
+      case Nil          => sys.error("init of empty list")
       case Cons(_, Nil) => List(buf.toList: _*)
-      case Cons(h, t) => buf += h; go(t)
+      case Cons(h, t)   => buf += h; go(t)
     }
     go(l)
   }
@@ -133,7 +136,7 @@ object List { // `List` companion object. Contains functions for creating and wo
   No, this is not possible! The reason is because _before_ we ever call our function, `f`, we evaluate its argument,
   which in the case of `foldRight` means traversing the list all the way to the end. We need _non-strict_ evaluation
   to support early termination---we discuss this in chapter 5.
-  */
+   */
 
   /*
   We get back the original list! Why is that? As we mentioned earlier, one way of thinking about what `foldRight` "does"
@@ -145,7 +148,7 @@ object List { // `List` companion object. Contains functions for creating and wo
   Cons(1, Cons(2, foldRight(Cons(3, Nil), Nil:List[Int])(Cons(_,_))))
   Cons(1, Cons(2, Cons(3, foldRight(Nil, Nil:List[Int])(Cons(_,_)))))
   Cons(1, Cons(2, Cons(3, Nil)))
-  */
+   */
 
   def length[A](l: List[A]): Int =
     foldRight(l, 0)((_, acc) => acc + 1)
@@ -154,14 +157,14 @@ object List { // `List` companion object. Contains functions for creating and wo
   It's common practice to annotate functions you expect to be tail-recursive with the `tailrec` annotation. If the
   function is not tail-recursive, it will yield a compile error, rather than silently compiling the code and resulting
   in greater stack space usage at runtime.
-  */
+   */
   @annotation.tailrec
   def foldLeft[A, B](l: List[A], z: B)(f: (B, A) => B): B = l match {
-    case Nil => z
+    case Nil        => z
     case Cons(h, t) => foldLeft(t, f(z, h))(f)
   }
 
-  def sum3(l: List[Int]) = foldLeft(l, 0)(_ + _)
+  def sum3(l: List[Int])        = foldLeft(l, 0)(_ + _)
   def product3(l: List[Double]) = foldLeft(l, 1.0)(_ * _)
 
   def length2[A](l: List[A]): Int = foldLeft(l, 0)((acc, h) => acc + 1)
@@ -178,7 +181,7 @@ object List { // `List` companion object. Contains functions for creating and wo
   calling the built up function with the `z` argument. Try expanding the definitions by substituting equals for equals
   using a simple example, like `foldLeft(List(1,2,3), 0)(_ + _)` if this isn't clear. Note these implementations are
   more of theoretical interest - they aren't stack-safe and won't work for large lists.
-  */
+   */
   def foldRightViaFoldLeft[A, B](l: List[A], z: B)(f: (A, B) => B): B =
     foldLeft(reverse(l), z)((b, a) => f(a, b))
 
@@ -191,7 +194,7 @@ object List { // `List` companion object. Contains functions for creating and wo
   /*
   `append` simply replaces the `Nil` constructor of the first list with the second list, which is exactly the operation
   performed by `foldRight`.
-  */
+   */
   def appendViaFoldRight[A](l: List[A], r: List[A]): List[A] =
     foldRight(l, r)(Cons(_, _))
 
@@ -206,7 +209,7 @@ object List { // `List` companion object. Contains functions for creating and wo
   functions, put in collections, and so on. This is a case where Scala lets us pretend the distinction doesn't exist.
   In other cases, you'll be forced to write `append _` (to convert a `def` to a function value)
   or even `(x: List[A], y: List[A]) => append(x,y)` if the function is polymorphic and the type arguments aren't known.
-  */
+   */
   def concat[A](l: List[List[A]]): List[A] =
     foldRight(l, Nil: List[A])(append)
 
@@ -221,7 +224,7 @@ object List { // `List` companion object. Contains functions for creating and wo
   use `foldRightViaFoldLeft` to avoid the stack overflow (variation 1), but more commonly, with our current
   implementation of `List`, `map` will just be implemented using local mutation (variation 2). Again, note that the
   mutation isn't observable outside the function, since we're only mutating a buffer that we've allocated.
-  */
+   */
   def map[A, B](l: List[A])(f: A => B): List[B] =
     foldRight(l, Nil: List[B])((h, t) => Cons(f(h), t))
 
@@ -231,7 +234,7 @@ object List { // `List` companion object. Contains functions for creating and wo
   def map_2[A, B](l: List[A])(f: A => B): List[B] = {
     val buf = new collection.mutable.ListBuffer[B]
     def go(l: List[A]): Unit = l match {
-      case Nil => ()
+      case Nil        => ()
       case Cons(h, t) => buf += f(h); go(t)
     }
     go(l)
@@ -240,7 +243,7 @@ object List { // `List` companion object. Contains functions for creating and wo
 
   /*
   The discussion about `map` also applies here.
-  */
+   */
   def filter[A](l: List[A])(f: A => Boolean): List[A] =
     foldRight(l, Nil: List[A])((h, t) => if (f(h)) Cons(h, t) else t)
 
@@ -250,7 +253,7 @@ object List { // `List` companion object. Contains functions for creating and wo
   def filter_2[A](l: List[A])(f: A => Boolean): List[A] = {
     val buf = new collection.mutable.ListBuffer[A]
     def go(l: List[A]): Unit = l match {
-      case Nil => ()
+      case Nil        => ()
       case Cons(h, t) => if (f(h)) buf += h; go(t)
     }
     go(l)
@@ -259,7 +262,7 @@ object List { // `List` companion object. Contains functions for creating and wo
 
   /*
   This could also be implemented directly using `foldRight`.
-  */
+   */
   def flatMap[A, B](l: List[A])(f: A => List[B]): List[B] =
     concat(map(l)(f))
 
@@ -274,20 +277,20 @@ object List { // `List` companion object. Contains functions for creating and wo
   variables introduced in the outer `match`.
 
   The discussion about stack usage from the explanation of `map` also applies here.
-  */
+   */
   def addPairwise(a: List[Int], b: List[Int]): List[Int] = (a, b) match {
-    case (Nil, _) => Nil
-    case (_, Nil) => Nil
+    case (Nil, _)                     => Nil
+    case (_, Nil)                     => Nil
     case (Cons(h1, t1), Cons(h2, t2)) => Cons(h1 + h2, addPairwise(t1, t2))
   }
 
   /*
   This function is usually called `zipWith`. The discussion about stack usage from the explanation of `map` also
   applies here. By putting the `f` in the second argument list, Scala can infer its type from the previous argument list.
-  */
+   */
   def zipWith[A, B, C](a: List[A], b: List[B])(f: (A, B) => C): List[C] = (a, b) match {
-    case (Nil, _) => Nil
-    case (_, Nil) => Nil
+    case (Nil, _)                     => Nil
+    case (_, Nil)                     => Nil
     case (Cons(h1, t1), Cons(h2, t2)) => Cons(f(h1, h2), zipWith(t1, t2)(f))
   }
 
@@ -301,26 +304,26 @@ object List { // `List` companion object. Contains functions for creating and wo
   loops early. In Chapter 5 we'll discuss ways of composing functions
   like this from simpler components, without giving up the efficiency
   of having the resulting functions work in one pass over the data.
-  
+
   It's good to specify some properties about these functions.
   For example, do you expect these expressions to be true?
-  
+
   (xs append ys) startsWith xs
   xs startsWith Nil
   (xs append ys append zs) hasSubsequence ys
   xs hasSubsequence Nil
 
-  */
+   */
   @annotation.tailrec
   def startsWith[A](l: List[A], prefix: List[A]): Boolean = (l, prefix) match {
-    case (_, Nil) => true
+    case (_, Nil)                              => true
     case (Cons(h, t), Cons(h2, t2)) if h == h2 => startsWith(t, t2)
-    case _ => false
+    case _                                     => false
   }
   @annotation.tailrec
   def hasSubsequence[A](sup: List[A], sub: List[A]): Boolean = sup match {
-    case Nil => sub == Nil
+    case Nil                       => sub == Nil
     case _ if startsWith(sup, sub) => true
-    case Cons(h, t) => hasSubsequence(t, sub)
+    case Cons(h, t)                => hasSubsequence(t, sub)
   }
 }

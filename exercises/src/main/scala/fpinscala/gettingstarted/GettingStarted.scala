@@ -31,7 +31,7 @@ object MyModule {
   // Another implementation of `factorial`, this time with a `while` loop
   def factorial2(n: Int): Int = {
     var acc = 1
-    var i = n
+    var i   = n
     while (i > 0) {
       acc *= i;
       i -= 1
@@ -86,7 +86,9 @@ object TestFib {
   // test implementation of `fib`
   def main(args: Array[String]): Unit = {
     println("Expected: 0, 1, 1, 2, 3, 5, 8")
-    println("Actual:   %d, %d, %d, %d, %d, %d, %d".format(fib(0), fib(1), fib(2), fib(3), fib(4), fib(5), fib(6)))
+    println(
+      "Actual:   %d, %d, %d, %d, %d, %d, %d"
+        .format(fib(0), fib(1), fib(2), fib(3), fib(4), fib(5), fib(6)))
   }
 }
 
@@ -125,7 +127,7 @@ object MonomorphicBinarySearch {
       if (low > high) -mid - 1
       else {
         val mid2 = (low + high) / 2
-        val d = ds(mid2) // We index into an array using the same
+        val d    = ds(mid2) // We index into an array using the same
         // syntax as function application
         if (d == key) mid2
         else if (d > key) go(low, mid2, mid2 - 1)
@@ -146,8 +148,8 @@ object PolymorphicFunctions {
     def go(low: Int, mid: Int, high: Int): Int = {
       if (low > high) -mid - 1
       else {
-        val mid2 = (low + high) / 2
-        val a = as(mid2)
+        val mid2    = (low + high) / 2
+        val a       = as(mid2)
         val greater = gt(a, key)
         if (!greater && !gt(key, a)) mid2
         else if (greater) go(low, mid2, mid2 - 1)
@@ -199,7 +201,7 @@ object PolymorphicFunctions {
   and uncurry and the two forms are in some sense "the same". In FP jargon,
   we say that they are _isomorphic_ ("iso" = same; "morphe" = shape, form),
   a term we inherit from category theory.
-  */
+   */
 
   // Exercise 5: Implement `compose`
 

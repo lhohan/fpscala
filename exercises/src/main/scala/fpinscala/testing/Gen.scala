@@ -9,40 +9,37 @@ import Prop._
 import java.util.concurrent.{Executors, ExecutorService}
 
 case class Prop(run: (MaxSize, TestCases, RNG) => Result) {
-  def &&(p: Prop) = Prop {
-    (max, n, rng) =>
-      run(max, n, rng) match {
-        case Passed | Proved => p.run(max, n, rng)
-        case x => x
-      }
+  def &&(p: Prop) = Prop { (max, n, rng) =>
+    run(max, n, rng) match {
+      case Passed | Proved => p.run(max, n, rng)
+      case x               => x
+    }
   }
 
-  def ||(p: Prop) = Prop {
-    (max, n, rng) =>
-      run(max, n, rng) match {
-        // In case of failure, run the other prop.
-        case Falsified(msg, _) => p.tag(msg).run(max, n, rng)
-        case x => x
-      }
+  def ||(p: Prop) = Prop { (max, n, rng) =>
+    run(max, n, rng) match {
+      // In case of failure, run the other prop.
+      case Falsified(msg, _) => p.tag(msg).run(max, n, rng)
+      case x                 => x
+    }
   }
 
   /* This is rather simplistic - in the event of failure, we simply prepend
    * the given message on a newline in front of the existing message.
    */
-  def tag(msg: String) = Prop {
-    (max, n, rng) =>
-      run(max, n, rng) match {
-        case Falsified(e, c) => Falsified(msg + "\n" + e, c)
-        case x => x
-      }
+  def tag(msg: String) = Prop { (max, n, rng) =>
+    run(max, n, rng) match {
+      case Falsified(e, c) => Falsified(msg + "\n" + e, c)
+      case x               => x
+    }
   }
 }
 
 object Prop {
   type SuccessCount = Int
-  type TestCases = Int
-  type MaxSize = Int
-  type FailedCase = String
+  type TestCases    = Int
+  type MaxSize      = Int
+  type FailedCase   = String
 
   sealed trait Result {
     def isFalsified: Boolean
@@ -64,13 +61,18 @@ object Prop {
   def randomStream[A](g: Gen[A])(rng: RNG): Stream[A] =
     Stream.unfold(rng)(rng => Some(g.sample.run(rng)))
 
-  def forAll[A](as: Gen[A])(f: A => Boolean): Prop = Prop {
-    (n, rng) =>
-      randomStream(as)(rng).zip(Stream.from(0)).take(n).map {
-        case (a, i) => try {
-          if (f(a)) Passed else Falsified(a.toString, i)
-        } catch { case e: Exception => Falsified(buildMsg(a, e), i) }
-      }.find(_.isFalsified).getOrElse(Passed)
+  def forAll[A](as: Gen[A])(f: A => Boolean): Prop = Prop { (n, rng) =>
+    randomStream(as)(rng)
+      .zip(Stream.from(0))
+      .take(n)
+      .map {
+        case (a, i) =>
+          try {
+            if (f(a)) Passed else Falsified(a.toString, i)
+          } catch { case e: Exception => Falsified(buildMsg(a, e), i) }
+      }
+      .find(_.isFalsified)
+      .getOrElse(Passed)
   }
 
   // String interpolation syntax. A string starting with `s"` can refer to
@@ -82,28 +84,33 @@ object Prop {
       s"stack trace:\n ${e.getStackTrace.mkString("\n")}"
 
   def apply(f: (TestCases, RNG) => Result): Prop =
-    Prop { (_, n, rng) => f(n, rng) }
+    Prop { (_, n, rng) =>
+      f(n, rng)
+    }
 
   def forAll[A](g: SGen[A])(f: A => Boolean): Prop =
     forAll(g(_))(f)
 
-  def forAll[A](g: Int => Gen[A])(f: A => Boolean): Prop = Prop {
-    (max, n, rng) =>
-      val casesPerSize = (n - 1) / max + 1
-      val props: Stream[Prop] =
-        Stream.from(0).take((n min max) + 1).map(i => forAll(g(i))(f))
-      val prop: Prop =
-        props.map(p => Prop { (max, n, rng) =>
-          p.run(max, casesPerSize, rng)
-        }).toList.reduce(_ && _)
-      prop.run(max, n, rng)
+  def forAll[A](g: Int => Gen[A])(f: A => Boolean): Prop = Prop { (max, n, rng) =>
+    val casesPerSize = (n - 1) / max + 1
+    val props: Stream[Prop] =
+      Stream.from(0).take((n min max) + 1).map(i => forAll(g(i))(f))
+    val prop: Prop =
+      props
+        .map(p =>
+          Prop { (max, n, rng) =>
+            p.run(max, casesPerSize, rng)
+        })
+        .toList
+        .reduce(_ && _)
+    prop.run(max, n, rng)
   }
 
   def run(
-    p: Prop,
-    maxSize: Int = 100,
-    testCases: Int = 100,
-    rng: RNG = RNG.Simple(System.currentTimeMillis)
+      p: Prop,
+      maxSize: Int = 100,
+      testCases: Int = 100,
+      rng: RNG = RNG.Simple(System.currentTimeMillis)
   ): Unit =
     p.run(maxSize, testCases, rng) match {
       case Falsified(msg, n) =>
@@ -116,15 +123,15 @@ object Prop {
     }
 
   val ES: ExecutorService = Executors.newCachedThreadPool
-  val p1 = Prop.forAll(Gen.unit(Par.unit(1)))(i =>
-    Par.map(i)(_ + 1)(ES).get == Par.unit(2)(ES).get)
+  val p1 =
+    Prop.forAll(Gen.unit(Par.unit(1)))(i => Par.map(i)(_ + 1)(ES).get == Par.unit(2)(ES).get)
 
   def check(p: => Boolean): Prop = Prop { (_, _, _) =>
     if (p) Passed else Falsified("()", 0)
   }
 
   val p2 = check {
-    val p = Par.map(Par.unit(1))(_ + 1)
+    val p  = Par.map(Par.unit(1))(_ + 1)
     val p2 = Par.unit(2)
     p(ES).get == p2(ES).get
   }
@@ -141,7 +148,7 @@ object Prop {
 
   val S = weighted(
     choose(1, 4).map(Executors.newFixedThreadPool) -> .75,
-    unit(Executors.newCachedThreadPool) -> .25
+    unit(Executors.newCachedThreadPool)            -> .25
   ) // `a -> b` is syntax sugar for `(a,b)`
 
   def forAllPar[A](g: Gen[A])(f: A => Par[Boolean]): Prop =
@@ -181,7 +188,7 @@ case class Gen[+A](sample: State[RNG, A]) {
   def listOfN(size: Gen[Int]): Gen[List[A]] =
     size flatMap (n => this.listOfN(n))
 
-  def listOf: SGen[List[A]] = Gen.listOf(this)
+  def listOf: SGen[List[A]]  = Gen.listOf(this)
   def listOf1: SGen[List[A]] = Gen.listOf1(this)
 
   def unsized = SGen(_ => this)
@@ -213,17 +220,18 @@ object Gen {
    * integer in the range.
    */
   def even(start: Int, stopExclusive: Int): Gen[Int] =
-    choose(start, if (stopExclusive % 2 == 0) stopExclusive - 1 else stopExclusive).
-      map(n => if (n % 2 != 0) n + 1 else n)
+    choose(start, if (stopExclusive % 2 == 0) stopExclusive - 1 else stopExclusive).map(n =>
+      if (n % 2 != 0) n + 1 else n)
 
   def odd(start: Int, stopExclusive: Int): Gen[Int] =
-    choose(start, if (stopExclusive % 2 != 0) stopExclusive - 1 else stopExclusive).
-      map(n => if (n % 2 == 0) n + 1 else n)
+    choose(start, if (stopExclusive % 2 != 0) stopExclusive - 1 else stopExclusive).map(n =>
+      if (n % 2 == 0) n + 1 else n)
 
-  def sameParity(from: Int, to: Int): Gen[(Int, Int)] = for {
-    i <- choose(from, to)
-    j <- if (i % 2 == 0) even(from, to) else odd(from, to)
-  } yield (i, j)
+  def sameParity(from: Int, to: Int): Gen[(Int, Int)] =
+    for {
+      i <- choose(from, to)
+      j <- if (i % 2 == 0) even(from, to) else odd(from, to)
+    } yield (i, j)
 
   def listOfN_1[A](n: Int, g: Gen[A]): Gen[List[A]] =
     List.fill(n)(g).foldRight(unit(List[A]()))((a, b) => a.map2(b)(_ :: _))
@@ -284,9 +292,9 @@ object Gen {
    * Note that this has to be a `lazy val` because of the way Scala initializes objects.
    * It depends on the `Prop` companion object being created, which references `pint2`.
    */
-  lazy val pint2: Gen[Par[Int]] = choose(-100, 100).listOfN(choose(0, 20)).map(l =>
-    l.foldLeft(Par.unit(0))((p, i) =>
-      Par.fork { Par.map2(p, Par.unit(i))(_ + _) }))
+  lazy val pint2: Gen[Par[Int]] = choose(-100, 100)
+    .listOfN(choose(0, 20))
+    .map(l => l.foldLeft(Par.unit(0))((p, i) => Par.fork { Par.map2(p, Par.unit(i))(_ + _) }))
 
   def genStringIntFn(g: Gen[Int]): Gen[String => Int] =
     g map (i => (s => i))
@@ -304,4 +312,3 @@ case class SGen[+A](g: Int => Gen[A]) {
   def **[B](s2: SGen[B]): SGen[(A, B)] =
     SGen(n => apply(n) ** s2(n))
 }
-

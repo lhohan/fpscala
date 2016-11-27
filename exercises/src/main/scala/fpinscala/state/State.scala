@@ -14,7 +14,7 @@ object RNG {
     def nextInt: (Int, RNG) = {
       val newSeed = (seed * 0x5DEECE66DL + 0xBL) & 0xFFFFFFFFFFFFL // `&` is bitwise AND. We use the current seed to generate a new seed.
       val nextRNG = Simple(newSeed) // The next state, which is an `RNG` instance created from the new seed.
-      val n = (newSeed >>> 16).toInt // `>>>` is right binary shift with zero fill. The value `n` is our new pseudo-random integer.
+      val n       = (newSeed >>> 16).toInt // `>>>` is right binary shift with zero fill. The value `n` is our new pseudo-random integer.
       (n, nextRNG) // The return value is a tuple containing both a pseudo-random integer and the next `RNG` state.
     }
   }
@@ -34,7 +34,7 @@ object RNG {
 
   def nonNegativeInt(rng: RNG): (Int, RNG) = {
     val (v, r) = rng.nextInt
-    val abs_v = if (v < 0) -(v + 1) else v
+    val abs_v  = if (v < 0) -(v + 1) else v
     (abs_v, r)
   }
 
@@ -97,7 +97,9 @@ object RNG {
     }
 
   def sequence[A](fs: List[Rand[A]]): Rand[List[A]] =
-    fs.foldRight(unit(List.empty[A])) { (r, acc) => map2(r, acc)(_ :: _) }
+    fs.foldRight(unit(List.empty[A])) { (r, acc) =>
+      map2(r, acc)(_ :: _)
+    }
 
   def intsViaSequence(count: Int)(rng: RNG): (List[Int], RNG) = {
     val ris = List.fill(count)((r: RNG) => r.nextInt)
@@ -147,10 +149,9 @@ case class State[S, +A](run: S => (A, S)) {
     flatMap(a => sb.map(b => f(a, b)))
 
   def flatMap[B](f: A => State[S, B]): State[S, B] =
-    State {
-      s =>
-        val (a, s1) = run(s)
-        f(a).run(s1)
+    State { s =>
+      val (a, s1) = run(s)
+      f(a).run(s1)
     }
 
 }
@@ -169,16 +170,19 @@ object State {
   def unit[S, A](a: A): State[S, A] = State[S, A](s => (a, s))
 
   def sequence[S, A](ss: List[State[S, A]]): State[S, List[A]] =
-    ss.foldRight(unit[S, List[A]](List())) { (s, acc) => s.map2(acc)(_ :: _) }
+    ss.foldRight(unit[S, List[A]](List())) { (s, acc) =>
+      s.map2(acc)(_ :: _)
+    }
 
   def get[S]: State[S, S] = State(s => (s, s))
 
   def set[S](s: S): State[S, Unit] = State(_ => ((), s))
 
-  def modify[S](f: S => S): State[S, Unit] = for {
-    s <- get
-    _ <- set(f(s))
-  } yield ()
+  def modify[S](f: S => S): State[S, Unit] =
+    for {
+      s <- get
+      _ <- set(f(s))
+    } yield ()
 
 }
 
@@ -211,7 +215,8 @@ object CandyMachine {
       }
     }
 
-    val inputsToState: State[Machine, List[(Int, Int)]] = sequence(inputs.map(input => updateState(input)))
+    val inputsToState: State[Machine, List[(Int, Int)]] = sequence(
+      inputs.map(input => updateState(input)))
     inputsToState.map(_.last)
 
     // this works too:

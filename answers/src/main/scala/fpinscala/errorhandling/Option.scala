@@ -5,12 +5,12 @@ import scala.{Option => _, Either => _, _}
 
 sealed trait Option[+A] {
   def map[B](f: A => B): Option[B] = this match {
-    case None => None
+    case None    => None
     case Some(a) => Some(f(a))
   }
 
   def getOrElse[B >: A](default: => B): B = this match {
-    case None => default
+    case None    => default
     case Some(a) => a
   }
 
@@ -19,9 +19,9 @@ sealed trait Option[+A] {
 
   /*
   Of course, we can also implement `flatMap` with explicit pattern matching.
-  */
+   */
   def flatMap_1[B](f: A => Option[B]): Option[B] = this match {
-    case None => None
+    case None    => None
     case Some(a) => f(a)
   }
 
@@ -30,24 +30,24 @@ sealed trait Option[+A] {
 
   /*
   Again, we can implement this with explicit pattern matching.
-  */
+   */
   def orElse_1[B >: A](ob: => Option[B]): Option[B] = this match {
     case None => ob
-    case _ => this
+    case _    => this
   }
 
   def filter(f: A => Boolean): Option[A] = this match {
     case Some(a) if f(a) => this
-    case _ => None
+    case _               => None
   }
   /*
   This can also be defined in terms of `flatMap`.
-  */
+   */
   def filter_1(f: A => Boolean): Option[A] =
     flatMap(a => if (f(a)) Some(a) else None)
 }
 case class Some[+A](get: A) extends Option[A]
-case object None extends Option[Nothing]
+case object None            extends Option[Nothing]
 
 object Option {
   def failingFn(i: Int): Int = {
@@ -83,23 +83,23 @@ object Option {
 
   /*
   Here's an explicit recursive version:
-  */
+   */
   def sequence[A](a: List[Option[A]]): Option[List[A]] =
     a match {
-      case Nil => Some(Nil)
+      case Nil    => Some(Nil)
       case h :: t => h flatMap (hh => sequence(t) map (hh :: _))
     }
   /*
   It can also be implemented using `foldRight` and `map2`. The type annotation on `foldRight` is needed here; otherwise
   Scala wrongly infers the result type of the fold as `Some[Nil.type]` and reports a type error (try it!). This is an
   unfortunate consequence of Scala using subtyping to encode algebraic data types.
-  */
+   */
   def sequence_1[A](a: List[Option[A]]): Option[List[A]] =
     a.foldRight[Option[List[A]]](Some(Nil))((x, y) => map2(x, y)(_ :: _))
 
   def traverse[A, B](a: List[A])(f: A => Option[B]): Option[List[B]] =
     a match {
-      case Nil => Some(Nil)
+      case Nil    => Some(Nil)
       case h :: t => map2(f(h), traverse(t)(f))(_ :: _)
     }
 

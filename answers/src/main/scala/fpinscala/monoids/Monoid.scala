@@ -13,32 +13,32 @@ object Monoid {
 
   val stringMonoid = new Monoid[String] {
     def op(a1: String, a2: String) = a1 + a2
-    val zero = ""
+    val zero                       = ""
   }
 
   def listMonoid[A] = new Monoid[List[A]] {
     def op(a1: List[A], a2: List[A]) = a1 ++ a2
-    val zero = Nil
+    val zero                         = Nil
   }
 
   val intAddition: Monoid[Int] = new Monoid[Int] {
     def op(x: Int, y: Int) = x + y
-    val zero = 0
+    val zero               = 0
   }
 
   val intMultiplication: Monoid[Int] = new Monoid[Int] {
     def op(x: Int, y: Int) = x * y
-    val zero = 1
+    val zero               = 1
   }
 
   val booleanOr: Monoid[Boolean] = new Monoid[Boolean] {
     def op(x: Boolean, y: Boolean) = x || y
-    val zero = false
+    val zero                       = false
   }
 
   val booleanAnd: Monoid[Boolean] = new Monoid[Boolean] {
     def op(x: Boolean, y: Boolean) = x && y
-    val zero = true
+    val zero                       = true
   }
 
   // Notice that we have a choice in how we implement `op`.
@@ -50,24 +50,24 @@ object Monoid {
   // as well as associative.
   def optionMonoid[A]: Monoid[Option[A]] = new Monoid[Option[A]] {
     def op(x: Option[A], y: Option[A]) = x orElse y
-    val zero = None
+    val zero                           = None
   }
 
   // We can get the dual of any monoid just by flipping the `op`.
   def dual[A](m: Monoid[A]): Monoid[A] = new Monoid[A] {
     def op(x: A, y: A): A = m.op(y, x)
-    val zero = m.zero
+    val zero              = m.zero
   }
 
   // Now we can have both monoids on hand
   def firstOptionMonoid[A]: Monoid[Option[A]] = optionMonoid[A]
-  def lastOptionMonoid[A]: Monoid[Option[A]] = dual(firstOptionMonoid)
+  def lastOptionMonoid[A]: Monoid[Option[A]]  = dual(firstOptionMonoid)
 
   // There is a choice of implementation here as well.
   // Do we implement it as `f compose g` or `f andThen g`? We have to pick one.
   def endoMonoid[A]: Monoid[A => A] = new Monoid[A => A] {
     def op(f: A => A, g: A => A) = f compose g
-    val zero = (a: A) => a
+    val zero                     = (a: A) => a
   }
 
   import fpinscala.testing._
@@ -79,11 +79,9 @@ object Monoid {
       x <- gen
       y <- gen
       z <- gen
-    } yield (x, y, z))(p =>
-      m.op(p._1, m.op(p._2, p._3)) == m.op(m.op(p._1, p._2), p._3)) &&
+    } yield (x, y, z))(p => m.op(p._1, m.op(p._2, p._3)) == m.op(m.op(p._1, p._2), p._3)) &&
       // Identity
-      forAll(gen)((a: A) =>
-        m.op(a, m.zero) == a && m.op(m.zero, a) == a)
+      forAll(gen)((a: A) => m.op(a, m.zero) == a && m.op(m.zero, a) == a)
 
   def concatenate[A](as: List[A], m: Monoid[A]): A =
     as.foldLeft(m.zero)(m.op)
@@ -139,7 +137,7 @@ object Monoid {
   // some context (here `Par`) is something we'll discuss more in
   // chapters 11 & 12
   def par[A](m: Monoid[A]): Monoid[Par[A]] = new Monoid[Par[A]] {
-    def zero = Par.unit(m.zero)
+    def zero                     = Par.unit(m.zero)
     def op(a: Par[A], b: Par[A]) = a.map2(b)(m.op)
   }
 
@@ -150,7 +148,7 @@ object Monoid {
     }
 
   sealed trait WC
-  case class Stub(chars: String) extends WC
+  case class Stub(chars: String)                            extends WC
   case class Part(lStub: String, words: Int, rStub: String) extends WC
 
   val wcMonoid: Monoid[WC] = new Monoid[WC] {
@@ -158,7 +156,7 @@ object Monoid {
     val zero = Stub("")
 
     def op(a: WC, b: WC) = (a, b) match {
-      case (Stub(c), Stub(d)) => Stub(c + d)
+      case (Stub(c), Stub(d))       => Stub(c + d)
       case (Stub(c), Part(l, w, r)) => Part(c + l, w, r)
       case (Part(l, w, r), Stub(c)) => Part(l, w, r + c)
       case (Part(l1, w1, r1), Part(l2, w2, r2)) =>
@@ -177,7 +175,7 @@ object Monoid {
     // `unstub(s)` is 0 if `s` is empty, otherwise 1.
     def unstub(s: String) = s.length min 1
     foldMapV(s.toIndexedSeq, wcMonoid)(wc) match {
-      case Stub(s) => unstub(s)
+      case Stub(s)       => unstub(s)
       case Part(l, w, r) => unstub(l) + w + unstub(r)
     }
   }
@@ -192,7 +190,7 @@ object Monoid {
   def functionMonoid[A, B](B: Monoid[B]): Monoid[A => B] =
     new Monoid[A => B] {
       def op(f: A => B, g: A => B) = a => B.op(f(a), g(a))
-      val zero: A => B = a => B.zero
+      val zero: A => B             = a => B.zero
     }
 
   def mapMergeMonoid[K, V](V: Monoid[V]): Monoid[Map[K, V]] =
@@ -200,10 +198,11 @@ object Monoid {
       def zero = Map[K, V]()
       def op(a: Map[K, V], b: Map[K, V]) =
         (a.keySet ++ b.keySet).foldLeft(zero) { (acc, k) =>
-          acc.updated(k, V.op(
-            a.getOrElse(k, V.zero),
-            b.getOrElse(k, V.zero)
-          ))
+          acc.updated(k,
+                      V.op(
+                        a.getOrElse(k, V.zero),
+                        b.getOrElse(k, V.zero)
+                      ))
         }
     }
 
@@ -259,20 +258,20 @@ object StreamFoldable extends Foldable[Stream] {
 }
 
 sealed trait Tree[+A]
-case class Leaf[A](value: A) extends Tree[A]
+case class Leaf[A](value: A)                        extends Tree[A]
 case class Branch[A](left: Tree[A], right: Tree[A]) extends Tree[A]
 
 object TreeFoldable extends Foldable[Tree] {
   override def foldMap[A, B](as: Tree[A])(f: A => B)(mb: Monoid[B]): B = as match {
-    case Leaf(a) => f(a)
+    case Leaf(a)      => f(a)
     case Branch(l, r) => mb.op(foldMap(l)(f)(mb), foldMap(r)(f)(mb))
   }
   override def foldLeft[A, B](as: Tree[A])(z: B)(f: (B, A) => B) = as match {
-    case Leaf(a) => f(z, a)
+    case Leaf(a)      => f(z, a)
     case Branch(l, r) => foldLeft(r)(foldLeft(l)(z)(f))(f)
   }
   override def foldRight[A, B](as: Tree[A])(z: B)(f: (A, B) => B) = as match {
-    case Leaf(a) => f(a, z)
+    case Leaf(a)      => f(a, z)
     case Branch(l, r) => foldRight(l)(foldRight(r)(z)(f))(f)
   }
 }
@@ -287,16 +286,15 @@ object TreeFoldable extends Foldable[Tree] {
 object OptionFoldable extends Foldable[Option] {
   override def foldMap[A, B](as: Option[A])(f: A => B)(mb: Monoid[B]): B =
     as match {
-      case None => mb.zero
+      case None    => mb.zero
       case Some(a) => f(a)
     }
   override def foldLeft[A, B](as: Option[A])(z: B)(f: (B, A) => B) = as match {
-    case None => z
+    case None    => z
     case Some(a) => f(z, a)
   }
   override def foldRight[A, B](as: Option[A])(z: B)(f: (A, B) => B) = as match {
-    case None => z
+    case None    => z
     case Some(a) => f(a, z)
   }
 }
-

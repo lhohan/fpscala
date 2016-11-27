@@ -4,8 +4,8 @@ import fpinscala.datastructures._
 import org.scalatest.FunSuite
 
 /**
- * Created by hans on 19/10/14.
- */
+  * Created by hans on 19/10/14.
+  */
 class ch03_DataStructuresTests extends FunSuite {
 
   import fpinscala.datastructures.List._
@@ -244,7 +244,8 @@ class ch03_DataStructuresTests extends FunSuite {
   test("tree - size") {
     import fpinscala.datastructures.Tree._
     assertResult(1, "1 leaf")(size(Leaf("abc")))
-    assertResult(5, "3 leafs + 2 branches")(size(Branch(Leaf("abc"), Branch(Leaf("def"), Leaf("ghi")))))
+    assertResult(5, "3 leafs + 2 branches")(
+      size(Branch(Leaf("abc"), Branch(Leaf("def"), Leaf("ghi")))))
   }
 
   test("tree - maximum") {
@@ -257,13 +258,15 @@ class ch03_DataStructuresTests extends FunSuite {
     import fpinscala.datastructures.Tree._
     assertResult(0, "1 leaf")(depth(Leaf(1)))
     assertResult(2, "3 leafs + 2 branches")(depth(Branch(Leaf(1), Branch(Leaf(3), Leaf(2)))))
-    assertResult(3, "3 leafs + 3 branches")(depth(Branch(Leaf(1), Branch(Branch(Leaf(3), Leaf(8)), Leaf(2)))))
+    assertResult(3, "3 leafs + 3 branches")(
+      depth(Branch(Leaf(1), Branch(Branch(Leaf(3), Leaf(8)), Leaf(2)))))
   }
 
   test("tree - map") {
     import fpinscala.datastructures.Tree._
     assertResult(Leaf(2), "1 leaf")(map(Leaf(1))((x: Int) => x + 1))
-    assertResult(Branch(Leaf("1"), Branch(Branch(Leaf("3"), Leaf("8")), Leaf("2"))), "3 leafs + 3 branches") {
+    assertResult(Branch(Leaf("1"), Branch(Branch(Leaf("3"), Leaf("8")), Leaf("2"))),
+                 "3 leafs + 3 branches") {
       map(Branch(Leaf(1), Branch(Branch(Leaf(3), Leaf(8)), Leaf(2))))((x: Int) => x.toString)
     }
   }
@@ -271,28 +274,34 @@ class ch03_DataStructuresTests extends FunSuite {
   test("tree - fold - size") {
     import fpinscala.datastructures.Tree._
     assertResult(1, "1 leaf")(sizeViaFold(Leaf("abc")))
-    assertResult(5, "3 leafs + 2 branches")(sizeViaFold(Branch(Leaf("abc"), Branch(Leaf("def"), Leaf("ghi")))))
+    assertResult(5, "3 leafs + 2 branches")(
+      sizeViaFold(Branch(Leaf("abc"), Branch(Leaf("def"), Leaf("ghi")))))
   }
 
   test("tree - fold - maximum") {
     import fpinscala.datastructures.Tree._
     assertResult(1, "1 leaf")(maximumViaFold(Leaf(1)))
-    assertResult(3, "3 leafs + 2 branches")(maximumViaFold(Branch(Leaf(1), Branch(Leaf(3), Leaf(2)))))
+    assertResult(3, "3 leafs + 2 branches")(
+      maximumViaFold(Branch(Leaf(1), Branch(Leaf(3), Leaf(2)))))
   }
 
   test("tree - fold - map") {
     import fpinscala.datastructures.Tree._
     assertResult(Leaf(2), "1 leaf")(mapViaFold(Leaf(1))((x: Int) => x + 1))
-    assertResult(Branch(Leaf("1"), Branch(Branch(Leaf("3"), Leaf("8")), Leaf("2"))), "3 leafs + 3 branches") {
-      mapViaFold(Branch(Leaf(1), Branch(Branch(Leaf(3), Leaf(8)), Leaf(2))))((x: Int) => x.toString)
+    assertResult(Branch(Leaf("1"), Branch(Branch(Leaf("3"), Leaf("8")), Leaf("2"))),
+                 "3 leafs + 3 branches") {
+      mapViaFold(Branch(Leaf(1), Branch(Branch(Leaf(3), Leaf(8)), Leaf(2))))((x: Int) =>
+        x.toString)
     }
   }
 
   test("tree - fold - depth") {
     import fpinscala.datastructures.Tree._
     assertResult(0, "1 leaf")(depth(Leaf(1)))
-    assertResult(2, "3 leafs + 2 branches")(depthViaFold(Branch(Leaf(1), Branch(Leaf(3), Leaf(2)))))
-    assertResult(3, "3 leafs + 3 branches")(depthViaFold(Branch(Leaf(1), Branch(Branch(Leaf(3), Leaf(8)), Leaf(2)))))
+    assertResult(2, "3 leafs + 2 branches")(
+      depthViaFold(Branch(Leaf(1), Branch(Leaf(3), Leaf(2)))))
+    assertResult(3, "3 leafs + 3 branches")(
+      depthViaFold(Branch(Leaf(1), Branch(Branch(Leaf(3), Leaf(8)), Leaf(2)))))
   }
 
 }

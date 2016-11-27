@@ -14,7 +14,8 @@ class ch10_MonoidsTests extends FunSuite {
     assert(intAddition.op(1, 2) == 3)
   }
 
-  def optionGen[A](g: Gen[A]): Gen[Option[A]] = g.flatMap(a => Gen.boolean.map(b => if (b) Some(a) else None))
+  def optionGen[A](g: Gen[A]): Gen[Option[A]] =
+    g.flatMap(a => Gen.boolean.map(b => if (b) Some(a) else None))
 
   test("test monoids using laws") {
     Prop.run(monoidLaws(intAddition, Gen.smallInt))
@@ -75,7 +76,8 @@ class ch10_MonoidsTests extends FunSuite {
   }
 
   test("ex 10.10, 10.11 word count") {
-    assert(16 == count("ScalaTest provides a domain specific language (DSL) for expressing assertions in tests using the word should."))
+    assert(16 == count(
+      "ScalaTest provides a domain specific language (DSL) for expressing assertions in tests using the word should."))
     assert(1 == count("ScalaTest "))
     assert(1 == count(" ScalaTest "))
     assert(1 == count(" ScalaTest"))
@@ -84,25 +86,39 @@ class ch10_MonoidsTests extends FunSuite {
 
   test("ex 10.12 Foldable[List], etc") {
     assert("12345" == ListFoldable.foldMap(List(1, 2, 3, 4, 5))(_.toString)(stringMonoid))
-    assert("12345" == IndexedSeqFoldable.foldMap(IndexedSeq(1, 2, 3, 4, 5))(_.toString)(stringMonoid))
+    assert(
+      "12345" == IndexedSeqFoldable.foldMap(IndexedSeq(1, 2, 3, 4, 5))(_.toString)(stringMonoid))
     assert("12345" == StreamFoldable.foldMap(Stream(1, 2, 3, 4, 5))(_.toString)(stringMonoid))
 
   }
 
   test("ex 10.13 TreeFoldable") {
-    assert("1024" == TreeFoldable.foldLeft(Branch(Leaf(5), Branch(Leaf(1), Leaf(2))))("")((s, x) => s + x * 2))
+    assert("1024" == TreeFoldable.foldLeft(Branch(Leaf(5), Branch(Leaf(1), Leaf(2))))("")((s, x) =>
+      s + x * 2))
     assert("10" == TreeFoldable.foldLeft(Leaf(5))("")((s, x) => s + x * 2))
-    assert("4210" == TreeFoldable.foldRight(Branch(Leaf(5), Branch(Leaf(1), Leaf(2))))("")((x, s) => s + x * 2))
-    assert(17 == TreeFoldable.foldRight(Branch(Leaf(5), Branch(Leaf(1), Leaf(2))))(1)((x, s) => s + x * 2))
-    assert(17 == TreeFoldable.foldLeft(Branch(Leaf(5), Branch(Leaf(1), Leaf(2))))(1)((s, x) => s + x * 2))
+    assert(
+      "4210" == TreeFoldable.foldRight(Branch(Leaf(5), Branch(Leaf(1), Leaf(2))))("")((x, s) =>
+        s + x * 2))
+    assert(17 == TreeFoldable.foldRight(Branch(Leaf(5), Branch(Leaf(1), Leaf(2))))(1)((x, s) =>
+      s + x * 2))
+    assert(17 == TreeFoldable.foldLeft(Branch(Leaf(5), Branch(Leaf(1), Leaf(2))))(1)((s, x) =>
+      s + x * 2))
 
   }
 
   test("ex 10.14 OptionFoldable") {
-    assert(15 == OptionFoldable.foldLeft(Some(5))(10) { (a, b) => a + b })
-    assert(10 == OptionFoldable.foldLeft(None.asInstanceOf[Option[Int]])(10) { (a, b) => a + b })
-    assert(15 == OptionFoldable.foldRight(Some(5))(10) { (a, b) => a + b })
-    assert(10 == OptionFoldable.foldRight(None.asInstanceOf[Option[Int]])(10) { (a, b) => a + b })
+    assert(15 == OptionFoldable.foldLeft(Some(5))(10) { (a, b) =>
+      a + b
+    })
+    assert(10 == OptionFoldable.foldLeft(None.asInstanceOf[Option[Int]])(10) { (a, b) =>
+      a + b
+    })
+    assert(15 == OptionFoldable.foldRight(Some(5))(10) { (a, b) =>
+      a + b
+    })
+    assert(10 == OptionFoldable.foldRight(None.asInstanceOf[Option[Int]])(10) { (a, b) =>
+      a + b
+    })
     assert("5-" == OptionFoldable.foldMap(Some(5))(_ + "-")(stringMonoid))
     assert("" == OptionFoldable.foldMap(None.asInstanceOf[Option[Int]])(_ + "-")(stringMonoid))
   }
@@ -118,7 +134,8 @@ class ch10_MonoidsTests extends FunSuite {
   test("ex 10.16 product monoid") {
     def pairGen[A, B](ga: Gen[A], gb: Gen[B]): Gen[(A, B)] = ga.flatMap(a => gb.map(b => (a, b)))
 
-    Prop.run(monoidLaws(productMonoid(intAddition, stringMonoid), pairGen(Gen.smallInt, Gen.stringN(10))))
+    Prop.run(
+      monoidLaws(productMonoid(intAddition, stringMonoid), pairGen(Gen.smallInt, Gen.stringN(10))))
   }
 
   test("Using product monoid to check if seq is ordered") {
@@ -133,7 +150,7 @@ class ch10_MonoidsTests extends FunSuite {
   }
 
   test("ex 10.17 function monoid") {
-    val fm = functionMonoid[Int, Int](intAddition)
+    val fm             = functionMonoid[Int, Int](intAddition)
     val f1: Int => Int = (x: Int) => x * 2
     val f2: Int => Int = (x: Int) => x + 3
     assert(18 == fm.op(f1, f2)(5))

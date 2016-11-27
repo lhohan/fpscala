@@ -3,8 +3,8 @@ package fpinscala
 import org.scalatest.FunSuite
 
 /**
- * Created by hans on 25/10/14.
- */
+  * Created by hans on 25/10/14.
+  */
 class ch04_ErrorHandlingTests extends FunSuite {
 
   test("map") {
@@ -34,7 +34,8 @@ class ch04_ErrorHandlingTests extends FunSuite {
     import fpinscala.errorhandling._
 
     assertResult(Some("default option value"), "none")(None.orElse(Some("default option value")))
-    assertResult(Some(5), "some")(Some(5).orElse(throw new IllegalArgumentException("I should not be evaluated")))
+    assertResult(Some(5), "some")(
+      Some(5).orElse(throw new IllegalArgumentException("I should not be evaluated")))
   }
 
   test("filter") {
@@ -42,7 +43,7 @@ class ch04_ErrorHandlingTests extends FunSuite {
 
     assertResult(None, "none filter false")(None.filter(_ => false))
     assertResult(None, "none filter true")(None.filter(_ => true))
-    assertResult(None, "some filter false")(Some(5).filter(_ % 2 == 0))
+    assertResult(None, "some filter false")(Some(5).filter(_   % 2 == 0))
     assertResult(Some(6), "some filter true")(Some(6).filter(_ % 2 == 0))
   }
 
@@ -115,7 +116,8 @@ class ch04_ErrorHandlingTests extends FunSuite {
     import fpinscala.errorhandling.Option._
     import fpinscala.errorhandling._
 
-    assertResult(Some(List(1, 2, 4)), "some: 1,2,4")(sequenceViaTraverse(List(Some(1), Some(2), Some(4))))
+    assertResult(Some(List(1, 2, 4)), "some: 1,2,4")(
+      sequenceViaTraverse(List(Some(1), Some(2), Some(4))))
     assertResult(None, "none: first")(sequenceViaTraverse(List(None, Some(2), Some(4))))
     assertResult(None, "none: last")(sequenceViaTraverse(List(Some(1), Some(2), None)))
     assertResult(Some(List()), "sequence of empty list")(sequenceViaTraverse(List()))
@@ -153,7 +155,8 @@ class ch04_ErrorHandlingTests extends FunSuite {
     import fpinscala.errorhandling._
 
     assertResult(Right(7), "right")(Right(4).map2(Right(3))(_ + _))
-    assertResult(Left("error"), "left 1")((Left("error"): Either[String, Int]).map2[String, Int, Int](Right(3))(_ + _))
+    assertResult(Left("error"), "left 1")(
+      (Left("error"): Either[String, Int]).map2[String, Int, Int](Right(3))(_ + _))
     assertResult(Left("error2"), "left 2")(Right(1).map2[String, Int, Int](Left("error2"))(_ + _))
   }
 
@@ -171,7 +174,8 @@ class ch04_ErrorHandlingTests extends FunSuite {
     import fpinscala.errorhandling.Either._
     import fpinscala.errorhandling._
 
-    assertResult(Right(List(4, 2, 1)), "right")(traverse(List("4", "2", "1"))((s: String) => Try(s.toInt)))
+    assertResult(Right(List(4, 2, 1)), "right")(traverse(List("4", "2", "1"))((s: String) =>
+      Try(s.toInt)))
 
     val result = traverse(List("4", "two", "1"))((s: String) => Try(s.toInt))
     assert(result.isInstanceOf[Left[Exception]], "error")
@@ -183,9 +187,12 @@ class ch04_ErrorHandlingTests extends FunSuite {
     import fpinscala.errorhandling.Either._
     import fpinscala.errorhandling._
 
-    assertResult(Right(List(4, 2, 1)), "right")(sequenceViaTraverse(List(Right(4), Right(2), Right(1))))
-    assertResult(Left("error"), "error")(sequenceViaTraverse(List(Left("error"), Right(2), Right(1))))
-    assertResult(Left("error"), "error 2")(sequenceViaTraverse(List(Right(1), Right(2), Left("error"))))
+    assertResult(Right(List(4, 2, 1)), "right")(
+      sequenceViaTraverse(List(Right(4), Right(2), Right(1))))
+    assertResult(Left("error"), "error")(
+      sequenceViaTraverse(List(Left("error"), Right(2), Right(1))))
+    assertResult(Left("error"), "error 2")(
+      sequenceViaTraverse(List(Right(1), Right(2), Left("error"))))
     assertResult(Right(List()), "empty")(sequenceViaTraverse(List()))
   }
 

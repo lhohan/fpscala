@@ -77,8 +77,7 @@ trait Applicative[F[_]] extends Functor[F] {
 
 sealed trait Validation[+E, +A]
 
-case class Failure[E](head: E, tail: Vector[E])
-  extends Validation[E, Nothing]
+case class Failure[E](head: E, tail: Vector[E]) extends Validation[E, Nothing]
 
 case class Success[A](a: A) extends Validation[Nothing, A]
 
@@ -89,8 +88,7 @@ object Applicative {
       Stream.continually(a) // The infinite, constant stream
 
     override def map2[A, B, C](a: Stream[A], b: Stream[B])( // Combine elements pointwise
-      f: (A, B) => C
-    ): Stream[C] =
+                                                           f: (A, B) => C): Stream[C] =
       a zip b map f.tupled
   }
 
@@ -111,7 +109,7 @@ object Applicative {
 
   implicit def monoidApplicative[M](M: Monoid[M]) =
     new Applicative[({ type f[x] = Const[M, x] })#f] {
-      def unit[A](a: => A): M = M.zero
+      def unit[A](a: => A): M                   = M.zero
       override def apply[A, B](m1: M)(m2: M): M = M.op(m1, m2)
     }
 
@@ -144,7 +142,7 @@ object Monad {
       def unit[A](a: => A): Either[E, A] = Right(a)
       override def flatMap[A, B](eea: Either[E, A])(f: A => Either[E, B]) = eea match {
         case Right(a) => f(a)
-        case Left(b) => Left(b)
+        case Left(b)  => Left(b)
       }
     }
 
@@ -155,11 +153,14 @@ object Monad {
   }
 
   // Monad composition
-  def composeM[G[_], H[_]](implicit G: Monad[G], H: Monad[H], T: Traverse[H]): Monad[({ type f[x] = G[H[x]] })#f] = new Monad[({ type f[x] = G[H[x]] })#f] {
-    def unit[A](a: => A): G[H[A]] = G.unit(H.unit(a))
-    override def flatMap[A, B](mna: G[H[A]])(f: A => G[H[B]]): G[H[B]] =
-      G.flatMap(mna)(na => G.map(T.traverse(na)(f))(H.join))
-  }
+  def composeM[G[_], H[_]](implicit G: Monad[G],
+                           H: Monad[H],
+                           T: Traverse[H]): Monad[({ type f[x] = G[H[x]] })#f] =
+    new Monad[({ type f[x] = G[H[x]] })#f] {
+      def unit[A](a: => A): G[H[A]] = G.unit(H.unit(a))
+      override def flatMap[A, B](mna: G[H[A]])(f: A => G[H[B]]): G[H[B]] =
+        G.flatMap(mna)(na => G.map(T.traverse(na)(f))(H.join))
+    }
 
 }
 
@@ -172,7 +173,7 @@ trait Traverse[F[_]] extends Functor[F] with Foldable[F] { self =>
   type Id[A] = A
 
   val idMonad = new Monad[Id] {
-    def unit[A](a: => A) = a
+    def unit[A](a: => A)                           = a
     override def flatMap[A, B](a: A)(f: A => B): B = f(a)
   }
 
@@ -190,23 +191,26 @@ trait Traverse[F[_]] extends Functor[F] with Foldable[F] { self =>
     traverse[({ type f[x] = State[S, x] })#f, A, B](fa)(f)(Monad.stateMonad)
 
   def zipWithIndex_[A](ta: F[A]): F[(A, Int)] =
-    traverseS(ta)((a: A) => (for {
-      i <- get[Int]
-      _ <- set(i + 1)
-    } yield (a, i))).run(0)._1
+    traverseS(ta)((a: A) =>
+      (for {
+        i <- get[Int]
+        _ <- set(i + 1)
+      } yield (a, i))).run(0)._1
 
   def toList_[A](fa: F[A]): List[A] =
-    traverseS(fa)((a: A) => (for {
-      as <- get[List[A]] // Get the current state, the accumulated list.
-      _ <- set(a :: as) // Add the current element and set the new list as the new state.
-    } yield ())).run(Nil)._2.reverse
+    traverseS(fa)((a: A) =>
+      (for {
+        as <- get[List[A]] // Get the current state, the accumulated list.
+        _  <- set(a :: as) // Add the current element and set the new list as the new state.
+      } yield ())).run(Nil)._2.reverse
 
   def mapAccum[S, A, B](fa: F[A], s: S)(f: (A, S) => (B, S)): (F[B], S) =
-    traverseS(fa)((a: A) => (for {
-      s1 <- get[S]
-      (b, s2) = f(a, s1)
-      _ <- set(s2)
-    } yield b)).run(s)
+    traverseS(fa)((a: A) =>
+      (for {
+        s1 <- get[S]
+        (b, s2) = f(a, s1)
+        _ <- set(s2)
+      } yield b)).run(s)
 
   override def toList[A](fa: F[A]): List[A] =
     mapAccum(fa, List[A]())((a, s) => ((), a :: s))._2.reverse
@@ -222,23 +226,25 @@ trait Traverse[F[_]] extends Functor[F] with Foldable[F] { self =>
 
   def zip[A, B](fa: F[A], fb: F[B]): F[(A, B)] =
     (mapAccum(fa, toList(fb)) {
-      case (a, Nil) => sys.error("zip: Incompatible shapes.")
+      case (a, Nil)     => sys.error("zip: Incompatible shapes.")
       case (a, b :: bs) => ((a, b), bs)
     })._1
 
   def zipL[A, B](fa: F[A], fb: F[B]): F[(A, Option[B])] =
     (mapAccum(fa, toList(fb)) {
-      case (a, Nil) => ((a, None), Nil)
+      case (a, Nil)     => ((a, None), Nil)
       case (a, b :: bs) => ((a, Some(b)), bs)
     })._1
 
   def zipR[A, B](fa: F[A], fb: F[B]): F[(Option[A], B)] =
     (mapAccum(fb, toList(fa)) {
-      case (b, Nil) => ((None, b), Nil)
+      case (b, Nil)     => ((None, b), Nil)
       case (b, a :: as) => ((Some(a), b), as)
     })._1
 
-  def fuse[M[_], N[_], A, B](fa: F[A])(f: A => M[B], g: A => N[B])(implicit M: Applicative[M], N: Applicative[N]): (M[F[B]], N[F[B]]) =
+  def fuse[M[_], N[_], A, B](fa: F[A])(f: A => M[B], g: A => N[B])(
+      implicit M: Applicative[M],
+      N: Applicative[N]): (M[F[B]], N[F[B]]) =
     traverse[({ type f[x] = (M[x], N[x]) })#f, A, B](fa)(a => (f(a), g(a)))(M product N)
 
   def compose[G[_]](implicit G: Traverse[G]): Traverse[({ type f[x] = F[G[x]] })#f] =
@@ -252,20 +258,23 @@ case class Tree[+A](head: A, tail: List[Tree[A]])
 
 object Traverse {
   val listTraverse = new Traverse[List] {
-    override def traverse[M[_], A, B](as: List[A])(f: A => M[B])(implicit M: Applicative[M]): M[List[B]] =
+    override def traverse[M[_], A, B](as: List[A])(f: A => M[B])(
+        implicit M: Applicative[M]): M[List[B]] =
       as.foldRight(M.unit(List[B]()))((a, fbs) => M.map2(f(a), fbs)(_ :: _))
   }
 
   val optionTraverse = new Traverse[Option] {
-    override def traverse[M[_], A, B](oa: Option[A])(f: A => M[B])(implicit M: Applicative[M]): M[Option[B]] =
+    override def traverse[M[_], A, B](oa: Option[A])(f: A => M[B])(
+        implicit M: Applicative[M]): M[Option[B]] =
       oa match {
         case Some(a) => M.map(f(a))(Some(_))
-        case None => M.unit(None)
+        case None    => M.unit(None)
       }
   }
 
   val treeTraverse = new Traverse[Tree] {
-    override def traverse[M[_], A, B](ta: Tree[A])(f: A => M[B])(implicit M: Applicative[M]): M[Tree[B]] =
+    override def traverse[M[_], A, B](ta: Tree[A])(f: A => M[B])(
+        implicit M: Applicative[M]): M[Tree[B]] =
       M.map2(f(ta.head), listTraverse.traverse(ta.tail)(a => traverse(a)(f)))(Tree(_, _))
   }
 
@@ -278,4 +287,3 @@ object Traverse {
     }
   }
 }
-

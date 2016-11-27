@@ -8,8 +8,8 @@ trait These[+A, +B] {
 
   def bimap[A2, B2](f: A => A2, g: B => B2): These[A2, B2] =
     this match {
-      case This(a) => This(f(a))
-      case That(b) => That(g(b))
+      case This(a)    => This(f(a))
+      case That(b)    => That(g(b))
       case Both(a, b) => Both(f(a), g(b))
     }
 
@@ -21,13 +21,13 @@ trait These[+A, +B] {
 
   def isBoth = this match {
     case Both(_, _) => true
-    case _ => false
+    case _          => false
   }
 }
 
 object These {
-  case class This[+A](a: A) extends These[A, Nothing]
-  case class That[+B](b: B) extends These[Nothing, B]
+  case class This[+A](a: A)           extends These[A, Nothing]
+  case class That[+B](b: B)           extends These[Nothing, B]
   case class Both[+A, +B](a: A, b: B) extends These[A, B]
 
   def zipAll[A, B, C](a: Seq[A], b: Seq[B]): Stream[These[A, B]] =
@@ -35,12 +35,12 @@ object These {
     else if (b isEmpty) a.toStream.map(This(_))
     else Both(a.head, b.head) #:: zipAll(a.tail, b.tail)
 
-  /* 
-   * Zips together the two `Seq`s, returning the remaining elemnts 
-   * of each (possibly empty). 
+  /*
+   * Zips together the two `Seq`s, returning the remaining elemnts
+   * of each (possibly empty).
    */
   def zipResidual[A, B, C](a: Seq[A], b: Seq[B]): (Seq[(A, B)], Seq[A], Seq[B]) = {
-    val z = a zip b
+    val z   = a zip b
     val len = z.length
     (z, a drop len, b drop len)
   }

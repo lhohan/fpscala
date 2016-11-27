@@ -7,41 +7,45 @@ import org.scalacheck.Prop.{BooleanOperators, forAll}
 import org.scalacheck.{Arbitrary, Gen, Properties}
 
 class ch06_CandyDispenserSpecs extends Properties("Candy dispenser machine") {
-  property("Inserting a coin in locked machine if candy left should unlock") = forAll { (machine: Machine) =>
-    (machine.locked && machine.candies > 0) ==> {
-      val (_, resultMachine) = simulateMachine(List(Coin)).run(machine)
-      !resultMachine.locked
-    }
+  property("Inserting a coin in locked machine if candy left should unlock") = forAll {
+    (machine: Machine) =>
+      (machine.locked && machine.candies > 0) ==> {
+        val (_, resultMachine) = simulateMachine(List(Coin)).run(machine)
+        !resultMachine.locked
+      }
   }
-  property("Turning the knob on an unlocked machine should dispense a candy and become locked") = forAll { (machine: Machine) =>
-    (!machine.locked && machine.candies > 0) ==> {
+  property("Turning the knob on an unlocked machine should dispense a candy and become locked") =
+    forAll { (machine: Machine) =>
+      (!machine.locked && machine.candies > 0) ==> {
 
-      val ((_, resultCandies), resultMachine) = simulateMachine(List(Turn)).run(machine)
-      val startCandies = machine.candies
-      (resultCandies == startCandies - 1) :| s"result # candies ($resultCandies) not one less than start candies ($startCandies)" &&
+        val ((_, resultCandies), resultMachine) = simulateMachine(List(Turn)).run(machine)
+        val startCandies                        = machine.candies
+        (resultCandies == startCandies - 1) :| s"result # candies ($resultCandies) not one less than start candies ($startCandies)" &&
         resultMachine.locked :| "machine not locked"
+      }
     }
-  }
 
-  property("Turning the knob on a locked machine should do nothing") = forAll { (machine: Machine) =>
-    machine.locked ==> {
+  property("Turning the knob on a locked machine should do nothing") = forAll {
+    (machine: Machine) =>
+      machine.locked ==> {
 
-      val ((coins, candies), resultMachine) = simulateMachine(List(Turn)).run(machine)
-      (machine.candies == candies) :| "candies not equal" &&
+        val ((coins, candies), resultMachine) = simulateMachine(List(Turn)).run(machine)
+        (machine.candies == candies) :| "candies not equal" &&
         (machine.coins == coins) :| "coins not equal" &&
         (machine == resultMachine) :| "machines not equal"
-    }
+      }
   }
 
-  property("Inserting a coin into an unlocked machine should do nothing") = forAll { (machine: Machine) =>
-    (!machine.locked) ==> {
+  property("Inserting a coin into an unlocked machine should do nothing") = forAll {
+    (machine: Machine) =>
+      (!machine.locked) ==> {
 
-      val ((coins, candies), resultMachine) = simulateMachine(List(Coin)).run(machine)
+        val ((coins, candies), resultMachine) = simulateMachine(List(Coin)).run(machine)
 
-      (machine.candies == candies) :| "candies not equal" &&
+        (machine.candies == candies) :| "candies not equal" &&
         (machine.coins == coins) :| "coins not equal" &&
         (machine == resultMachine) :| "machines not equal"
-    }
+      }
   }
 
   property("Inserting a machine that's out of candy should ignore all inputs") = forAll {
@@ -50,8 +54,8 @@ class ch06_CandyDispenserSpecs extends Properties("Candy dispenser machine") {
 
         val ((coins, candies), resultMachine) = simulateMachine(List(input)).run(machine)
         (machine.candies == candies) :| "candies not equal" &&
-          (machine.coins == coins) :| "coins not equal" &&
-          (machine == resultMachine) :| "machines not equal"
+        (machine.coins == coins) :| "coins not equal" &&
+        (machine == resultMachine) :| "machines not equal"
       }
   }
 
@@ -70,9 +74,9 @@ class ch06_CandyDispenserSpecs extends Properties("Candy dispenser machine") {
   implicit lazy val arbMachine: Arbitrary[Machine] =
     Arbitrary(
       for {
-        coins <- zeroBiased
+        coins   <- zeroBiased
         candies <- zeroBiased
-        locked <- arbitrary[Boolean]
+        locked  <- arbitrary[Boolean]
       } yield Machine(locked = locked, candies = candies, coins = coins)
     ) // A generator of Machines.
 

@@ -18,13 +18,14 @@ object List {
   def sum(ints: List[Int]): Int = ints match {
     // A function that uses pattern matching to add up a list of integers
     case Nil => 0 // The sum of the empty list is 0.
-    case Cons(x, xs) => x + sum(xs) // The sum of a list starting with `x` is `x` plus the sum of the rest of the list.
+    case Cons(x, xs) =>
+      x + sum(xs) // The sum of a list starting with `x` is `x` plus the sum of the rest of the list.
   }
 
   def product(ds: List[Double]): Double = ds match {
-    case Nil => 1.0
+    case Nil          => 1.0
     case Cons(0.0, _) => 0.0
-    case Cons(x, xs) => x * product(xs)
+    case Cons(x, xs)  => x * product(xs)
   }
 
   def apply[A](as: A*): List[A] = // Variadic function syntax
@@ -32,22 +33,22 @@ object List {
     else Cons(as.head, apply(as.tail: _*))
 
   val x = List(1, 2, 3, 4, 5) match {
-    case Cons(x, Cons(2, Cons(4, _))) => x
-    case Nil => 42
+    case Cons(x, Cons(2, Cons(4, _)))          => x
+    case Nil                                   => 42
     case Cons(x, Cons(y, Cons(3, Cons(4, _)))) => x + y
-    case Cons(h, t) => h + sum(t)
-    case _ => 101
+    case Cons(h, t)                            => h + sum(t)
+    case _                                     => 101
   }
 
   def append[A](a1: List[A], a2: List[A]): List[A] =
     a1 match {
-      case Nil => a2
+      case Nil        => a2
       case Cons(h, t) => Cons(h, append(t, a2))
     }
 
   def foldRight[A, B](as: List[A], z: B)(f: (A, B) => B): B = // Utility functions
     as match {
-      case Nil => z
+      case Nil         => z
       case Cons(x, xs) => f(x, foldRight(xs, z)(f))
     }
 
@@ -58,22 +59,23 @@ object List {
     foldRight(ns, 1.0)(_ * _) // `_ * _` is more concise notation for `(x,y) => x * y`; see sidebar
 
   def tail[A](l: List[A]): List[A] = l match {
-    case Nil => throw new UnsupportedOperationException("tail not supported on empty list")
+    case Nil         => throw new UnsupportedOperationException("tail not supported on empty list")
     case Cons(_, xs) => xs
   }
 
   def setHead[A](l: List[A], h: A): List[A] = l match {
-    case Nil => throw new UnsupportedOperationException("setHead not supported on empty list")
+    case Nil         => throw new UnsupportedOperationException("setHead not supported on empty list")
     case Cons(_, xs) => Cons(h, xs)
   }
 
   def drop[A](l: List[A], n: Int): List[A] =
     if (n <= 0) {
       l
-    } else l match {
-      case Nil => throw new UnsupportedOperationException("drop not supported on empty list")
-      case Cons(_, xs) => drop(xs, n - 1)
-    }
+    } else
+      l match {
+        case Nil         => throw new UnsupportedOperationException("drop not supported on empty list")
+        case Cons(_, xs) => drop(xs, n - 1)
+      }
 
   //tail in terms of drop
   def tail2[A](l: List[A]): List[A] = drop(l, 1)
@@ -81,21 +83,21 @@ object List {
   @tailrec
   def dropWhile[A](l: List[A], f: A => Boolean): List[A] = l match {
     case Cons(h, xs) if f(h) => dropWhile(xs, f)
-    case _ => l
+    case _                   => l
   }
 
   def init[A](l: List[A]): List[A] = l match {
-    case Nil => throw new UnsupportedOperationException("init on empty list")
+    case Nil          => throw new UnsupportedOperationException("init on empty list")
     case Cons(h, Nil) => Nil
-    case Cons(h, xs) => Cons(h, init(xs))
+    case Cons(h, xs)  => Cons(h, init(xs))
   }
 
   def init2[A](l: List[A]): List[A] = {
     @tailrec
     def go(acc: List[A], rest: List[A]): List[A] = rest match {
-      case Nil => throw new UnsupportedOperationException("init2 on empty list")
+      case Nil          => throw new UnsupportedOperationException("init2 on empty list")
       case Cons(_, Nil) => acc
-      case Cons(h, xs) => go(Cons(h, acc), xs)
+      case Cons(h, xs)  => go(Cons(h, acc), xs)
     }
     rev(go(Nil, l))
   }
@@ -103,7 +105,7 @@ object List {
   def rev[A](l: List[A]): List[A] = {
     @tailrec
     def go(acc: List[A], l: List[A]): List[A] = l match {
-      case Nil => acc
+      case Nil         => acc
       case Cons(h, xs) => go(Cons(h, acc), xs)
     }
     go(Nil, l)
@@ -113,7 +115,7 @@ object List {
 
   @tailrec
   def foldLeft[A, B](l: List[A], z: B)(f: (B, A) => B): B = l match {
-    case Nil => z
+    case Nil         => z
     case Cons(h, xs) => foldLeft(xs, f(z, h))(f)
   }
 
@@ -121,21 +123,33 @@ object List {
 
   def productLF(ds: List[Double]): Double = foldLeft(ds, 1.0)(_ * _)
 
-  def reverse[A](ls: List[A]): List[A] = foldLeft(ls, List[A]()) { (acc, el) => Cons(el, acc) }
+  def reverse[A](ls: List[A]): List[A] = foldLeft(ls, List[A]()) { (acc, el) =>
+    Cons(el, acc)
+  }
 
   def foldRightViaFoldLeft[A, B](l: List[A], z: B)(f: (B, A) => B): B = foldLeft(reverse(l), z)(f)
 
-  def appendRF[A](a1: List[A], a2: List[A]): List[A] = foldRight(a1, a2) { (el, acc) => Cons(el, acc) }
+  def appendRF[A](a1: List[A], a2: List[A]): List[A] = foldRight(a1, a2) { (el, acc) =>
+    Cons(el, acc)
+  }
 
-  def appendLF[A](a1: List[A], a2: List[A]): List[A] = foldLeft(reverse(a1), a2) { (acc, el) => Cons(el, acc) }
+  def appendLF[A](a1: List[A], a2: List[A]): List[A] = foldLeft(reverse(a1), a2) { (acc, el) =>
+    Cons(el, acc)
+  }
 
   def concat[A](ls: List[List[A]]): List[A] = foldRight(ls, List[A]())(append)
 
-  def add1(l: List[Int]): List[Int] = foldRight(l, List[Int]()) { (el, acc) => Cons(el + 1, acc) }
+  def add1(l: List[Int]): List[Int] = foldRight(l, List[Int]()) { (el, acc) =>
+    Cons(el + 1, acc)
+  }
 
-  def doubleToString(l: List[Double]): List[String] = foldRight(l, List[String]()) { (el, acc) => Cons(el.toString, acc) }
+  def doubleToString(l: List[Double]): List[String] = foldRight(l, List[String]()) { (el, acc) =>
+    Cons(el.toString, acc)
+  }
 
-  def map[A, B](l: List[A])(f: A => B): List[B] = foldRight(l, List[B]()) { (el, acc) => Cons(f(el), acc) }
+  def map[A, B](l: List[A])(f: A => B): List[B] = foldRight(l, List[B]()) { (el, acc) =>
+    Cons(f(el), acc)
+  }
 
   def map_tr[A, B](l: List[A])(f: A => B): List[B] = {
     val lb = new ListBuffer[B]
@@ -165,25 +179,28 @@ object List {
 
   // not stack safe, a bit coarse too
   def flatMap[A, B](as: List[A])(f: A => List[B]): List[B] = {
-    concat(foldRight(as, List[List[B]]()) { (el, acc) => Cons(f(el), acc) })
+    concat(foldRight(as, List[List[B]]()) { (el, acc) =>
+      Cons(f(el), acc)
+    })
   }
 
   // stack safe, short but don't like double traversal
   def flatMap_2[A, B](as: List[A])(f: A => List[B]): List[B] = concat(map(as)(f))
 
-  def filterWithFlatMap[A](as: List[A])(f: A => Boolean) = flatMap(as)(a => if (f(a)) List(a) else Nil)
+  def filterWithFlatMap[A](as: List[A])(f: A => Boolean) =
+    flatMap(as)(a => if (f(a)) List(a) else Nil)
 
   def zipAdd(is1: List[Int], is2: List[Int]): List[Int] = (is1, is2) match {
-    case (Nil, Nil) => Nil
+    case (Nil, Nil)                     => Nil
     case (Cons(h1, xs1), Cons(h2, xs2)) => Cons(h1 + h2, zipAdd(xs1, xs2))
-    case (_, _) => throw new IllegalArgumentException("number of element does not match")
+    case (_, _)                         => throw new IllegalArgumentException("number of element does not match")
   }
 
   def zipAdd_2(is1: List[Int], is2: List[Int]): List[Int] = {
     def loop(is1: List[Int], is2: List[Int], acc: List[Int]): List[Int] = (is1, is2) match {
-      case (Nil, Nil) => acc
+      case (Nil, Nil)                     => acc
       case (Cons(h1, xs1), Cons(h2, xs2)) => loop(xs1, xs2, Cons(h1 + h2, acc))
-      case (_, _) => throw new IllegalArgumentException("number of element does not match")
+      case (_, _)                         => throw new IllegalArgumentException("number of element does not match")
     }
     reverse(loop(is1, is2, List[Int]()))
   }
@@ -202,22 +219,22 @@ object List {
 
   // only one implementation, see zipAdd implementation for stack safe versions
   def zipWith[A, B](as1: List[A], as2: List[A])(f: (A, A) => B): List[B] = (as1, as2) match {
-    case (Nil, Nil) => Nil
+    case (Nil, Nil)                     => Nil
     case (Cons(h1, xs1), Cons(h2, xs2)) => Cons(f(h1, h2), zipWith(xs1, xs2)(f))
-    case (_, _) => throw new IllegalArgumentException("number of element does not match")
+    case (_, _)                         => throw new IllegalArgumentException("number of element does not match")
   }
 
   def startsWith[A](list: List[A], sub: List[A]): Boolean = (list, sub) match {
-    case (_, Nil) => true
+    case (_, Nil)                                   => true
     case (Cons(hp, xps), Cons(hb, xbs)) if hp == hb => startsWith(xps, xbs)
-    case _ => false
+    case _                                          => false
   }
 
   @tailrec
   def hasSubSequence[A](sup: List[A], sub: List[A]): Boolean = sup match {
-    case Nil => false
+    case Nil                           => false
     case list if startsWith(list, sub) => true
-    case Cons(h, t) => hasSubSequence(t, sub)
+    case Cons(h, t)                    => hasSubSequence(t, sub)
   }
 
 }

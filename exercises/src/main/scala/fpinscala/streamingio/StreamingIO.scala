@@ -14,7 +14,7 @@ object ImperativeAndLazyIO {
 
   Our first implementation is an imperative implementation, embedded
   into `IO`.
-                             */
+   */
 
   import java.io._
 
@@ -39,9 +39,9 @@ object ImperativeAndLazyIO {
   The above code is rather low-level, and it's not compositional,
   either. Consider the following scenarios:
 
-  * Check whether the number of _nonempty_ lines in the file exceeds
+   * Check whether the number of _nonempty_ lines in the file exceeds
     40,000
-  * Find a line index before 40,000 where the first letter of
+   * Find a line index before 40,000 where the first letter of
     consecutive lines spells out `"abracadabra"`.
 
   We cannot just compose our existing implementation with some
@@ -52,13 +52,13 @@ object ImperativeAndLazyIO {
   Now imagine if we had a `Stream[String]` for the lines of the file
   and we could assemble functionality using all the `Stream` functions
   we know and love.
-                             */
+   */
 
   object Examples {
     val lines: Stream[String] = sys.error("defined elsewhere")
-    val ex1 = lines.zipWithIndex.exists(_._2 + 1 >= 40000)
-    val ex2 = lines.filter(!_.trim.isEmpty).zipWithIndex.exists(_._2 + 1 >= 40000)
-    val ex3 = lines.take(40000).map(_.head).indexOfSlice("abracadabra".toList)
+    val ex1                   = lines.zipWithIndex.exists(_._2 + 1 >= 40000)
+    val ex2                   = lines.filter(!_.trim.isEmpty).zipWithIndex.exists(_._2 + 1 >= 40000)
+    val ex3                   = lines.take(40000).map(_.head).indexOfSlice("abracadabra".toList)
   }
 
   /*
@@ -66,7 +66,7 @@ object ImperativeAndLazyIO {
   Could we actually write the above? Not quite. We could 'cheat' and
   return an `IO[Stream[String]]` representing the lines of a file:
 
-                             */
+   */
 
   def lines(filename: String): IO[Stream[String]] = IO {
     val src = io.Source.fromFile(filename)
@@ -79,7 +79,7 @@ object ImperativeAndLazyIO {
   recover the same high-level, compositional style we are used to
   from our use of `List` and `Stream`.
 
-                             */
+ */
 }
 
 object SimpleStreamTransducers {
@@ -91,7 +91,7 @@ object SimpleStreamTransducers {
   emitting a value to the output (`Emit`), reading a value from its
   input (`Await`) or signaling termination via `Halt`.
 
-                             */
+   */
 
   sealed trait Process[I, O] {
     import Process._
@@ -102,10 +102,11 @@ object SimpleStreamTransducers {
      */
     def apply(s: Stream[I]): Stream[O] = this match {
       case Halt() => Stream()
-      case Await(recv) => s match {
-        case h #:: t => recv(Some(h))(t)
-        case xs => recv(None)(xs) // Stream is empty
-      }
+      case Await(recv) =>
+        s match {
+          case h #:: t => recv(Some(h))(t)
+          case xs      => recv(None)(xs) // Stream is empty
+        }
       case Emit(h, t) => h #:: t(s)
     }
 
@@ -117,18 +118,18 @@ object SimpleStreamTransducers {
      */
 
     def map[O2](f: O => O2): Process[I, O2] = this match {
-      case Halt() => Halt()
-      case Emit(h, t) => Emit(f(h), t map f)
+      case Halt()      => Halt()
+      case Emit(h, t)  => Emit(f(h), t map f)
       case Await(recv) => Await(recv andThen (_ map f))
     }
     def ++(p: => Process[I, O]): Process[I, O] = this match {
-      case Halt() => p
-      case Emit(h, t) => Emit(h, t ++ p)
+      case Halt()      => p
+      case Emit(h, t)  => Emit(h, t ++ p)
       case Await(recv) => Await(recv andThen (_ ++ p))
     }
     def flatMap[O2](f: O => Process[I, O2]): Process[I, O2] = this match {
-      case Halt() => Halt()
-      case Emit(h, t) => f(h) ++ t.flatMap(f)
+      case Halt()      => Halt()
+      case Emit(h, t)  => f(h) ++ t.flatMap(f)
       case Await(recv) => Await(recv andThen (_ flatMap f))
     }
 
@@ -166,10 +167,11 @@ object SimpleStreamTransducers {
     def repeat: Process[I, O] = {
       def go(p: Process[I, O]): Process[I, O] = p match {
         case Halt() => go(this)
-        case Await(recv) => Await {
-          case None => recv(None)
-          case i => go(recv(i))
-        }
+        case Await(recv) =>
+          Await {
+            case None => recv(None)
+            case i    => go(recv(i))
+          }
         case Emit(h, t) => Emit(h, go(t))
       }
       go(this)
@@ -178,10 +180,11 @@ object SimpleStreamTransducers {
     def repeatN(n: Int): Process[I, O] = {
       def go(n: Int, p: Process[I, O]): Process[I, O] = p match {
         case Halt() => if (n > 0) go(n - 1, this) else Halt()
-        case Await(recv) => Await {
-          case None => recv(None)
-          case i => go(n, recv(i))
-        }
+        case Await(recv) =>
+          Await {
+            case None => recv(None)
+            case i    => go(n, recv(i))
+          }
         case Emit(h, t) => Emit(h, go(n, t))
       }
       go(n, this)
@@ -203,10 +206,11 @@ object SimpleStreamTransducers {
     /* Add `p` to the fallback branch of this process */
     def orElse(p: Process[I, O]): Process[I, O] = this match {
       case Halt() => p
-      case Await(recv) => Await {
-        case None => p
-        case x => recv(x)
-      }
+      case Await(recv) =>
+        Await {
+          case None => p
+          case x    => recv(x)
+        }
       case _ => this
     }
   }
@@ -214,21 +218,19 @@ object SimpleStreamTransducers {
   object Process {
 
     case class Emit[I, O](
-      head: O,
-      tail: Process[I, O] = Halt[I, O]()
-    )
-        extends Process[I, O]
+        head: O,
+        tail: Process[I, O] = Halt[I, O]()
+    ) extends Process[I, O]
 
     case class Await[I, O](
-      recv: Option[I] => Process[I, O]
-    )
-        extends Process[I, O]
+        recv: Option[I] => Process[I, O]
+    ) extends Process[I, O]
 
     case class Halt[I, O]() extends Process[I, O]
 
     def emit[I, O](
-      head: O,
-      tail: Process[I, O] = Halt[I, O]()
+        head: O,
+        tail: Process[I, O] = Halt[I, O]()
     ): Process[I, O] =
       Emit(head, tail)
 
@@ -247,16 +249,16 @@ object SimpleStreamTransducers {
     implicit def toMonadic[I, O](a: Process[I, O]) = monad[I].toMonadic(a)
 
     /**
-     * A helper function to await an element or fall back to another process
-     * if there is no input.
-     */
+      * A helper function to await an element or fall back to another process
+      * if there is no input.
+      */
     def await[I, O](
-      f: I => Process[I, O],
-      fallback: Process[I, O] = Halt[I, O]()
+        f: I => Process[I, O],
+        fallback: Process[I, O] = Halt[I, O]()
     ): Process[I, O] =
       Await[I, O] {
         case Some(i) => f(i)
-        case None => fallback
+        case None    => fallback
       }
 
     /*
@@ -267,7 +269,7 @@ object SimpleStreamTransducers {
     def liftOne[I, O](f: I => O): Process[I, O] =
       Await {
         case Some(i) => emit(f(i))
-        case None => Halt()
+        case None    => Halt()
       }
 
     def lift[I, O](f: I => O): Process[I, O] =
@@ -280,7 +282,7 @@ object SimpleStreamTransducers {
     def filter[I](f: I => Boolean): Process[I, I] =
       Await[I, I] {
         case Some(i) if f(i) => emit(i)
-        case _ => Halt()
+        case _               => Halt()
       }.repeat
 
     /*
@@ -325,8 +327,9 @@ object SimpleStreamTransducers {
     def mean: Process[Double, Double] = ???
 
     def loop[S, I, O](z: S)(f: (I, S) => (O, S)): Process[I, O] =
-      await((i: I) => f(i, z) match {
-        case (o, s2) => emit(o, loop(s2)(f))
+      await((i: I) =>
+        f(i, z) match {
+          case (o, s2) => emit(o, loop(s2)(f))
       })
 
     /* Exercise 4: Implement `sum` and `count` in terms of `loop` */
@@ -343,8 +346,8 @@ object SimpleStreamTransducers {
 
     def feed[A, B](oa: Option[A])(p: Process[A, B]): Process[A, B] =
       p match {
-        case Halt() => p
-        case Emit(h, t) => Emit(h, feed(oa)(t))
+        case Halt()      => p
+        case Emit(h, t)  => Emit(h, feed(oa)(t))
         case Await(recv) => recv(oa)
       }
 
@@ -365,24 +368,25 @@ object SimpleStreamTransducers {
     /* Awaits then emits a single value, then halts. */
     def echo[I]: Process[I, I] = await(i => emit(i))
 
-    def skip[I, O]: Process[I, O] = await(i => Halt())
+    def skip[I, O]: Process[I, O]   = await(i => Halt())
     def ignore[I, O]: Process[I, O] = skip.repeat
 
     def terminated[I]: Process[I, Option[I]] =
       await((i: I) => emit(Some(i), terminated[I]), emit(None))
 
     def processFile[A, B](
-      f: java.io.File,
-      p: Process[String, A],
-      z: B
+        f: java.io.File,
+        p: Process[String, A],
+        z: B
     )(g: (B, A) => B): IO[B] = IO {
       @annotation.tailrec
       def go(ss: Iterator[String], cur: Process[String, A], acc: B): B =
         cur match {
           case Halt() => acc
           case Await(recv) =>
-            val next = if (ss.hasNext) recv(Some(ss.next))
-            else recv(None)
+            val next =
+              if (ss.hasNext) recv(Some(ss.next))
+              else recv(None)
             go(ss, next, acc)
           case Emit(h, t) => go(ss, t, g(acc, h))
         }
@@ -427,7 +431,7 @@ object GeneralizedStreamTransducers {
   We'll use the improved `Await` and `Halt` cases together to ensure
   that all resources get released, even in the event of exceptions.
 
-                             */
+   */
 
   trait Process[F[_], O] {
     import Process._
@@ -441,7 +445,7 @@ object GeneralizedStreamTransducers {
       case Await(req, recv) =>
         Await(req, recv andThen (_ map f))
       case Emit(h, t) => Try { Emit(f(h), t map f) }
-      case Halt(err) => Halt(err)
+      case Halt(err)  => Halt(err)
     }
 
     def ++(p: => Process[F, O]): Process[F, O] =
@@ -461,16 +465,17 @@ object GeneralizedStreamTransducers {
 
     def asFinalizer: Process[F, O] = this match {
       case Emit(h, t) => Emit(h, t.asFinalizer)
-      case Halt(e) => Halt(e)
-      case Await(req, recv) => await(req) {
-        case Left(Kill) => this.asFinalizer
-        case x => recv(x)
-      }
+      case Halt(e)    => Halt(e)
+      case Await(req, recv) =>
+        await(req) {
+          case Left(Kill) => this.asFinalizer
+          case x          => recv(x)
+        }
     }
 
     def onHalt(f: Throwable => Process[F, O]): Process[F, O] = this match {
-      case Halt(e) => Try(f(e))
-      case Emit(h, t) => Emit(h, t.onHalt(f))
+      case Halt(e)          => Try(f(e))
+      case Emit(h, t)       => Emit(h, t.onHalt(f))
       case Await(req, recv) => Await(req, recv andThen (_.onHalt(f)))
     }
 
@@ -480,7 +485,7 @@ object GeneralizedStreamTransducers {
      */
     def flatMap[O2](f: O => Process[F, O2]): Process[F, O2] =
       this match {
-        case Halt(err) => Halt(err)
+        case Halt(err)  => Halt(err)
         case Emit(o, t) => Try(f(o)) ++ t.flatMap(f)
         case Await(req, recv) =>
           Await(req, recv andThen (_ flatMap f))
@@ -495,10 +500,10 @@ object GeneralizedStreamTransducers {
       // implies `this` has produced no values during an iteration
       val trimmed = cycle |> window2 |> (takeWhile {
         case (Some(None), None) => false
-        case _ => true
+        case _                  => true
       })
       trimmed.map(_._2).flatMap {
-        case None => Halt(End)
+        case None    => Halt(End)
         case Some(o) => emit(o)
       }
     }
@@ -525,23 +530,28 @@ object GeneralizedStreamTransducers {
      */
     def |>[O2](p2: Process1[O, O2]): Process[F, O2] = {
       p2 match {
-        case Halt(e) => this.kill onHalt { e2 => Halt(e) ++ Halt(e2) }
+        case Halt(e) =>
+          this.kill onHalt { e2 =>
+            Halt(e) ++ Halt(e2)
+          }
         case Emit(h, t) => Emit(h, this |> t)
-        case Await(req, recv) => this match {
-          case Halt(err) => Halt(err) |> recv(Left(err))
-          case Emit(h, t) => t |> Try(recv(Right(h)))
-          case Await(req0, recv0) => await(req0)(recv0 andThen (_ |> p2))
-        }
+        case Await(req, recv) =>
+          this match {
+            case Halt(err)          => Halt(err) |> recv(Left(err))
+            case Emit(h, t)         => t |> Try(recv(Right(h)))
+            case Await(req0, recv0) => await(req0)(recv0 andThen (_ |> p2))
+          }
       }
     }
 
     @annotation.tailrec
     final def kill[O2]: Process[F, O2] = this match {
-      case Await(req, recv) => recv(Left(Kill)).drain.onHalt {
-        case Kill => Halt(End) // we convert the `Kill` exception back to normal termination
-        case e => Halt(e)
-      }
-      case Halt(e) => Halt(e)
+      case Await(req, recv) =>
+        recv(Left(Kill)).drain.onHalt {
+          case Kill => Halt(End) // we convert the `Kill` exception back to normal termination
+          case e    => Halt(e)
+        }
+      case Halt(e)    => Halt(e)
       case Emit(h, t) => t.kill
     }
 
@@ -550,8 +560,8 @@ object GeneralizedStreamTransducers {
       this |> p2
 
     final def drain[O2]: Process[F, O2] = this match {
-      case Halt(e) => Halt(e)
-      case Emit(h, t) => t.drain
+      case Halt(e)          => Halt(e)
+      case Emit(h, t)       => t.drain
       case Await(req, recv) => Await(req, recv andThen (_.drain))
     }
 
@@ -577,22 +587,25 @@ object GeneralizedStreamTransducers {
      */
     def tee[O2, O3](p2: Process[F, O2])(t: Tee[O, O2, O3]): Process[F, O3] = {
       t match {
-        case Halt(e) => this.kill onComplete p2.kill onComplete Halt(e)
+        case Halt(e)    => this.kill onComplete p2.kill onComplete Halt(e)
         case Emit(h, t) => Emit(h, (this tee p2)(t))
-        case Await(side, recv) => side.get match {
-          case Left(isO) => this match {
-            case Halt(e) => p2.kill onComplete Halt(e)
-            case Emit(o, ot) => (ot tee p2)(Try(recv(Right(o))))
-            case Await(reqL, recvL) =>
-              await(reqL)(recvL andThen (this2 => this2.tee(p2)(t)))
+        case Await(side, recv) =>
+          side.get match {
+            case Left(isO) =>
+              this match {
+                case Halt(e)     => p2.kill onComplete Halt(e)
+                case Emit(o, ot) => (ot tee p2)(Try(recv(Right(o))))
+                case Await(reqL, recvL) =>
+                  await(reqL)(recvL andThen (this2 => this2.tee(p2)(t)))
+              }
+            case Right(isO2) =>
+              p2 match {
+                case Halt(e)      => this.kill onComplete Halt(e)
+                case Emit(o2, ot) => (this tee ot)(Try(recv(Right(o2))))
+                case Await(reqR, recvR) =>
+                  await(reqR)(recvR andThen (p3 => this.tee(p3)(t)))
+              }
           }
-          case Right(isO2) => p2 match {
-            case Halt(e) => this.kill onComplete Halt(e)
-            case Emit(o2, ot) => (this tee ot)(Try(recv(Right(o2))))
-            case Await(reqR, recvR) =>
-              await(reqR)(recvR andThen (p3 => this.tee(p3)(t)))
-          }
-        }
       }
     }
 
@@ -611,20 +624,20 @@ object GeneralizedStreamTransducers {
 
   object Process {
     case class Await[F[_], A, O](
-      req: F[A],
-      recv: Either[Throwable, A] => Process[F, O]
+        req: F[A],
+        recv: Either[Throwable, A] => Process[F, O]
     ) extends Process[F, O]
 
     case class Emit[F[_], O](
-      head: O,
-      tail: Process[F, O]
+        head: O,
+        tail: Process[F, O]
     ) extends Process[F, O]
 
     case class Halt[F[_], O](err: Throwable) extends Process[F, O]
 
     def emit[F[_], O](
-      head: O,
-      tail: Process[F, O] = Halt[F, O](End)
+        head: O,
+        tail: Process[F, O] = Halt[F, O](End)
     ): Process[F, O] =
       Emit(head, tail)
 
@@ -632,9 +645,9 @@ object GeneralizedStreamTransducers {
       Await(req, recv)
 
     /**
-     * Helper function to safely produce `p`, or gracefully halt
-     * with an error if an exception is thrown.
-     */
+      * Helper function to safely produce `p`, or gracefully halt
+      * with an error if an exception is thrown.
+      */
     def Try[F[_], O](p: => Process[F, O]): Process[F, O] =
       try p
       catch { case e: Throwable => Halt(e) }
@@ -651,10 +664,11 @@ object GeneralizedStreamTransducers {
      * Safely produce `p`, or run `cleanup` or `fallback` if an exception
      * occurs while evaluating `p`.
      */
-    def TryAwait[F[_], O](p: => Process[F, O])(fallback: Process[F, O], cleanup: Process[F, O]): Process[F, O] =
+    def TryAwait[F[_], O](p: => Process[F, O])(fallback: Process[F, O],
+                                               cleanup: Process[F, O]): Process[F, O] =
       try p
       catch {
-        case End => fallback
+        case End          => fallback
         case e: Throwable => cleanup ++ Halt(e)
       }
 
@@ -685,8 +699,8 @@ object GeneralizedStreamTransducers {
       def go(cur: Process[IO, O], acc: IndexedSeq[O]): IndexedSeq[O] =
         cur match {
           case Emit(h, t) => go(t, acc :+ h)
-          case Halt(End) => acc
-          case Halt(err) => throw err
+          case Halt(End)  => acc
+          case Halt(err)  => throw err
           case Await(req, recv) =>
             val next =
               try recv(Right(fpinscala.iomonad.unsafePerformIO(req)(E)))
@@ -707,7 +721,7 @@ object GeneralizedStreamTransducers {
       await(IO(new BufferedReader(new FileReader("lines.txt")))) {
         case Right(b) =>
           lazy val next: Process[IO, String] = await(IO(b.readLine)) {
-            case Left(e) => await(IO(b.close))(_ => Halt(e))
+            case Left(e)     => await(IO(b.close))(_ => Halt(e))
             case Right(line) => Emit(line, next)
           }
           next
@@ -721,19 +735,21 @@ object GeneralizedStreamTransducers {
      * See `lines` below for an example use.
      */
     def resource[R, O](acquire: IO[R])(
-      use: R => Process[IO, O]
+        use: R => Process[IO, O]
     )(
-      release: R => Process[IO, O]
+        release: R => Process[IO, O]
     ): Process[IO, O] =
-      eval(acquire) flatMap { r => use(r).onComplete(release(r)) }
+      eval(acquire) flatMap { r =>
+        use(r).onComplete(release(r))
+      }
 
     /*
      * Like `resource`, but `release` is a single `IO` action.
      */
     def resource_[R, O](acquire: IO[R])(
-      use: R => Process[IO, O]
+        use: R => Process[IO, O]
     )(
-      release: R => IO[Unit]
+        release: R => IO[Unit]
     ): Process[IO, O] =
       resource(acquire)(use)(release andThen (eval_[IO, Unit, O]))
 
@@ -745,13 +761,15 @@ object GeneralizedStreamTransducers {
     def lines(filename: String): Process[IO, String] =
       resource { IO(io.Source.fromFile(filename)) } { src =>
         lazy val iter = src.getLines // a stateful iterator
-        def step = if (iter.hasNext) Some(iter.next) else None
+        def step      = if (iter.hasNext) Some(iter.next) else None
         lazy val lines: Process[IO, String] = eval(IO(step)).flatMap {
-          case None => Halt(End)
+          case None       => Halt(End)
           case Some(line) => Emit(line, lines)
         }
         lines
-      } { src => eval_ { IO(src.close) } }
+      } { src =>
+        eval_ { IO(src.close) }
+      }
 
     /* Exercise 11: Implement `eval`, `eval_`, and use these to implement `lines`. */
     def eval[F[_], A](a: F[A]): Process[F, A] = ???
@@ -781,14 +799,16 @@ object GeneralizedStreamTransducers {
     /* Some helper functions to improve type inference. */
 
     def await1[I, O](
-      recv: I => Process1[I, O],
-      fallback: => Process1[I, O] = halt1[I, O]
+        recv: I => Process1[I, O],
+        fallback: => Process1[I, O] = halt1[I, O]
     ): Process1[I, O] =
-      Await(Get[I], (e: Either[Throwable, I]) => e match {
-        case Left(End) => fallback
-        case Left(err) => Halt(err)
-        case Right(i) => Try(recv(i))
-      })
+      Await(Get[I],
+            (e: Either[Throwable, I]) =>
+              e match {
+                case Left(End) => fallback
+                case Left(err) => Halt(err)
+                case Right(i)  => Try(recv(i))
+            })
 
     def emit1[I, O](h: O, tl: Process1[I, O] = halt1[I, O]): Process1[I, O] =
       emit(h, tl)
@@ -808,14 +828,16 @@ object GeneralizedStreamTransducers {
       else await1[I, I](i => emit(i, take(n - 1)))
 
     def takeWhile[I](f: I => Boolean): Process1[I, I] =
-      await1(i =>
-        if (f(i)) emit(i, takeWhile(f))
-        else halt1)
+      await1(
+        i =>
+          if (f(i)) emit(i, takeWhile(f))
+          else halt1)
 
     def dropWhile[I](f: I => Boolean): Process1[I, I] =
-      await1(i =>
-        if (f(i)) dropWhile(f)
-        else emit(i, id))
+      await1(
+        i =>
+          if (f(i)) dropWhile(f)
+          else emit(i, id))
 
     def id[I]: Process1[I, I] =
       await1((i: I) => emit(i, id))
@@ -841,11 +863,11 @@ object GeneralizedStreamTransducers {
     call this a `Tee`, after the letter 'T', which looks like a
     little diagram of two inputs being combined into one output.
 
-                             */
+     */
 
     case class T[I, I2]() {
       sealed trait f[X] { def get: Either[I => X, I2 => X] }
-      val L = new f[I] { def get = Left(identity) }
+      val L = new f[I]  { def get = Left(identity)  }
       val R = new f[I2] { def get = Right(identity) }
     }
     def L[I, I2] = T[I, I2]().L
@@ -859,31 +881,30 @@ object GeneralizedStreamTransducers {
       Halt[T[I, I2]#f, O](End)
 
     def awaitL[I, I2, O](
-      recv: I => Tee[I, I2, O],
-      fallback: => Tee[I, I2, O] = haltT[I, I2, O]
+        recv: I => Tee[I, I2, O],
+        fallback: => Tee[I, I2, O] = haltT[I, I2, O]
     ): Tee[I, I2, O] =
       await[T[I, I2]#f, I, O](L) {
         case Left(End) => fallback
         case Left(err) => Halt(err)
-        case Right(a) => Try(recv(a))
+        case Right(a)  => Try(recv(a))
       }
 
     def awaitR[I, I2, O](
-      recv: I2 => Tee[I, I2, O],
-      fallback: => Tee[I, I2, O] = haltT[I, I2, O]
+        recv: I2 => Tee[I, I2, O],
+        fallback: => Tee[I, I2, O] = haltT[I, I2, O]
     ): Tee[I, I2, O] =
       await[T[I, I2]#f, I2, O](R) {
         case Left(End) => fallback
         case Left(err) => Halt(err)
-        case Right(a) => Try(recv(a))
+        case Right(a)  => Try(recv(a))
       }
 
     def emitT[I, I2, O](h: O, tl: Tee[I, I2, O] = haltT[I, I2, O]): Tee[I, I2, O] =
       emit(h, tl)
 
     def zipWith[I, I2, O](f: (I, I2) => O): Tee[I, I2, O] =
-      awaitL[I, I2, O](i =>
-        awaitR(i2 => emitT(f(i, i2)))) repeat
+      awaitL[I, I2, O](i => awaitR(i2 => emitT(f(i, i2)))) repeat
 
     def zip[I, I2]: Tee[I, I2, (I, I2)] = zipWith((_, _))
 
@@ -895,8 +916,7 @@ object GeneralizedStreamTransducers {
 
     /* Alternate pulling values from the left and the right inputs. */
     def interleaveT[I]: Tee[I, I, I] =
-      awaitL[I, I, I](i =>
-        awaitR(i2 => emitT(i) ++ emitT(i2))) repeat
+      awaitL[I, I, I](i => awaitR(i2 => emitT(i) ++ emitT(i2))) repeat
 
     /*
 
@@ -905,7 +925,7 @@ object GeneralizedStreamTransducers {
     definition of `to` in `Process` for an example of how to feed a
     `Process` to a `Sink`.
 
-                             */
+     */
 
     type Sink[F[_], O] = Process[F, O => Process[F, Unit]]
 
@@ -913,11 +933,20 @@ object GeneralizedStreamTransducers {
 
     /* A `Sink` which writes input strings to the given file. */
     def fileW(file: String, append: Boolean = false): Sink[IO, String] =
-      resource[FileWriter, String => Process[IO, Unit]] { IO { new FileWriter(file, append) } } { w => constant { (s: String) => eval[IO, Unit](IO(w.write(s))) } } { w => eval_(IO(w.close)) }
+      resource[FileWriter, String => Process[IO, Unit]] { IO { new FileWriter(file, append) } } {
+        w =>
+          constant { (s: String) =>
+            eval[IO, Unit](IO(w.write(s)))
+          }
+      } { w =>
+        eval_(IO(w.close))
+      }
 
     /* The infinite, constant stream. */
     def constant[A](a: A): Process[IO, A] =
-      eval(IO(a)).flatMap { a => Emit(a, constant(a)) }
+      eval(IO(a)).flatMap { a =>
+        Emit(a, constant(a))
+      }
 
     /* Exercise 12: Implement `join`. Notice this is the standard monadic combinator! */
     def join[F[_], A](p: Process[F, Process[F, A]]): Process[F, A] = ???
@@ -930,19 +959,19 @@ object GeneralizedStreamTransducers {
     import fpinscala.iomonad.IO0.fahrenheitToCelsius
 
     val converter: Process[IO, Unit] =
-      lines("fahrenheit.txt").
-        filter(line => !line.startsWith("#") && !line.trim.isEmpty).
-        map(line => fahrenheitToCelsius(line.toDouble).toString).
-        pipe(intersperse("\n")).
-        to(fileW("celsius.txt")).
-        drain
+      lines("fahrenheit.txt")
+        .filter(line => !line.startsWith("#") && !line.trim.isEmpty)
+        .map(line => fahrenheitToCelsius(line.toDouble).toString)
+        .pipe(intersperse("\n"))
+        .to(fileW("celsius.txt"))
+        .drain
 
     /*
 
     More generally, we can feed a `Process` through an effectful
     channel which returns a value other than `Unit`.
 
-                             */
+     */
 
     type Channel[F[_], I, O] = Process[F, I => Process[F, O]]
 
@@ -955,14 +984,15 @@ object GeneralizedStreamTransducers {
      */
     import java.sql.{Connection, PreparedStatement, ResultSet}
 
-    def query(conn: IO[Connection]): Channel[IO, Connection => PreparedStatement, Map[String, Any]] =
+    def query(
+        conn: IO[Connection]): Channel[IO, Connection => PreparedStatement, Map[String, Any]] =
       resource_ { conn } { conn =>
         constant { (q: Connection => PreparedStatement) =>
           resource_ {
             IO {
-              val rs = q(conn).executeQuery
+              val rs    = q(conn).executeQuery
               val ncols = rs.getMetaData.getColumnCount
-              val cols = (1 to ncols).map(rs.getMetaData.getColumnName)
+              val cols  = (1 to ncols).map(rs.getMetaData.getColumnName)
               (rs, cols)
             }
           } {
@@ -972,13 +1002,17 @@ object GeneralizedStreamTransducers {
                 else Some(cols.map(c => (c, rs.getObject(c): Any)).toMap)
               lazy val rows: Process[IO, Map[String, Any]] =
                 eval(IO(step)).flatMap {
-                  case None => Halt(End)
+                  case None      => Halt(End)
                   case Some(row) => Emit(row, rows)
                 }
               rows
-          } { p => IO { p._1.close } } // close the ResultSet
+          } { p =>
+            IO { p._1.close }
+          } // close the ResultSet
         }
-      } { c => IO(c.close) }
+      } { c =>
+        IO(c.close)
+      }
 
     /*
      * We can allocate resources dynamically when defining a `Process`.
@@ -988,11 +1022,11 @@ object GeneralizedStreamTransducers {
      */
 
     val convertAll: Process[IO, Unit] = (for {
-      out <- fileW("celsius.txt").once
+      out  <- fileW("celsius.txt").once
       file <- lines("fahrenheits.txt")
-      _ <- lines(file).
-        map(line => fahrenheitToCelsius(line.toDouble)).
-        flatMap(celsius => out(celsius.toString))
+      _ <- lines(file)
+        .map(line => fahrenheitToCelsius(line.toDouble))
+        .flatMap(celsius => out(celsius.toString))
     } yield ()) drain
 
     /*
@@ -1001,10 +1035,10 @@ object GeneralizedStreamTransducers {
      */
     val convertMultisink: Process[IO, Unit] = (for {
       file <- lines("fahrenheits.txt")
-      _ <- lines(file).
-        map(line => fahrenheitToCelsius(line.toDouble)).
-        map(_ toString).
-        to(fileW(file + ".celsius"))
+      _ <- lines(file)
+        .map(line => fahrenheitToCelsius(line.toDouble))
+        .map(_ toString)
+        .to(fileW(file + ".celsius"))
     } yield ()) drain
 
     /*
@@ -1013,12 +1047,13 @@ object GeneralizedStreamTransducers {
      */
     val convertMultisink2: Process[IO, Unit] = (for {
       file <- lines("fahrenheits.txt")
-      _ <- lines(file).
-        filter(!_.startsWith("#")).
-        map(line => fahrenheitToCelsius(line.toDouble)).
-        filter(_ > 0). // ignore below zero temperatures
-        map(_ toString).
-        to(fileW(file + ".celsius"))
+      _ <- lines(file)
+        .filter(!_.startsWith("#"))
+        .map(line => fahrenheitToCelsius(line.toDouble))
+        .filter(_ > 0)
+        . // ignore below zero temperatures
+        map(_ toString)
+        .to(fileW(file + ".celsius"))
     } yield ()) drain
   }
 }

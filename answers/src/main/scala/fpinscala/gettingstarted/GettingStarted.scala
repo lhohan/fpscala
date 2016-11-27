@@ -29,7 +29,7 @@ object MyModule {
   // Another implementation of `factorial`, this time with a `while` loop
   def factorial2(n: Int): Int = {
     var acc = 1
-    var i = n
+    var i   = n
     while (i > 0) { acc *= i; i -= 1 }
     acc
   }
@@ -170,7 +170,7 @@ object PolymorphicFunctions {
   and uncurry and the two forms are in some sense "the same". In FP jargon,
   we say that they are _isomorphic_ ("iso" = same; "morphe" = shape, form),
   a term we inherit from category theory.
-  */
+   */
 
   // Exercise 5: Implement `compose`
 
