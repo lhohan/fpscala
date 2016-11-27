@@ -401,13 +401,14 @@ object IO3 {
   // Exercise 2: Implement a specialized `Function0` interpreter.
   @annotation.tailrec
   def runTrampoline[A](fa: Free[Function0, A]): A = fa match {
-    case Return(a) => a
+    case Return(a)  => a
     case Suspend(r) => r()
-    case FlatMap(x, f) => x match {
-      case Return(a) => runTrampoline(f(a))
-      case Suspend(r) => runTrampoline(f(r()))
-      case FlatMap(y, g) => runTrampoline(y flatMap (a => g(a) flatMap f))
-    }
+    case FlatMap(x, f) =>
+      x match {
+        case Return(a)     => runTrampoline(f(a))
+        case Suspend(r)    => runTrampoline(f(r()))
+        case FlatMap(y, g) => runTrampoline(y flatMap (a => g(a) flatMap f))
+      }
   }
 
   // Exercise 3: Implement a `Free` interpreter which works for any `Monad`
