@@ -1,6 +1,6 @@
 package fpinscala
 
-import fpinscala.localeffects.{RunnableST, ST, STArray}
+import fpinscala.localeffects.{Immutable, RunnableST, ST, STArray}
 import org.scalatest.FunSuite
 
 /**
@@ -22,7 +22,6 @@ class ch14_LocalEffectsTests extends FunSuite {
     val (head, list) = ST.runST(p)
     assert(List("a", "a", "b", "a", "a") === list)
     assert("a" === head)
-
   }
 
   test("14.1 - fill using Map") {
@@ -38,7 +37,28 @@ class ch14_LocalEffectsTests extends FunSuite {
     }
     val list = ST.runST(p)
     assert(List("A", "a", "a", "a", "E") === list)
+  }
 
+  test("14.0 - test swap") {
+    type ResultType = List[String]
+
+    val p = new RunnableST[ResultType] {
+      override def apply[S]: ST[S, ResultType] =
+        for {
+          arr <- STArray(5, "a")
+          _   <- arr.fill(Map(0 -> "A", 1 -> "B", 2 -> "C", 3 -> "D", 4 -> "E"))
+          _   <- arr.swap(0, 4)
+          x   <- arr.freeze
+        } yield x
+    }
+    val list = ST.runST(p)
+    assert(List("E", "B", "C", "D", "A") === list)
+  }
+
+  test("14.2 - quicksort") {
+    assert(List(1, 2, 3, 4, 5) === Immutable.quicksort(List(1, 2, 3, 4, 5)))
+    assert(List(1, 2, 3, 4, 5) === Immutable.quicksort(List(1, 4, 5, 2, 3)))
+    assert(List(1, 2, 3, 4, 5) === Immutable.quicksort(List(5, 4, 3, 2, 1)))
   }
 
 }
