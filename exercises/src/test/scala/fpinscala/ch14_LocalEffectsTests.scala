@@ -1,6 +1,6 @@
 package fpinscala
 
-import fpinscala.localeffects.{Immutable, RunnableST, ST, STArray}
+import fpinscala.localeffects._
 import org.scalatest.FunSuite
 
 /**
@@ -59,6 +59,25 @@ class ch14_LocalEffectsTests extends FunSuite {
     assert(List(1, 2, 3, 4, 5) === Immutable.quicksort(List(1, 2, 3, 4, 5)))
     assert(List(1, 2, 3, 4, 5) === Immutable.quicksort(List(1, 4, 5, 2, 3)))
     assert(List(1, 2, 3, 4, 5) === Immutable.quicksort(List(5, 4, 3, 2, 1)))
+  }
+
+  test("14.3 - STHashMap") {
+    type ResultType = (Map[String, Int], Int, Set[String])
+
+    val p = new RunnableST[ResultType] {
+      override def apply[S]: ST[S, ResultType] =
+        for {
+          m    <- STHashMap(("a", 1), ("b", 2))
+          _    <- m.put("c", 3)
+          cVal <- m.get("c")
+          keys <- m.keys
+          x    <- m.freeze
+        } yield (x, cVal, keys)
+    }
+    val (result, getResult, keysResult) = ST.runST(p)
+    assert(Map("a" -> 1, "b" -> 2, "c" -> 3) === result)
+    assert(3 === getResult)
+    assert(Set("a", "b", "c") === keysResult)
   }
 
 }

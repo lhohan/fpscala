@@ -2,6 +2,8 @@ package fpinscala.localeffects
 
 import fpinscala.monads._
 
+import scala.collection.mutable
+
 object Mutable {
   def quicksort(xs: List[Int]): List[Int] =
     if (xs.isEmpty) xs
@@ -190,4 +192,35 @@ object Immutable {
       })
 }
 
-import scala.collection.mutable.HashMap
+// Scala requires an implicit Manifest for constructing arrays.
+sealed abstract class STHashMap[S, K, V] {
+  protected def value: mutable.HashMap[K, V]
+
+  def size: ST[S, Int] = ST(value.size)
+
+  // Put a value at the give key of the map
+  def put(k: K, v: V): ST[S, Unit] = new ST[S, Unit] {
+    def run(s: S) = {
+      value.put(k, v)
+      ((), s)
+    }
+  }
+
+  // Read the value at the given key of the map
+  def get(k: K): ST[S, V] = ST(value(k))
+
+  def freeze: ST[S, Map[K, V]] = ST(value.toMap)
+
+  def keys: ST[S, Set[K]] = ST(value.keySet.toSet)
+}
+
+object STHashMap {
+  def apply[S, K, V](kv: (K, V)*): ST[S, STHashMap[S, K, V]] =
+    ST(new STHashMap[S, K, V] {
+      lazy val value = {
+        val x = new mutable.HashMap[K, V]()
+        kv.foreach { case (k, v) => x.put(k, v) }
+        x
+      }
+    })
+}
