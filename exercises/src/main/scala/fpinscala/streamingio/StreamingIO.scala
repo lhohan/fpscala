@@ -1,9 +1,11 @@
 package fpinscala.streamingio
 
-import fpinscala.iomonad.{IO, Monad, Free, unsafePerformIO}
+import fpinscala.iomonad.{Free, IO, Monad, unsafePerformIO}
+
 import language.implicitConversions
 import language.higherKinds
 import language.postfixOps
+import scala.runtime.Nothing$
 
 object ImperativeAndLazyIO {
 
@@ -298,13 +300,40 @@ object SimpleStreamTransducers {
     /*
      * Exercise 1: Implement `take`, `drop`, `takeWhile`, and `dropWhile`.
      */
-    def take[I](n: Int): Process[I, I] = ???
+    def take[I](n: Int): Process[I, I] = {
+      Await[I, I] {
+        case Some(x) if n > 0 => Emit(x, take(n - 1))
+        case _                => Halt()
+      }
+    }
 
-    def drop[I](n: Int): Process[I, I] = ???
+    def drop[I](n: Int): Process[I, I] = {
+      Await[I, I] {
+        case Some(_) if n > 0 => drop(n - 1)
+        case Some(x)          => Emit(x, drop(n))
+        case None             => Halt()
+      }
+    }
 
-    def takeWhile[I](f: I => Boolean): Process[I, I] = ???
+    def takeWhile[I](f: I => Boolean): Process[I, I] = {
+      Await[I, I] {
+        case Some(x) if f(x) => Emit(x, takeWhile(f))
+        case Some(x)         => Halt()
+        case None            => Halt()
+      }
+    }
 
-    def dropWhile[I](f: I => Boolean): Process[I, I] = ???
+    def dropWhile[I](f: I => Boolean): Process[I, I] = {
+      def go(emitting: Boolean): Process[I, I] = {
+        Await[I, I] {
+          case Some(x) if emitting          => Emit(x, go(true))
+          case Some(x) if f(x) && !emitting => dropWhile(f)
+          case Some(x)                      => Emit(x, go(true))
+          case None                         => Halt()
+        }
+      }
+      go(false)
+    }
 
     /* The identity `Process`, just repeatedly echos its input. */
     def id[I]: Process[I, I] = lift(identity)
@@ -312,7 +341,13 @@ object SimpleStreamTransducers {
     /*
      * Exercise 2: Implement `count`.
      */
-    def count[I]: Process[I, Int] = ???
+    def count[I]: Process[I, Int] = {
+      def go(i: Int): Process[I, Int] = Await {
+        case Some(_) => Emit(i, go(i + 1))
+        case None    => Emit(i, Halt[I, Int]())
+      }
+      go(0)
+    }
 
     /* For comparison, here is an explicit recursive implementation. */
     def count2[I]: Process[I, Int] = {
@@ -324,7 +359,12 @@ object SimpleStreamTransducers {
     /*
      * Exercise 3: Implement `mean`.
      */
-    def mean: Process[Double, Double] = ???
+    def mean: Process[Double, Double] = {
+      def go(i: Int, s: Double): Process[Double, Double] = await { (d: Double) =>
+        Emit((s + d) / (i + 1), go(i + 1, s + d))
+      }
+      go(0, 0.0)
+    }
 
     def loop[S, I, O](z: S)(f: (I, S) => (O, S)): Process[I, O] =
       await((i: I) =>
@@ -334,9 +374,9 @@ object SimpleStreamTransducers {
 
     /* Exercise 4: Implement `sum` and `count` in terms of `loop` */
 
-    def sum2: Process[Double, Double] = ???
+    def sum2: Process[Double, Double] = loop(0.0) { case (i, s) => (i + s, i + s) }
 
-    def count3[I]: Process[I, Int] = ???
+    def count3[I]: Process[I, Int] = loop(0) { case (_, s) => (s + 1, s + 1) }
 
     /*
      * Exercise 7: Can you think of a generic combinator that would
