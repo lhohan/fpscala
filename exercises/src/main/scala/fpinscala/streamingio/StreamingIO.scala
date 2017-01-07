@@ -138,7 +138,22 @@ object SimpleStreamTransducers {
     /*
      * Exercise 5: Implement `|>`. Let the types guide your implementation.
      */
-    def |>[O2](p2: Process[O, O2]): Process[I, O2] = ???
+    def |>[O2](p2: Process[O, O2]): Process[I, O2] = {
+      p2 match {
+        case Halt()     => Halt()
+        case Emit(h, t) => Emit(h, this |> t) // tail is 'this' again piped to p2's tail
+        case p2Await @ Await(recv2) =>
+          this match {
+            case Halt()     => Halt()
+            case Emit(o, t) => t |> recv2(Some(o))
+            case Await(recvthis) =>
+              Await { maybeI: Option[I] =>
+                val po: Process[I, O] = recvthis(maybeI)
+                po |> p2Await
+              }
+          }
+      }
+    }
 
     /*
      * Feed `in` to this `Process`. Uses a tail recursive loop as long

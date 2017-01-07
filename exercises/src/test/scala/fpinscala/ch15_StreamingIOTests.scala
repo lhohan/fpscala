@@ -64,4 +64,14 @@ class ch15_StreamingIOTests extends FunSuite {
     assert(List(5.0) == p(Stream(5.0)).toList)
     assert(List() == p(Stream()).toList)
   }
+
+  test("15.5: compose") {
+    val p1: Process[Double, Double] = Process.filter(_ > 5)
+    val p2: Process[Double, Double] = Process.sum
+    val p: Process[Double, Double]  = p1 |> p2
+    val q: Process[Double, Double]  = p2 |> p1
+    assert(List(6.0, 16.0) == p(Stream(1.0, 6.0, 10.0, 1.0, 1.0, 4.0)).toList)
+    assert(List(7.0, 17.0, 18.0, 19.0, 23.0) == q(Stream(1.0, 6.0, 10.0, 1.0, 1.0, 4.0)).toList)
+
+  }
 }
