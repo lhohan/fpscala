@@ -71,6 +71,7 @@ class ch15_StreamingIOTests extends FunSuite {
     val p: Process[Double, Double]  = p1 |> p2
     val q: Process[Double, Double]  = p2 |> p1
     assert(List(6.0, 16.0) == p(Stream(1.0, 6.0, 10.0, 1.0, 1.0, 4.0)).toList)
+    // note: first element '1.0' is filtered
     assert(List(7.0, 17.0, 18.0, 19.0, 23.0) == q(Stream(1.0, 6.0, 10.0, 1.0, 1.0, 4.0)).toList)
 
   }
