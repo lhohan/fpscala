@@ -217,8 +217,13 @@ object SimpleStreamTransducers {
 
     /*
      * Exercise 6: Implement `zipWithIndex`.
+     *
+     * Hans notes: tried flatMap and map combination (as this is where this exercise is located after, misleading or
+     * is there a way to get to a solution using only these combinators?) but could not get the state of the counter
+     * to propagate. So to make both streams 'go forward simultaneously as one' kind of zipping them seems a way
+     * that at least makes it work.
      */
-    def zipWithIndex: Process[I, (O, Int)] = ???
+    def zipWithIndex: Process[I, (O, Int)] = Process.zipWithIndex(this, count)
 
     /* Add `p` to the fallback branch of this process */
     def orElse(p: Process[I, O]): Process[I, O] = this match {
@@ -233,6 +238,36 @@ object SimpleStreamTransducers {
   }
 
   object Process {
+    /*
+     * 'count' keeps on emitting until p1 is exhausted so
+     * - We take into account only emits and awaits because this is what the stream to be zipped will emit and await for.
+     * - We halt when p halts which can be reduced basically to the rest of the matches.
+     *
+     * */
+    def zipWithIndex[I, O](p: Process[I, O], count: Process[I, Int]): Process[I, (O, Int)] =
+      (p, count) match {
+        case (Emit(o, t1), Emit(index, t2)) => Emit[I, (O, Int)]((o, index), zipWithIndex(t1, t2))
+        case (Await(recv1), Await(recv2)) =>
+          Await { maybeI: Option[I] =>
+            zipWithIndex(recv1(maybeI), recv2(maybeI))
+          }
+        case _ => Halt()
+      }
+
+//    def zipWithIndex[I, O](p1: Process[I, O], count: Process[I, Int]): Process[I, (O, Int)] =
+//      (p1, count) match {
+//        case (Emit(o, t1), Emit(index, t2)) => Emit[I, (O, Int)]((o, index), zipWithIndex(t1, t2))
+//        case (Await(recv1), Await(recv2)) =>
+//          Await { maybeI: Option[I] =>
+//            zipWithIndex(recv1(maybeI), recv2(maybeI))
+//          }
+//        case (Halt(), _)                    => Halt()
+//        case (_, Halt())                    => Halt()
+//        case (Emit(o, t1), Await(recv2)) =>
+//        case (Await(recv1), Emit(index, t2)) => Await{ maybeI =>
+//          zipWithIndex(recv1(maybeI), Halt())
+//        }
+//      }
 
     case class Emit[I, O](
         head: O,
