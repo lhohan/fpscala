@@ -140,14 +140,14 @@ object SimpleStreamTransducers {
      */
     def |>[O2](p2: Process[O, O2]): Process[I, O2] = {
       p2 match {
-        case Halt()     => Halt()
-        case Emit(h, t) => Emit(h, this |> t) // tail is 'this' again piped to p2's tail
+        case Halt()     => Halt[I, O2]()
+        case Emit(h, t) => Emit[I, O2](h, this |> t) // tail is 'this' again piped to p2's tail
         case p2Await @ Await(recv2) =>
           this match {
-            case Halt()     => Halt()
+            case Halt()     => Halt[I, O2]()
             case Emit(o, t) => t |> recv2(Some(o))
             case Await(recvthis) =>
-              Await { maybeI: Option[I] =>
+              Await[I, O2] { maybeI: Option[I] =>
                 val po: Process[I, O] = recvthis(maybeI)
                 po |> p2Await
               }
