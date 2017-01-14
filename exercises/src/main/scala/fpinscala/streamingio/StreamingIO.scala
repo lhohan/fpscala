@@ -137,6 +137,7 @@ object SimpleStreamTransducers {
 
     /*
      * Exercise 5: Implement `|>`. Let the types guide your implementation.
+     *
      */
     def |>[O2](p2: Process[O, O2]): Process[I, O2] = {
       p2 match {
@@ -144,11 +145,11 @@ object SimpleStreamTransducers {
         case Emit(h, t) => Emit[I, O2](h, this |> t) // tail is 'this' again piped to p2's tail
         case p2Await @ Await(recv2) =>
           this match {
-            case Halt()     => Halt[I, O2]()
+            case Halt()     => Halt() |> recv2(None)
             case Emit(o, t) => t |> recv2(Some(o))
-            case Await(recvthis) =>
+            case Await(recv1) =>
               Await[I, O2] { maybeI: Option[I] =>
-                val po: Process[I, O] = recvthis(maybeI)
+                val po: Process[I, O] = recv1(maybeI)
                 po |> p2Await
               }
           }
