@@ -115,11 +115,35 @@ class ch15_StreamingIOTests extends FunSuite {
     assert(List.empty[(Double, Int)] == p(Stream.empty[Double]).toList)
   }
 
-  test("15.6: zipWithIndex - 2") {
+  test("15.6: zipWithIndex - one Emit") {
     import Process._
     val p: Process[Int, (Int, Int)] = Emit[Int, Int](25, Halt()).zipWithIndex
     assert(
       List((25, 0))
+        ==
+          p(Stream.from(5)).toList
+    )
+  }
+
+  test("15.6: zipWithIndex - one Await sending Emit") {
+    import Process._
+    val p: Process[Int, (Int, Int)] = Await[Int, Int] { _ =>
+      Emit(25, Halt())
+    }.zipWithIndex
+    assert(
+      List((25, 0))
+        ==
+          p(Stream.from(5)).toList
+    )
+  }
+
+  test("15.6: zipWithIndex - one Await sending Halt") {
+    import Process._
+    val p: Process[Int, (Int, Int)] = Await[Int, Int] { _ =>
+      Halt()
+    }.zipWithIndex
+    assert(
+      List()
         ==
           p(Stream.from(5)).toList
     )

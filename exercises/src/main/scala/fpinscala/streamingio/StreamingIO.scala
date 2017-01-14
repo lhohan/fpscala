@@ -257,16 +257,21 @@ object SimpleStreamTransducers {
   object Process {
     /*
      * 'count' keeps on emitting until p1 is exhausted so
-     * - We take into account only emits and awaits because this is what the stream to be zipped will emit and await for.
-     * - We halt when p halts which can be reduced basically to the rest of the matches.
-     *
      * */
     def zipWithIndex[I, O](p: Process[I, O], count: Process[I, Int]): Process[I, (O, Int)] =
       (p, count) match {
+        case (e @ Emit(_, _), Await(recv)) =>
+          Await { option =>
+            zipWithIndex(e, recv(option))
+          }
         case (Emit(o, t1), Emit(index, t2)) => Emit[I, (O, Int)]((o, index), zipWithIndex(t1, t2))
         case (Await(recv1), Await(recv2)) =>
           Await { maybeI: Option[I] =>
             zipWithIndex(recv1(maybeI), recv2(maybeI))
+          }
+        case (Await(recv), e @ Emit(_, _)) => // Is this really needed since count is 'infinite'? Could not find test.
+          Await { option =>
+            zipWithIndex(recv(option), e)
           }
         case _ => Halt()
       }
