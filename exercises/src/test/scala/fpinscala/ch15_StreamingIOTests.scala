@@ -75,7 +75,17 @@ class ch15_StreamingIOTests extends FunSuite {
     assert(List(7.0, 17.0, 18.0, 19.0, 23.0) == q(Stream(1.0, 6.0, 10.0, 1.0, 1.0, 4.0)).toList)
   }
 
-  test("15.7: zipWithIndex") {
+  test("15.5: compose - finite p1 , infinite p2") {
+    import Process._
+    val infiniteP: Process[Int, Int] = Process.count
+    val finiteP: Process[Int, Int]   = Emit(25, Halt())
+    val p: Process[Int, Int]         = infiniteP |> finiteP
+    val q: Process[Int, Int]         = finiteP |> infiniteP
+    assert(List(25) == p(Stream.from(500)).toList)
+    assert(List(0, 1) == q(Stream.from(500)).toList)
+  }
+
+  test("15.6: zipWithIndex") {
     val p: Process[Double, (Double, Int)] = Process.sum.zipWithIndex
     assert(
       List((1.0, 0), (7.0, 1), (17.0, 2), (18.0, 3), (19.0, 4), (23.0, 5))
@@ -84,4 +94,15 @@ class ch15_StreamingIOTests extends FunSuite {
     )
     assert(List.empty[(Double, Int)] == p(Stream.empty[Double]).toList)
   }
+
+  test("15.6: zipWithIndex - 2") {
+    import Process._
+    val p: Process[Int, (Int, Int)] = Emit[Int, Int](25, Halt()).zipWithIndex
+    assert(
+      List((25, 0))
+        ==
+          p(Stream.from(5)).toList
+    )
+  }
+
 }
