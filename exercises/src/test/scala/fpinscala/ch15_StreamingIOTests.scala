@@ -85,6 +85,26 @@ class ch15_StreamingIOTests extends FunSuite {
     assert(List(0, 1) == q(Stream.from(500)).toList)
   }
 
+  test("15.5: compose alternate") {
+    val p1: Process[Double, Double] = Process.filter(_ > 5)
+    val p2: Process[Double, Double] = Process.sum
+    val p: Process[Double, Double]  = p1 pipe2 p2
+    val q: Process[Double, Double]  = p2 pipe2 p1
+    assert(List(6.0, 16.0) == p(Stream(1.0, 6.0, 10.0, 1.0, 1.0, 4.0)).toList)
+    // note: first element '1.0' is filtered
+    assert(List(7.0, 17.0, 18.0, 19.0, 23.0) == q(Stream(1.0, 6.0, 10.0, 1.0, 1.0, 4.0)).toList)
+  }
+
+  test("15.5: compose alternate - finite p1 , infinite p2") {
+    import Process._
+    val infiniteP: Process[Int, Int] = Process.count
+    val finiteP: Process[Int, Int]   = Emit(25, Halt())
+    val p: Process[Int, Int]         = infiniteP pipe2 finiteP
+    val q: Process[Int, Int]         = finiteP pipe2 infiniteP
+    assert(List(25) == p(Stream.from(500)).toList)
+    assert(List(0, 1) == q(Stream.from(500)).toList)
+  }
+
   test("15.6: zipWithIndex") {
     val p: Process[Double, (Double, Int)] = Process.sum.zipWithIndex
     assert(

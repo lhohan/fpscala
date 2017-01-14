@@ -157,6 +157,22 @@ object SimpleStreamTransducers {
     }
 
     /*
+     * Alternate implementation of Exercise 5.15. Conceptually it may be argued matching on
+     * `p2` makes most sense as it is the outer 'application' but I find it easier to reason about
+     * on a case by case basis as below.
+     * */
+    def pipe2[O2](p2: Process[O, O2]): Process[I, O2] = (this, p2) match {
+      case (_, Halt())               => Halt()
+      case (_, Emit(h, t))           => Emit(h, this |> t)
+      case (Emit(h, t), Await(recv)) => t |> recv(Some(h))
+      case (Await(recv1), p) =>
+        Await { maybeI =>
+          recv1(maybeI) |> p
+        }
+      case (Halt(), Await(recv)) => Halt() |> recv(None)
+    }
+
+    /*
      * Feed `in` to this `Process`. Uses a tail recursive loop as long
      * as `this` is in the `Await` state.
      */
