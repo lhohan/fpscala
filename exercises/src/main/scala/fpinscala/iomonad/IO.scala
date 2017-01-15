@@ -1,14 +1,16 @@
 package fpinscala.iomonad
 
+import language.postfixOps
+import language.higherKinds
 import scala.io.StdIn.readLine
-import scala.language.{higherKinds, postfixOps}
+import scala.util.Try
 
 object IO0 {
   /*
 
-  Our first attempt at data type for representing computations that
-  may perform I/O. Has a simple 'interpreter' baked in--the `run`
-  function, which just returns `Unit`.
+Our first attempt at data type for representing computations that
+may perform I/O. Has a simple 'interpreter' baked in--the `run`
+function, which just returns `Unit`.
 
    */
   trait IO { self =>
@@ -23,10 +25,10 @@ object IO0 {
 
   /*
 
-  The API of this `IO` type isn't very useful.  Not many operations
-  (it is only a monoid), and not many laws to help with reasoning. It
-  is completely _opaque_. Also cannot represent _input_ effects, like
-  reading from console, for instance:
+The API of this `IO` type isn't very useful.  Not many operations
+(it is only a monoid), and not many laws to help with reasoning. It
+is completely _opaque_. Also cannot represent _input_ effects, like
+reading from console, for instance:
 
    */
 
@@ -52,9 +54,9 @@ object IO0 {
 object IO1 {
   /*
 
-  We need a way for our `IO` actions to yield a result of some
-  meaningful type. We do this by adding a type parameter to `IO`,
-  which now forms a `Monad`.
+We need a way for our `IO` actions to yield a result of some
+meaningful type. We do this by adding a type parameter to `IO`,
+which now forms a `Monad`.
    */
 
   sealed trait IO[A] { self =>
@@ -115,25 +117,25 @@ object IO1 {
 
   /*
 
-  Larger example using various monadic combinators. Sample run:
+Larger example using various monadic combinators. Sample run:
 
-     The Amazing Factorial REPL, v2.0
-     q - quit
-     <number> - compute the factorial of the given number
-     <anything else> - bomb with horrible error
-     3
-     factorial: 6
-     7
-     factorial: 5040
-     q
+The Amazing Factorial REPL, v2.0
+q - quit
+<number> - compute the factorial of the given number
+<anything else> - bomb with horrible error
+3
+factorial: 6
+7
+factorial: 5040
+q
 
    */
   val helpstring = """
-  | The Amazing Factorial REPL, v2.0
-  | q - quit
-  | <number> - compute the factorial of the given number
-  | <anything else> - bomb with horrible error
-  """.trim.stripMargin
+                     | The Amazing Factorial REPL, v2.0
+                     | q - quit
+                     | <number> - compute the factorial of the given number
+                     | <anything else> - bomb with horrible error
+                   """.trim.stripMargin
 
   def factorial(n: Int): IO[Int] =
     for {
@@ -379,44 +381,46 @@ object IO3 {
     def map[B](f: A => B): Free[F, B] =
       flatMap(f andThen (Return(_)))
   }
-  case class Return[F[_], A](a: A)     extends Free[F, A]
-  case class Suspend[F[_], A](s: F[A]) extends Free[F, A]
-  case class FlatMap[F[_], A, B](
-      s: Free[F, A],
-      f: A => Free[F, B]
-  ) extends Free[F, B]
+  case class Return[F[_], A](a: A)                                  extends Free[F, A]
+  case class Suspend[F[_], A](s: F[A])                              extends Free[F, A]
+  case class FlatMap[F[_], A, B](s: Free[F, A], f: A => Free[F, B]) extends Free[F, B]
 
   // Exercise 1: Implement the free monad
   def freeMonad[F[_]]: Monad[({ type f[a] = Free[F, a] })#f] =
     new Monad[({ type f[a] = Free[F, a] })#f] {
-      override def flatMap[A, B](a: Free[F, A])(f: (A) => Free[F, B]): Free[F, B] = {
-        a.flatMap(x => f(x))
-      }
+      override def flatMap[A, B](a: Free[F, A])(f: (A) => Free[F, B]): Free[F, B] = a.flatMap(f)
 
-      override def unit[A](a: => A): Free[F, A] = {
-        Return(a)
-      }
+      override def unit[A](a: => A): Free[F, A] = Return(a)
     }
 
   // Exercise 2: Implement a specialized `Function0` interpreter.
   @annotation.tailrec
-  def runTrampoline[A](fa: Free[Function0, A]): A = fa match {
+  def runTrampoline[A](a: Free[Function0, A]): A = a match {
     case Return(a)  => a
-    case Suspend(r) => r()
-    case FlatMap(x, f) =>
-      x match {
-        case Return(a)     => runTrampoline(f(a))
-        case Suspend(r)    => runTrampoline(f(r()))
-        case FlatMap(y, g) => runTrampoline(y flatMap (a => g(a) flatMap f))
+    case Suspend(s) => s()
+    case FlatMap(s, f) =>
+      s match {
+        case Return(a1)     => runTrampoline(f(a1))
+        case Suspend(s1)    => runTrampoline(f(s1()))
+        case FlatMap(s1, g) => runTrampoline(s1.flatMap(a2 => g(a2).flatMap(f)))
       }
   }
 
   // Exercise 3: Implement a `Free` interpreter which works for any `Monad`
-  def run[F[_], A](a: Free[F, A])(implicit F: Monad[F]): F[A] = ???
+
+  def run[F[_], A](a: Free[F, A])(implicit F: Monad[F]): F[A] = step(a) match {
+    case Return(a)              => F.unit(a)
+    case Suspend(r)             => r
+    case FlatMap(Suspend(r), f) => F.flatMap(r)(a => run(f(a)))
+  }
 
   // return either a `Suspend`, a `Return`, or a right-associated `FlatMap`
-  // @annotation.tailrec
-  def step[F[_], A](a: Free[F, A]): Free[F, A] = ???
+  @annotation.tailrec
+  def step[F[_], A](a: Free[F, A]): Free[F, A] = a match {
+    case FlatMap(FlatMap(x, f), g) => step(x flatMap (a => f(a) flatMap g))
+    case FlatMap(Return(x), f)     => step(f(x))
+    case _                         => a
+  }
 
   /*
   The type constructor `F` lets us control the set of external requests our
@@ -500,9 +504,7 @@ object IO3 {
     def flatMap[A, B](a: Par[A])(f: A => Par[B]) = Par.fork { Par.flatMap(a)(f) }
   }
 
-  def runFree[F[_], G[_], A](free: Free[F, A])(t: F ~> G)(
-      implicit G: Monad[G]
-  ): G[A] =
+  def runFree[F[_], G[_], A](free: Free[F, A])(t: F ~> G)(implicit G: Monad[G]): G[A] =
     step(free) match {
       case Return(a)              => G.unit(a)
       case Suspend(r)             => t(r)
@@ -530,9 +532,15 @@ object IO3 {
   // Exercise 4 (optional, hard): Implement `runConsole` using `runFree`,
   // without going through `Par`. Hint: define `translate` using `runFree`.
 
-  def translate[F[_], G[_], A](f: Free[F, A])(fg: F ~> G): Free[G, A] = ???
+  def translate[F[_], G[_], A](f: Free[F, A])(fg: F ~> G): Free[G, A] = {
+    type FreeG[X] = Free[G, X]
+    val natTrans = new (F ~> FreeG) {
+      override def apply[A](f: F[A]): FreeG[A] = Suspend(fg(f))
+    }
+    runFree(f)(natTrans)(freeMonad[G])
+  }
 
-  def runConsole[A](a: Free[Console, A]): A = ???
+  def runConsole[A](a: Free[Console, A]): A = runTrampoline(translate(a)(consoleToFunction0))
 
   /*
   There is nothing about `Free[Console,A]` that requires we interpret
@@ -607,13 +615,50 @@ object IO3 {
    * which supports asynchronous reads.
    */
 
+  import java.nio._
   import java.nio.channels._
 
-  def read(
-      file: AsynchronousFileChannel,
-      fromPosition: Long,
-      numBytes: Int
-  ): Par[Either[Throwable, Array[Byte]]] = ???
+  def read(file: AsynchronousFileChannel,
+           fromPosition: Long,
+           numBytes: Int): Par[Either[Throwable, Array[Byte]]] = {
+    Par.async { (cb: Either[Throwable, Array[Byte]] => Unit) =>
+      val bb = ByteBuffer.allocate(numBytes)
+      val ft = file.read(bb, fromPosition)
+      val returnTry = Try {
+        val iRead     = ft.get()
+        val byteArray = new Array[Byte](iRead)
+        bb.get(byteArray)
+
+        byteArray
+      }
+
+      val either = returnTry.map(Right.apply).recover { case e => Left(e) }.get
+
+      cb(either)
+    }
+  }
+
+  def read1(file: AsynchronousFileChannel,
+            fromPosition: Long,
+            numBytes: Int): Par[Either[Throwable, Array[Byte]]] = {
+    Par.async { (cb: Either[Throwable, Array[Byte]] => Unit) =>
+      val bb = ByteBuffer.allocate(numBytes)
+      file.read(
+        bb,
+        fromPosition,
+        (),
+        new CompletionHandler[Integer, Unit] {
+          override def completed(result: Integer, attachment: Unit): Unit = {
+            val byteArray = new Array[Byte](result)
+            bb.get(byteArray)
+            cb(Right(byteArray))
+          }
+          override def failed(exc: Throwable, attachment: Unit): Unit =
+            cb(Left(exc))
+        }
+      )
+    }
+  }
 
   // Provides the syntax `Async { k => ... }` for asyncronous IO blocks.
   def Async[A](cb: (A => Unit) => Unit): IO[A] =
