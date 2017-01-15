@@ -149,4 +149,45 @@ class ch15_StreamingIOTests extends FunSuite {
     )
   }
 
+  test("15.7: zip") {
+    import Process._
+    val p: Process[Double, (Double, Int)] = zip(sum, count)
+    assert(
+      List((1.0, 0), (7.0, 1), (17.0, 2), (18.0, 3), (19.0, 4), (23.0, 5))
+        ==
+          p(Stream(1.0, 6.0, 10.0, 1.0, 1.0, 4.0)).toList
+    )
+    assert(List.empty[(Double, Int)] == p(Stream.empty[Double]).toList)
+  }
+
+  test("15.7: zip - one Emit") {
+    import Process._
+    val p: Process[Int, (Int, Int)] = zip(Emit[Int, Int](25, Halt()), count)
+    assert(
+      List((25, 0))
+        ==
+          p(Stream.from(5)).toList
+    )
+  }
+
+  test("15.7: meanWithZip") {
+    import Process._
+    val p = meanWithZip
+    assert(
+      List(1.0, 1.5, 2.0)
+        ==
+          p(Stream(1.0, 2.0, 3.0)).toList
+    )
+  }
+
+  test("15.7: meanWithZip - empty") {
+    import Process._
+    val p = meanWithZip
+    assert(
+      List()
+        ==
+          p(Stream()).toList
+    )
+  }
+
 }

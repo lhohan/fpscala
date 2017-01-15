@@ -242,6 +242,8 @@ object SimpleStreamTransducers {
      */
     def zipWithIndex: Process[I, (O, Int)] = Process.zipWithIndex(this, count)
 
+    def zip[O2](p: Process[I, O2]) = Process.zip(this, p)
+
     /* Add `p` to the fallback branch of this process */
     def orElse(p: Process[I, O]): Process[I, O] = this match {
       case Halt() => p
@@ -455,6 +457,35 @@ object SimpleStreamTransducers {
      * allow for the definition of `mean` in terms of `sum` and
      * `count`?
      */
+    def zip[I, O1, O2](p1: Process[I, O1], p2: Process[I, O2]): Process[I, (O1, O2)] =
+      (p1, p2) match {
+        case (Halt(), _)                  => Halt()
+        case (_, Halt())                  => Halt()
+        case (Emit(o1, t1), Emit(o2, t2)) => Emit((o1, o2), zip(t1, t2))
+        case (e @ Emit(o1, t1), Await(recv)) =>
+          Await { maybeI =>
+            val p: Process[I, O2] = recv(maybeI)
+            zip(e, p)
+          }
+        case (Await(recv), e @ Emit(_, _)) =>
+          Await { maybeI =>
+            val p: Process[I, O1] = recv(maybeI)
+            zip(p, e)
+          }
+        case (Await(recv1), Await(recv2)) =>
+          Await { maybeI =>
+            zip(recv1(maybeI), recv2(maybeI))
+          }
+      }
+
+    def meanWithZip: Process[Double, Double] = zip(sum, count[Double]).map {
+      case (s, c) => s / (c + 1)
+    }
+
+//    TODO For some reason the below does not compile ?
+//    def meanWithZip2 = zip(sum, count[Double]) |> {
+//      case (s, c) => s / (c + 1)
+//    }
 
     def feed[A, B](oa: Option[A])(p: Process[A, B]): Process[A, B] =
       p match {
