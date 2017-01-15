@@ -1,7 +1,10 @@
 package fpinscala
 
-import org.scalatest.FunSuite
+import java.io.File
+import java.util.concurrent.ThreadPoolExecutor
 
+import fpinscala.iomonad.IO2a.IO
+import org.scalatest.FunSuite
 import fpinscala.streamingio.SimpleStreamTransducers._
 
 class ch15_StreamingIOTests extends FunSuite {
@@ -260,6 +263,14 @@ class ch15_StreamingIOTests extends FunSuite {
         ==
           p(Stream()).toList
     )
+  }
+
+  test("15.9: reading and converting contents of file fahrenheit to celcius") {
+    val file              = new File(getClass.getResource("/ex_15_9.txt").getPath)
+    val convertedFromFile = Process.readFileAndConvertToCelcius(file)
+    val result = fpinscala.iomonad.unsafePerformIO(convertedFromFile)(
+      java.util.concurrent.Executors.newFixedThreadPool(2))
+    assert(List(0.0, 100.0) === result)
   }
 
 }

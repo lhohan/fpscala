@@ -1,5 +1,7 @@
 package fpinscala.streamingio
 
+import java.io.File
+
 import fpinscala.iomonad.{Free, IO, Monad, unsafePerformIO}
 
 import language.implicitConversions
@@ -552,6 +554,22 @@ object SimpleStreamTransducers {
      * Exercise 9: Write a program that reads degrees fahrenheit as `Double` values from a file,
      * converts each temperature to celsius, and writes results to another file.
      */
+    def readFileAndConvertToCelcius(f: File): IO[List[Double]] = {
+      val toCelciusProcess = {
+        filter { s: String =>
+          !s.startsWith("#")
+        } |>
+          filter { s: String =>
+            !s.trim.isEmpty
+          } |>
+          lift { s: String =>
+            toCelsius(s.toDouble)
+          }
+      }
+      processFile(f, toCelciusProcess, List.empty[Double]) { (acc, temperature) =>
+        temperature :: acc
+      }.map(_.reverse)
+    }
 
     def toCelsius(fahrenheit: Double): Double =
       (5.0 / 9.0) * (fahrenheit - 32.0)

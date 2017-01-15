@@ -1,0 +1,6 @@
+# temparatures in fahrenheit (this is a comment)
+
+# above and below are empty lines which should be skipped, like this comment
+
+32
+212
