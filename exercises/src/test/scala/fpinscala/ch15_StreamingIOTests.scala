@@ -190,4 +190,76 @@ class ch15_StreamingIOTests extends FunSuite {
     )
   }
 
+  test("15.8: exists - true") {
+    import Process._
+    val p = exists { s: String =>
+      s.startsWith("a")
+    }
+    assert(
+      List(false, true, true)
+        ==
+          p(Stream("bbbb", "aaaa", "bbbb")).toList
+    )
+  }
+
+  test("15.8: exists - false") {
+    import Process._
+    val p = exists { s: String =>
+      s.startsWith("a")
+    }
+    assert(
+      List(false, false, false)
+        ==
+          p(Stream("bbbb", "bbb", "bbbb")).toList
+    )
+  }
+
+  test("15.8: exists - empty") {
+    import Process._
+    val p = exists { s: String =>
+      s.startsWith("a")
+    }
+    assert(
+      List()
+        ==
+          p(Stream()).toList
+    )
+  }
+
+  test("15.8: existsResult - true") {
+    import Process._
+    val p = existsResult { s: String =>
+      s.startsWith("a")
+    }
+    assert(
+      List(true)
+        ==
+          p(Stream("bbbb", "aaaa", "bbbb")).toList
+    )
+  }
+
+  test("15.8: existsResult - false") {
+    import Process._
+    val p = existsResult { s: String =>
+      s.startsWith("a")
+    }
+    assert(
+      List(false)
+        ==
+          p(Stream("bbbb", "", "bbbb")).toList
+    )
+  }
+
+  test("15.8: existsResult - empty") {
+    import Process._
+    val p = existsResult { s: String =>
+      s.startsWith("a")
+    }
+    assert(
+      List(false)
+        ==
+          p(Stream()).toList
+    )
+  }
+
 }

@@ -506,7 +506,17 @@ object SimpleStreamTransducers {
      * We choose to emit all intermediate values, and not halt.
      * See `existsResult` below for a trimmed version.
      */
-    def exists[I](f: I => Boolean): Process[I, Boolean] = ???
+    def exists[I](f: I => Boolean): Process[I, Boolean] =
+      lift(f) |> loop(false)((b: Boolean, s) => (s || b, s || b))
+
+    def existsResult[I](f: I => Boolean): Process[I, Boolean] =
+      exists(f) |> { // generate intermediate results
+        takeWhile { b: Boolean => // take while false looking for first true
+          b == false // this can be simplified but this shows more the intention I think
+        } ++ echo // await next value and emit, if true it will be emitted, otherwise Halt will be sent
+      } |>
+        dropWhile(!_) |> // drop all false values that were taken
+        echo.orElse(emit(false)) // await the next value and emit, orElse handles case of no 'true' value found (Halt, recv None)
 
     /* Awaits then emits a single value, then halts. */
     def echo[I]: Process[I, I] = await(i => emit(i))
